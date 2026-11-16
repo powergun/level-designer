@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "resolveJsonModule": true,
+    "isolatedDeclarations": false
+  },
+  "include": ["packages/*/**/*.ts", "tools/*/**/*.ts"],
+  "exclude": [
+    "**/dist/**",
+    "**/.tmp/**",
+    "packages/destruction-gateway/src/**",
+    "packages/destruction-gateway/generated/**"
+  ]
+}

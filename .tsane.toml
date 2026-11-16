@@ -1,0 +1,98 @@
+# This file is the complete tsane policy. Omitted fields in a hand-edited file inherit
+# built-in defaults. Running `tsane config init --force` restores these typed defaults
+# and maintained comments. Running `tsane rules` explains the policy using the active
+# values resolved from the file.
+
+# Source selection is repository-relative and case-sensitive. This table also owns the default analysis report format; omitting the table inherits every built-in tool field.
+[tool]
+# Directory discovery matches each globset pattern against the complete repository-relative path with `/` as the logical separator. `*` stays within one component and `**` spans complete components. Omission inherits the built-in list; a configured list replaces it and never re-includes a denied path.
+include = [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts",
+    "**/*.cts",
+]
+# These case-sensitive globset patterns match the complete repository-relative `/` path, where `*` stays within one component and `**` spans complete components. They form a deny union with repository-owned .gitignore rules. Omission inherits the built-in list; a configured list replaces it.
+exclude = [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/out/**",
+    "**/coverage/**",
+    "**/.turbo/**",
+    "**/.next/**",
+    "**/.cache/**",
+    "**/target/**",
+]
+# This selects text or JSON when analysis has no --format override. Omission inherits text, and file extensions never select report format.
+format = "text"
+
+# TSA001 requires non-empty JSDoc on each admitted documentation subject. Omitting this table inherits every built-in TSA001 field, and its explicit selectors suppress TSA001 only.
+[rules.missing_docstring]
+# Enable TSA001 globally. Omission inherits true, while the analysis-only --enable-rules option may temporarily enable a disabled rule.
+enabled = true
+# Assign error, warning, or info to TSA001 findings. Omission inherits error, and only error-severity findings fail a completed analysis.
+severity = "error"
+# Exclusions are ORed selector tables; fields within one table are ANDed and list values are alternatives. Each table and each present list must be non-empty. Omission inherits no exclusions.
+#
+# `path` is a case-sensitive globset pattern for the complete repository-relative `/` path; `*` stays within one component and `**` spans complete components. `qualified_name` is a case-sensitive dotted-name glob: `*` stays within one segment and a whole `**` segment spans zero or more segments; other glob constructs are invalid.
+#
+# `kinds` accepts class, interface, enum, type_alias, function, and method. `nested_in` matches transitive class or function ancestry. `decorators` matches final static decorator names after call arguments and qualifiers are removed.
+#
+# Replace the generated `exclude = []` line with selector tables rather than keeping both forms. For example:
+# [[rules.missing_docstring.exclude]]
+# path = "src/generated/**"
+# kinds = ["function", "method"]
+#
+# [[rules.missing_docstring.exclude]]
+# qualified_name = "**.__generated__"
+# nested_in = ["function"]
+# decorators = ["generated"]
+exclude = []
+
+# TSA002 measures normalized JSDoc content in Unicode scalar values, including inserted line separators. Omitting this table inherits every built-in TSA002 field.
+[rules.long_docstring]
+# Enable TSA002 globally. Omission inherits true; existing docstrings remain eligible even when their subjects are excluded from TSA001.
+enabled = true
+# Assign error, warning, or info to TSA002 findings. Omission inherits error, and only error-severity findings fail a completed analysis.
+severity = "error"
+# Set the inclusive normalized-character maximum. Omission inherits 400; zero is valid, equality is allowed, and a greater measurement violates TSA002.
+max_chars = 400
+
+# TSA003 validates source-visible repository at-paths in recognized docstrings against the invocation repository root. Omitting this table inherits every built-in TSA003 field.
+[rules.invalid_docstring_reference]
+# Enable TSA003 globally. Omission inherits true; candidate extraction uses normalized docstrings even when TSA002 is disabled.
+enabled = true
+# Assign error, warning, or info to TSA003 findings. Omission inherits error, and only error-severity findings fail a completed analysis.
+severity = "error"
+# Deny Git-ignore-style repository-relative lexical and canonical targets and their ancestors. Omission inherits no deny patterns. Negation, blank entries, and comment-only entries are invalid. For example:
+# deny = ["generated/**", "private/**"]
+deny = []
+
+# TSA004 counts authored class property declarations and constructor parameter properties without deduplicating names. Omitting this table inherits every built-in TSA004 field.
+[rules.too_many_fields]
+# Enable TSA004 globally for class declarations and class expressions, including declaration files. Omission inherits true.
+enabled = true
+# Assign error, warning, or info to TSA004 findings. Omission inherits error, and only error-severity findings fail a completed analysis.
+severity = "error"
+# Set the inclusive authored-field maximum. Omission inherits 10; zero is valid, equality is allowed, and a greater count violates TSA004.
+max_fields = 10
+
+# TSA005 counts call, new, and tagged-template operations in each maximal dependent postfix expression spine. Omitting this table inherits every built-in TSA005 field.
+[rules.long_call_chain]
+# Enable TSA005 globally. Omission inherits true; independent argument and sibling expressions begin their own candidate spines.
+enabled = true
+# Assign error, warning, or info to TSA005 findings. Omission inherits error, and only error-severity findings fail a completed analysis.
+severity = "error"
+# Set the inclusive call-like-operation maximum. Omission inherits 6; zero is valid, equality is allowed, and a greater count violates TSA005.
+max_callees = 6
+
+# TSA006 measures physical lines strictly between the outer braces of each independently measured function body. Omitting this table inherits every built-in TSA006 field.
+[rules.long_functions]
+# Enable TSA006 globally for body-bearing declarations, methods, function expressions, and block-bodied arrows. Omission inherits true.
+enabled = true
+# Assign error, warning, or info to TSA006 findings. Omission inherits error, and only error-severity findings fail a completed analysis.
+severity = "error"
+# Set the inclusive physical-body-line maximum. Omission inherits 70; zero is valid, equality is allowed, and a greater count violates TSA006.
+max_lines = 70

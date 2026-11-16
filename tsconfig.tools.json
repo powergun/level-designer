@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun"]
+  },
+  "include": [
+    "tools/*/src/**/*.ts",
+    "packages/sec111-gateway/src/stage/**/*.ts",
+    "packages/sec111-gateway/src/testing/**/*.ts"
+  ],
+  "exclude": ["**/*.test.ts"]
+}

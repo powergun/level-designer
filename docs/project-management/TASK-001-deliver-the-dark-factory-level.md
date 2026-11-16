@@ -1,0 +1,241 @@
+# TASK-001: deliver the dark factory level with the level designer
+
+Build the level designer in this repository and use it to dress the old factory stage of
+sec-111 into a "dark factory" level. The task ends when the owner's QA accepts the level
+pair: a `.glb` with the sealed, dressed factory and a `.json` with the destructible props
+and the lighting. Adopting the pair in sec-111 follows as a separate task in the sec-111
+repository.
+
+## The owner's brief
+
+The owner wrote this brief on 2026-11-16. It is the requirement.
+
+```text
+# level designer app
+
+## Background
+
+We currently reply on a downloaded .glb (old_factory_free.glb) and a fix JSON description
+to dress up the stage with our in-house destructible walls.
+
+This setting works for the early prototype, but as our project moving towards an internal
+beta testing, we need a proper level design format and pipeline.
+
+We need a standalone app to author the level data.
+
+We should stay with .glb (mesh + material + textures + operational metadata) and .json
+for any in-house gameplay-specific information
+
+The new standalone app is called "level designer" and its repo in "../level-designer".
+It is guaranteed a sibling repo.
+
+## Art direction
+
+### Build on the existing factory level
+
+We want to customize (dress up) the old factory level with our in-house destructible
+objects to make the interior look more like a "dark factory" (i.e., a Xiaomi car factory)
+which matches our theme of "robots rebeling against human"
+
+We will not author a brand new level from scratch as it is too complex and challenge.
+It is better to build on something that is already proven in the prototype and QA.
+
+We will fully seal the old factory, and close the opening side.
+
+### Add procedurally-authored objects
+
+We will procedurally add geometry resembling production pipelines, storage containers
+and interior cranes under the ceiling.
+
+We have gathered some reference images:
+
+- layout: docs/art-direction/references/layout
+- mood (dark factory): docs/art-direction/references/mood
+
+We should use our in-house destructible system from "destruction lib"
+(../destruction-poc/README.md) so all the procedurally dressed objects can be destroyed
+with proper physics model (wood, brick, concrete, metal)
+
+### Lighting
+
+Lighting is part of the output. We will use lighting to achieve the mood reference.
+Lighting information can be saved in the .json file.
+
+### QA and playtest
+
+We will build a minimal walk-through FPS QA mode so we can QA the level.
+This app should allow human to fly as well.
+
+## Technical direction
+
+This new app can depends on destruction lib repo and sec-111.
+
+It will operate on its own. Only its level data is consumed by sec-111 game project
+(not its code)
+
+### Project boostrapping and dev-ops pipeline
+
+You should generally mirror the dev-ops pipeline in sec-111 and destruction lib, meaning
+just setup, just test and just lint; however, since level designer project is a new
+project, you do not need to establish the complete pipeline upfront; you can build it as
+you develop the project.
+
+### Technical structure
+
+Use the component-driven design.
+
+The walk-through QA app is a thin and lean component that runs as a web app in browser.
+This app is for human. This app should offer coordinate recording function (press F3) so
+human can mark problematic area by walking there and press F3 and type a comment.
+The information should be saved in a log file in .tmp/ directory.
+
+We should provide agent-friendly authoring feature so agents can follow the art
+references to dress up the original .glb. This process does not require interactivity.
+We follow the principle of "only build what we need". As soon as the new level passes QA
+and delivers the art expectation, we will stop any development.
+
+The level design pipeline and data flow should be implemented in several small,
+single-responsibility and purpose-built components. These components form the internal
+"library layer".
+
+### Constraints
+
+New procedural textures will be capped at 1K. This can be a hardcoded setting in the
+source code.
+
+Polycount for the dressed up level should be capped at 300k. This can be done via a
+simple validator cli.
+
+Other validation include: 1) no lights sinked in floor or outside the interior;
+2) no objects without materials
+
+## Operation
+
+Your role is the team lead. You lead a team of fable 5.2 and opus 5.5 subagents.
+Use the fable 5.2 subagents for designing and architecturing; use the opus 5.5 subagnets
+for source code development and review.
+
+Once this operation starts, firstly, bootstrap the new repo and establish the library
+layer, the QA app and the necessary level dressing tools for the agents.
+
+Then, do the first pass of level dressing and lighting, followed by human QA.
+
+From there, human will provide concrete art improvement feedback, and your team will
+continue iterating on them.
+```
+
+## The owner's decisions
+
+The owner answered the lead's questions on 2026-11-16. These answers bind the task.
+
+Scope and tools:
+
+- The operation includes sec-111 adoption, after the level passes QA. Until then sec-111
+  stays untouched.
+- The QA app walks and flies; the human cannot shoot in it. Automated checks prove that
+  destruction lib admits and damages every dressed object.
+- The QA app renders through the game's renderer, the rendering-poc pipeline, so the
+  approved mood is the game's mood.
+- Agents see the level through browser-free snapshot sheets. The human alone judges mood
+  and lighting in the browser.
+- The level pair is a build product of a committed level description. It is written under
+  the scratch directory and exported to sec-111 at adoption.
+- The owner commits in this repository. The team never commits or pushes: it hands over
+  a tree where both root gates pass, and QA runs the owner's commit.
+
+Art and gameplay:
+
+- The first pass dresses the hall with assembly lines (conveyors, machine enclosures,
+  simple robot arms), storage containers and cranes under the ceiling. No car bodies.
+- Every dressed object is destructible. If destruction budgets cannot carry the dressing,
+  the dressing shrinks; nothing static is added.
+- The six free-standing walls of the current level are removed. Dressed objects supply
+  all cover.
+- Dressed objects are built from destruction lib wall slabs. The owner accepts three
+  limits: a shot-through object never collapses, SMG rounds do nothing on a slab's thin
+  edges, and settled debris falls through to the floor.
+- The first pass builds no texture. Surface detail waits for the owner's QA feedback.
+- A blown-open container or enclosure can hide the player from minions. The first pass
+  accepts this; the fix belongs to adoption.
+
+## What to read
+
+The design in `docs/researches/2026-11-16-level-designer-foundation/` is the technical
+source of truth. Read it before the subtask document:
+
+- `architecture.md`: the data flow, the components, the tools, the QA app and the test
+  strategy.
+- `level-format.md`: the level description, the level pair, the lighting mapping rules
+  and the validator's checks.
+- `build-plan.md`: the milestones, the subtasks with their checks, the art pass and the
+  hand-off checklist.
+- The three research reports beside them hold the evidence: destructible objects, the
+  renderer and lighting, and the sec-111 level contract with the hall in numbers.
+
+Also read the root `CLAUDE.md`, the house rules it names, and the three retros in
+`../skin-designer/docs/retros/`. That team built a similar app; its lessons apply here.
+
+## Rules for everyone on this task
+
+- The human alone launches the QA server and judges the level in a browser. Agents never
+  launch a server or a browser.
+- sec-111, destruction-poc and rendering-poc are read-only. Only the three gateway
+  components reach them.
+- Only build what we need. Every component, field, check and recipe names its consumer.
+- An engineer edits only their own component. Root files belong to the integrator. Root
+  gates run one at a time under the gate lock the lead names.
+- The whole test recipe stays fast. One level preparation costs about 3 s; the build plan
+  says which tests may prepare.
+- The app never fails silently. Before a hand-over for QA, name the file that explains a
+  failure on the owner's machine.
+- A report separates what was verified from what is inferred, and names what was not
+  checked.
+
+## Subtasks
+
+Each subtask is one milestone of the build plan.
+
+- TASK-001.01: build the sibling gateways and the level formats (milestone 1).
+- TASK-001.02: build the slab model, the prop kit and the snapshot renderer
+  (milestone 2).
+- TASK-001.03: build the rules, the pipeline and the tool until the sealed hall builds
+  (milestone 3).
+- TASK-001.04: build the QA app (milestone 4).
+- TASK-001.05: dress and light the hall in the first art pass (milestone 5).
+- TASK-001.06: hand the first pass to the owner for QA (milestone 6).
+
+## Status update
+
+(2026-11-16 14:44:10)
+The owner approved the scope through two rounds of questions. The workspace and its
+pipeline are bootstrapped and committed. Three research reports, the design and its
+adversarial review are done; the design documents are being revised to the review's
+rulings. Milestone 1 has started with the root wiring and the three gateways. Status WIP.
+Remaining: milestones 1 to 6.
+
+(2026-11-16 14:58:35)
+The design is final: the review's rulings are in the architecture, the level format and
+the build plan. The root wiring and the three gateways are built and pass the root
+gates; their independent review is still open. The owner moved the operation into this
+repository and now commits here; the handoff note at the repository root tells the next
+team lead how to continue. Remaining: the gateway review, then subtasks 1.5 and 1.6,
+then milestones 2 to 6.
+
+(2026-11-16 16:19:16)
+Milestone 1 is built and reviewed: the root wiring, the three gateways, `level-format`
+and `level-glb`. An acceptance review found TASK-001.01 complete, and the root gates pass
+on Windows with a test recipe of 0.72 s. The level format document now states the
+readings the two format components settled, such as the path spelling and the index base.
+The handoff note is consumed and removed from the repository root. Status stays WIP.
+Remaining: the owner's QA of TASK-001.01, then milestones 2 to 6.
+
+(2026-11-16 16:28:23)
+The owner's QA of TASK-001.01 passed on Windows and on macOS, and the owner approved
+marking it DONE. The linking is now proved on both hosts. Status stays WIP. Remaining:
+milestones 2 to 6, starting with TASK-001.02.
+
+(2026-11-16 18:26:00)
+Milestone 2 is built and reviewed: `slab-model`, `prop-kit` with the six box kinds, and
+`snapshot-render`. An acceptance review found TASK-001.02 complete, and the root gates
+pass on Windows with a test recipe of 0.82 s. Status stays WIP. Remaining: the owner's QA
+of TASK-001.02, then milestones 3 to 6.

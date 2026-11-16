@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "oxc", "unicorn"],
+  "options": { "typeAware": true },
+  "categories": { "correctness": "error", "suspicious": "error" },
+  "rules": {
+    "eslint/complexity": ["error", { "max": 10 }],
+    "eslint/max-params": ["error", { "max": 6, "countThis": "never" }],
+    "eslint/max-depth": ["error", { "max": 4 }],
+    "eslint/max-lines": ["error", { "max": 400 }],
+    "eslint/max-statements": ["error", { "max": 30 }],
+    "eslint/max-nested-callbacks": ["error", { "max": 3 }],
+    "eslint/max-classes-per-file": ["error", { "max": 1 }],
+    "typescript/no-explicit-any": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-require-imports": "error",
+    "import/no-commonjs": "error",
+    "import/no-default-export": "error",
+    "import/no-cycle": ["error", { "ignoreTypes": false }],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["../**", "!../index.js", "!../**/index.js", "!../**/*.html"],
+            "message": "Import another unit only through its index.js facade."
+          },
+          {
+            "group": ["./*/**", "!./*/index.js", "!./*/**/index.js"],
+            "message": "Import a child unit only through its index.js facade."
+          }
+        ]
+      }
+    ]
+  },
+  "ignorePatterns": ["dist/", "node_modules/", ".claude/"]
+}

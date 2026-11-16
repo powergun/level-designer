@@ -1,0 +1,10 @@
+{
+  "name": "@level-designer/sec111-gateway",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./stage": "./src/stage/index.ts",
+    "./testing": "./src/testing/index.ts"
+  }
+}

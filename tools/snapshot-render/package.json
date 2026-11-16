@@ -1,0 +1,9 @@
+{
+  "name": "@level-designer/snapshot-render",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@level-designer/level-glb": "workspace:*"
+  }
+}

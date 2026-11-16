@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // Lint invokes these pinned tools through just rather than TypeScript imports.
+  "ignoreDependencies": ["oxlint", "oxlint-tsgolint"],
+  // Bun discovers unit and package integration tests independently of exports; as plugin
+  // entries they apply to every workspace and raise no hint in one that has no tests yet.
+  "bun": { "entry": ["{src,tests}/**/*.test.ts"] },
+  "workspaces": {
+    // just setup and just lint run the gateways' install scripts with Bun; the render gateway's
+    // browser entry is a bundler input of its test.
+    "packages/destruction-gateway": { "entry": ["emit.ts"] },
+    "packages/render-gateway": { "entry": ["detach.ts", "tests/browser-entry.ts"] }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["./.oxlintrc.json"],
+  "overrides": [
+    {
+      "files": ["packages/*/src/**/*.ts"],
+      "excludeFiles": [
+        "**/*.test.ts",
+        "packages/sec111-gateway/src/stage/**",
+        "packages/sec111-gateway/src/testing/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          { "patterns": ["node:*", "bun", "bun:*", "bun-types", "@types/*"] }
+        ],
+        "import/no-nodejs-modules": "error",
+        "no-restricted-globals": [
+          "error",
+          "Bun",
+          "process",
+          "Buffer",
+          "require",
+          "global",
+          "__dirname",
+          "__filename"
+        ]
+      }
+    }
+  ]
+}

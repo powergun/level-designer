@@ -1,0 +1,10 @@
+// The type half's guard: the gateway's declarations and everything they reach are checked with
+// skipLibCheck off, so a generated declaration that fails to resolve cannot turn into `any`.
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": false
+  },
+  "include": ["types/*.d.ts"],
+  "exclude": []
+}

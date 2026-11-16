@@ -1,0 +1,6 @@
+# Disable automatic .env loading for commands and tests.
+env = false
+
+# Isolated installs prevent undeclared dependency access.
+[install]
+linker = "isolated"

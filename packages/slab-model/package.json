@@ -1,0 +1,10 @@
+{
+  "name": "@level-designer/slab-model",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@level-designer/destruction-gateway": "workspace:*",
+    "@level-designer/level-format": "workspace:*"
+  }
+}

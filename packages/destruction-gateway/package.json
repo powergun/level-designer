@@ -1,0 +1,11 @@
+{
+  "name": "@level-designer/destruction-gateway",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  }
+}

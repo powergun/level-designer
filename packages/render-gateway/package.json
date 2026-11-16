@@ -1,0 +1,9 @@
+{
+  "name": "@level-designer/render-gateway",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@rendering-poc/library": "file:../../../rendering-poc/packages/library"
+  }
+}

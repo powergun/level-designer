@@ -1,0 +1,8 @@
+{
+  "noTips": true,
+  "minTokens": 50,
+  "exitCode": 1,
+  "format": ["typescript"],
+  "ignore": ["**/node_modules/**", "**/dist/**", "**/.claude/**"],
+  "reporters": ["console"]
+}
