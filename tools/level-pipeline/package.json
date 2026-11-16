@@ -1,0 +1,14 @@
+{
+  "name": "@level-designer/level-pipeline",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@level-designer/level-format": "workspace:*",
+    "@level-designer/level-glb": "workspace:*",
+    "@level-designer/level-rules": "workspace:*",
+    "@level-designer/prop-kit": "workspace:*",
+    "@level-designer/sec111-gateway": "workspace:*",
+    "@level-designer/slab-model": "workspace:*"
+  }
+}

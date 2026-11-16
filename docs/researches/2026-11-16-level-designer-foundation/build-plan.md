@@ -172,7 +172,8 @@ accepted and renders to sheets.
 ### 3.2 `level-rules`
 
 - Scope: every check of the format document, as pure functions over the facts of a
-  built level.
+  built level. One judgement returns the findings, the ramp zone and the lane widths;
+  the facade also offers the triangle cap, which the report shows.
 - Checks: each rule passes a box-room case at its limit and fails one step beyond with
   the documented subject: 0.69 and 0.70 m, 1.49 and 1.50 m for `gap`; 0.49 and 0.50 m
   for `low-top`; 2.16 and 2.17 m for `support`. Props typed 1.5 m apart, at -0.8 and
@@ -180,57 +181,91 @@ accepted and renders to sheets.
   prepared level three lanes measure more than 7 m and the +x-z lane 1.8 m, and a
   partition across a lane fails `lane`. `scale` fails on a prepared level that measures
   another scale and names the value to set.
-- Checks of the proof: it passes a seeded sample of 200 slabs of every material at
-  random poses, and the cap corners down to a 0.02 m face.
-- Checks of the guard: on sec-111's capsule, a 0.7 m gap blocks and 0.76 m lets pass; a
-  0.30 m top is climbed and a 0.5 m top blocks; an underside at 2.17 m lets pass.
-- Depends on: 1.2, 1.3, 1.5, 1.6, 2.2.
+- Depends on: 1.2, 1.3, 1.5, 1.6, 2.2, and 2.3 for its tests.
+
+Four more checks hold the footprint, the filled gap, the proof and the limits themselves:
+
+- The footprint: a hollow prop of 0.05 m walls under a roof at 2.17 m, laid across a
+  lane at an odd yaw, fails `lane`. Two tall enclosures of `prop-kit` without a glow,
+  typed 0.68 m apart, measure 0.74 m and fail `gap`.
+- The filled gap: three touching crates in a row, a touching block, chained conveyors
+  and a row against a wall of two body boxes pass `gap`, also at an odd yaw. A 1.0 m
+  gap between two props fails, also with a third prop in part of it, and a corridor
+  that widens from 1.0 m fails with its narrow end plugged. A third prop that leaves
+  0.70 m free fails with its own pair; 0.69 m passes.
+- The proof: it passes a seeded sample of 200 slabs of every material at random poses,
+  the cap corners down to a 0.02 m face, and the glow slabs that `prop-kit` expands for
+  the longest conveyor, enclosure and light strip.
+- The guard: on sec-111's capsule, a 0.7 m gap blocks and 0.76 m lets pass; a 0.30 m
+  top is climbed and a 0.5 m top blocks; an underside at 2.17 m lets pass.
 
 ### 3.3 `level-pipeline`, the build
 
-- Scope: reading the inputs, the six build steps, the rounding of slabs, the `place`
-  error and the optional prepared static level. No judgement.
+- Scope: reading the inputs, the six build steps, the rounding of slabs with
+  `level-format`'s rounding, the build errors in their step order, the `place` error,
+  the optional prepared static level and the committed description's path. The
+  preparation takes the empty wall list `{"walls":[]}`, which sec-111 cannot reject, so
+  a rejected result is a defect and throws. No judgement.
 - Checks, the real-data home for builds: a fixture with one crate on each floor level
-  builds. The preparation measures scale 1, the crates stand at 0 and 0.3241 m, the
-  `.json` decodes to the same level, and today's `prepareLevel` admits the whole GLB. A
-  description error and an unknown base name block the build before any preparation. A
-  prop outside the interior blocks it with `place` on the fixture's prepared static
-  level. The file prepares twice in all.
+  builds. The preparation measures scale 1, the crates stand at 0 and 0.3241 m, every
+  slab lies on the format's grid, the `.json` decodes to the same level, and today's
+  `prepareLevel` admits the whole GLB. A description error and an unknown base name
+  block the build before any preparation. A prop outside the interior blocks it with
+  `place` on the fixture's prepared static level.
+- Checks of the budget: one test file holds every case that builds. It makes two full
+  preparations: the fixture's static scene, and the fixture's level GLB as a whole file.
+  The `prepare` error case adds one call, which sec-111 refuses at its survey. Every
+  other build of the file passes the fixture's prepared static level.
 - Depends on: 1.2, 1.5, 1.6, 2.2, 2.3.
 
 ### 3.4 `level-pipeline`, the validation
 
-- Scope: running `level-rules` on a built level and shaping the report.
-- Checks: the fixture of 3.3 is accepted. Its report opens with the interior, the floor
-  heights, the ramp zone and the spawns, and its summary prints the body boxes against
-  `BODY_BOX_LIMIT`. The same built level with one point light moved under the floor is
-  rejected with `light-floor`. A level above the first-pass budget is accepted and
-  prints the budget. No case prepares again.
+- Scope: running `level-rules` on a built level and shaping the report as a value.
+- Checks: the fixture of 3.3 is accepted. Its report holds the interior, the floor
+  heights, the ramp zone and the spawns, and its summary the body boxes beside
+  `BODY_BOX_LIMIT`. The same fixture with one point light moved under the floor is
+  rejected with `light-floor`. A level above the first-pass budget is accepted, and its
+  summary shows the counts beside the budget. Every case builds in the test file of 3.3
+  on the fixture's prepared static level; no case prepares again.
 - Depends on: 3.2, 3.3.
 
 ### 3.5 `level-cli` and the recipes
 
-- Scope: the four commands, each with `--description`; the integrator adds the four
-  recipes. The tool passes the markers, the lens and the eye height to the renderer.
+- Scope: the four commands with their options and the printed report; the integrator
+  adds the four recipes. The tool fills the snapshot input: the markers, the lens, the
+  eye height, the figure height and the hang height of `level-rules`.
 - Checks: through the tool's `run` entry with an injected pipeline, captured streams and
-  a temporary work directory: `build` writes the pair only for an accepted report,
-  `validate` and `kinds` write nothing, a `--description` path replaces the default, and
-  the exit statuses are 0, 2 and 3. The integrator runs each recipe once on the seed
-  description.
+  a temporary work directory: `validate` prints the report from the hall facts to the
+  verdict line, and a blocked build as its error lines; `build` writes the pair only
+  for an accepted report; `snapshot` writes three sheets, and a fourth with an eye and
+  a look-at point; `validate` and `kinds` write nothing; a `--description` path replaces
+  the default; and the exit statuses are 0, 2 and 3. The integrator runs each recipe
+  once on the seed description.
 - Depends on: 3.4, 2.4, 1.2.
 
 ### 3.6 Seed description (integrator)
 
 - Scope: `levels/dark-factory.json` with no props. `base.scale` is 3.89956. Base
   overrides copy the values sec-111's view audit applies today: five PBR overrides, the
-  fixture material at its dimmed strength and seven double-sided meshes. Seven seals
-  follow the measured openings of the contract report. Lighting takes the baseline of
-  the rendering report: today's game values with the key turned overhead.
+  fixture material at its dimmed strength and seven double-sided meshes. Lighting takes
+  the baseline of the rendering report: today's game values with the key turned
+  overhead. `finishes` holds plain starting values and `glows` is empty; the art pass
+  tunes both. The 13 seals follow below.
 - Checks: the build is accepted, with scale 1 and the body boxes under the limit. A
   test in `level-pipeline` builds the committed description and expects acceptance; it
   is the gate's third preparation. A reviewer reads the sheets and finds each of the
-  seven seals in place and no background colour inside the hall.
+  13 seals in place and no background colour inside the hall on the plan tiles, the
+  elevations and the view tiles, nor on a custom view from 15.5 m down into a pier on
+  each side.
 - Depends on: 3.5.
+
+Thirteen seals close the hall. Seven follow the measured openings of the contract
+report. Two side boxes close the band between each side wall's top and the ceiling,
+behind the sloped upper panels. The eight piers outside the window bays are folds of
+the wall, open at the back and the top. The -X box runs down to the floor behind that
+wall and closes its four. The +X wall's upper band stands on the interior's edge, so a
+long box that passes `seal` would cover it; each +X pier takes a back plate between its
+own sides instead.
 
 ## Milestone 4: the QA app
 
@@ -328,8 +363,10 @@ exit.
   words, the budgets and the accepted limits. The integrator measures the corbel and
   pier numbers from the stage's triangles once. The guide says that a hanging height
   counts from the floor under `at`, with the corbel example: the same corbels take
-  `railHeight` 13.66 over the front floor and 13.34 over the raised slab. It copies no
-  kind parameter; the kinds command prints those.
+  `railHeight` 13.66 over the front floor and 13.34 over the raised slab. It says that
+  `gap` and `lane` measure a prop's standing slabs: a tall hollow prop counts by its
+  walls, and a tall enclosure without a glow stands narrower than its `width` by the
+  eave on each long side. It copies no kind parameter; the kinds command prints those.
 - Checks: the lint gate passes.
 - Depends on: 3.6.
 
@@ -418,8 +455,8 @@ the draft.
 - The level stays inside the first-pass budget of 800 slabs in 200 props. The validator
   only prints the budget, so this line holds the art team to it.
 - The reviewer has checked the sheets against the references: both lines, the storage
-  area, the cranes, open spawn areas and open main lanes. No sheet shows the background
-  colour inside the hall.
+  area, the cranes, open spawn areas and open main lanes. No plan tile, elevation or
+  view tile shows the background colour inside the hall.
 - The root gates pass on the tree handed over, and the test recipe's time is recorded.
 - The silent-failure audit of 4.7 is closed.
 - The owner has committed that tree on the working branch. QA runs that commit.
@@ -442,8 +479,8 @@ just qa      # prints the address and the path of the run log
   strip confirms the mark number and the file.
 - Judge what agents cannot: the mood against the references, shadows, haze and glow.
 - Judge the seals with `?leak=1` added to the address: no loud colour shows at the end
-  wall, the four window panels, the door panel, the back slot or the top of the +X
-  wall.
+  wall, the four window panels, the door panel, the back slot, above either side wall
+  or, from fly height, down into a pier.
 - Judge the play space: spawn areas, main lanes, gaps, and collision against every kind
   of prop.
 - Send back two files: the marks file and the run log.

@@ -1,5 +1,6 @@
 import { LENGTH_SLACK, readHexColor, readLinearRgb, readVec3 } from "../shape/index.js";
 import type { IdClaims, ShapeNode } from "../shape/index.js";
+import { formatLength } from "../slab/index.js";
 import type { Finish, Glow, MaterialOverride, Prop, Seal } from "./description.js";
 
 /** The thinnest a seal may be along any axis, in metres. */
@@ -44,7 +45,7 @@ function checkThickness(node: ShapeNode, seal: Seal): void {
   if (extents.some(Number.isNaN) || extents.every((e) => e >= MIN_SEAL_THICKNESS - LENGTH_SLACK)) {
     return;
   }
-  const shown = extents.map((extent) => Number(extent.toFixed(4))).join(", ");
+  const shown = extents.map(formatLength).join(", ");
   node.fail(`max - min of at least ${MIN_SEAL_THICKNESS} m on each axis`, `[${shown}]`);
 }
 

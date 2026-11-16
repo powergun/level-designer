@@ -1,5 +1,6 @@
 import { itemPath, LENGTH_SLACK } from "../shape/index.js";
 import type { FormatProblem } from "../shape/index.js";
+import { formatLength } from "../slab/index.js";
 import type { Slab } from "../slab/index.js";
 import type { LevelProp } from "./level.js";
 
@@ -29,7 +30,8 @@ function inSideRange(side: number): boolean {
 
 /** The limits that slab `k` of the prop at `path` breaks, one problem per limit. */
 function slabProblems(slab: Slab, path: string, k: number): FormatProblem[] {
-  const [width, height, thickness] = slab.size;
+  const [width, height] = slab.size;
+  const shownSize = slab.size.map(formatLength).join(" x ");
   const broken = [
     ...(slab.size.every(inSideRange) ? [] : [SIDE_LIMIT]),
     ...(width * height <= MAX_FACE + FACE_SLACK ? [] : [FACE_LIMIT]),
@@ -37,7 +39,7 @@ function slabProblems(slab: Slab, path: string, k: number): FormatProblem[] {
   return broken.map((limit) => ({
     rule: "slab",
     path,
-    message: `${path} slab ${k}: ${width} x ${height} x ${thickness} m breaks ${limit}`,
+    message: `${path} slab ${k}: ${shownSize} m breaks ${limit}`,
   }));
 }
 

@@ -16,6 +16,7 @@ export type {
 } from "./description/index.js";
 export { admitSlabs, decodeLevel, encodeLevel } from "./level/index.js";
 export type { Level, LevelProp } from "./level/index.js";
+export { MAX_POINT_LIGHTS } from "./lighting/index.js";
 export type {
   Environment,
   Haze,
@@ -24,7 +25,7 @@ export type {
   PointLight,
   Shadow,
 } from "./lighting/index.js";
-export { describeValue, isSurfaceColor, keyPath } from "./shape/index.js";
+export { describeValue, isSurfaceColor, keyPath, LENGTH_SLACK } from "./shape/index.js";
 export type { Admission, FormatProblem, LinearRgb, Vec3 } from "./shape/index.js";
-export { roundSlab, slabBox } from "./slab/index.js";
+export { formatLength, roundSlab, slabBox } from "./slab/index.js";
 export type { Quaternion, Slab, SlabBox, SlabMaterial } from "./slab/index.js";

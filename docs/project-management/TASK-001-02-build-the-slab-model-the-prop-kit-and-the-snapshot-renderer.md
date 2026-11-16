@@ -67,3 +67,7 @@ ran the four components together on the real base stage. The root gates pass on 
 The test recipe takes 0.82 s for 335 tests, against 0.72 s for 149 tests before this
 milestone. Status stays WIP. Remaining: the owner's QA on Windows and on macOS, then the
 owner's written approval to mark the task DONE.
+
+(2026-11-16 18:45:33)
+The owner approved in writing marking this task DONE. Mark this task DONE. No work
+remains.

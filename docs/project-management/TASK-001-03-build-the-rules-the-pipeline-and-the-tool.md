@@ -56,3 +56,31 @@ long sides stand inside its roof edge by the eave, so `gap` measures twice the e
 than the typed widths suggest. The proof must cover the thin glow slabs. The knowledge
 document of `prop-kit` holds these dimensions. The pipeline rounds slabs with the
 rounding that `level-format` owns.
+
+(2026-11-16 18:48:05)
+Milestone 2 is DONE and committed, so this task starts; change status to WIP. The
+integrator creates the three package skeletons while an architect reconciles the design
+documents with the built components and the four facts above. Remaining: subtasks 3.1 to
+3.6 with their reviews, the acceptance review and the owner's QA.
+
+(2026-11-16 22:14:46)
+Subtasks 3.1 to 3.6 are built, and each passed its own independent review. `level-rules`
+holds the eighteen validator rules and the destructibility proof. `level-pipeline` builds
+a level from a description and validates it into a report. `level-cli` offers `kinds`,
+`validate`, `build` and `snapshot`, each behind a root recipe. The seed
+`levels/dark-factory.json` holds no props and thirteen seals: the plan's seven, two above
+the side walls and four behind the open piers of the +X wall, because the reviews found
+the hall open there. It builds, the validator accepts it, and the sheets show no
+background inside the hall. The `gap` rule fails a pair only where a free lane lies
+between the two, so touching rows pass. The owner approved the seal count and this form
+of `gap` with its stated limits. `level-format` gained the length slack, the point-light
+cap and the one length formatter that the new components read. An acceptance review
+found every outcome and rule met. The root gates pass on Windows. The test recipe takes
+8.2 s for 419 tests, against 0.82 s for 335 tests before this milestone; the three level
+preparations account for the difference. Status stays WIP. Remaining: the owner's QA on
+Windows and on macOS, then the owner's written approval to mark the task DONE.
+
+(2026-11-16 22:22:05)
+The owner's QA passed. The owner also opened the built level in a glTF viewer and
+confirmed that every opening of the hall is sealed. The owner approved in writing marking
+this task DONE. Mark this task DONE. No work remains.

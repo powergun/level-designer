@@ -3,7 +3,7 @@ import type { ShapeNode, Vec3 } from "../shape/index.js";
 import type { Environment, Haze, KeyLight, Lighting, PointLight, Shadow } from "./lighting.js";
 
 /** The most point lights a level holds. */
-const MAX_POINTS = 8;
+export const MAX_POINT_LIGHTS = 8;
 
 /** A direction from the hall toward the key: a unit vector with positive y. */
 function readDirection(node: ShapeNode): Vec3 {
@@ -75,7 +75,7 @@ export function readLighting(node: ShapeNode): Lighting {
   return {
     environment: readEnvironment(node.field("environment")),
     ...(key === undefined ? {} : { key: readKey(key) }),
-    points: node.field("points").list(MAX_POINTS).map(readPoint),
+    points: node.field("points").list(MAX_POINT_LIGHTS).map(readPoint),
     haze: readHaze(node.field("haze")),
     exposure: node.field("exposure").positive(),
   };

@@ -6,9 +6,9 @@ TASK-001: WIP: deliver the dark factory level with the level designer
 
 TASK-001.01: DONE: build the sibling gateways and the level formats
 
-TASK-001.02: WIP: build the slab model, the prop kit and the snapshot renderer
+TASK-001.02: DONE: build the slab model, the prop kit and the snapshot renderer
 
-TASK-001.03: PLAN: build the rules, the pipeline and the tool until the sealed hall builds
+TASK-001.03: DONE: build the rules, the pipeline and the tool until the sealed hall builds
 
 TASK-001.04: PLAN: build the QA app
 

@@ -2,10 +2,9 @@
 
 The level designer turns one committed level description into the level pair that sec-111
 plays: a `.glb` with the sealed and dressed factory, and a `.json` with the destructible
-props and the lighting. Fourteen components carry that flow. Three of them are the only
-bridges to the sibling repositories. The [level format](level-format.md) defines the
-description, the pair and the validator's rules. The [build plan](build-plan.md) orders
-the work.
+props and the lighting. Fourteen components carry that flow; three are the only bridges
+to the sibling repositories. The [level format](level-format.md) defines the description,
+the pair and the validator's rules. The [build plan](build-plan.md) orders the work.
 
 ## Data flow
 
@@ -27,9 +26,10 @@ One build runs six steps in order:
 6. `level-glb` appends one object node per prop and writes the level GLB, and
    `level-format` encodes the level `.json`.
 
-`level-pipeline` owns this sequence. It returns one built level: the pair, the prepared
-static level and the description hash, the first 12 hex digits of the SHA-256 of the
-description file. Three consumers read a built level:
+`level-pipeline` owns this sequence. It returns one built level: the typed description
+and its hash, the first 12 hex digits of the SHA-256 of the description file; the pair
+with its typed level; the base stage's image count; and the prepared static level as
+sec-111 returns it, typed and as its two files. Three consumers read a built level:
 
 - built level -> `level-rules` -> report, the validator's verdict;
 - built level -> `snapshot-render` -> PNG sheets for agents;
@@ -54,11 +54,10 @@ backend would bundle two copies of Rapier.
 
 ### Gateways
 
-Each sibling repository has exactly one gateway, and no other component imports a
-sibling. A gateway is the bridge to its sibling: re-exports, the reader of a sibling
-file, the copied game values and their guards, and no other logic. The synopsis
-generator cannot follow a re-export out of the repository, so this section is the
-gateways' surface document.
+Each sibling repository has exactly one gateway, and no other component imports a sibling.
+A gateway is the bridge to its sibling: re-exports, the reader of a sibling file, the
+copied game values and their guards, and no other logic. The synopsis generator cannot
+follow a re-export out of the repository, so this section is the gateways' surface document.
 
 **`sec111-gateway`** (`packages/`) re-exports from sec-111's package facades by relative
 path. The sources run on sec-111's own install and pass this repository's type checks as
@@ -115,16 +114,18 @@ description as a typed value or a list of problems with their paths, and it enco
 decodes a level as canonical `.json` text. One slab admission holds the format caps for
 decode and for the build, and one rounding puts a slab on the grid. The lighting section
 has one type and one admission for both shapes. It also reads a slab as an oriented box
-with eight corners. Consumers: `level-pipeline` (parse, rounding, admission, encode),
-`prop-kit` (rounding, admission, colour form, message rules), `qa-client` (decode, boxes),
-`level-rules` (boxes) and every component that names a slab or lighting type.
+with eight corners, and `formatLength` prints every length of a message or a report, for
+`level-pipeline`, `level-rules` and `level-cli`. Other consumers: `level-pipeline` (parse,
+rounding, admission, encode, `MAX_POINT_LIGHTS` for the report), `prop-kit` (rounding,
+admission, colour form, message rules), `qa-client` (decode, boxes), `level-rules` (boxes,
+`LENGTH_SLACK`) and every component that names a slab or lighting type.
 
 **`level-glb`** (`packages/`, no dependency) owns the GLB contract. It reads a GLB
 container, assembles the static scene and the level scene, and writes one-buffer GLB
 bytes. Its inspection returns three facts: the triangle count, the primitives without a
 material and the image count. A reader returns world-space triangles with their material
-colours. Consumers: `level-pipeline` (assembly), `level-rules` (inspection facts) and
-`snapshot-render` (triangles).
+colours. Consumers: `level-pipeline` (assembly, inspection), `level-rules` (the
+inspection facts as a type) and `snapshot-render` (triangles).
 
 **`slab-model`** (`packages/`; depends on `destruction-gateway` and `level-format`) is
 the only place where a slab becomes a destruction lib object. One shared builder
@@ -144,29 +145,31 @@ and `level-cli` (the kind listing).
 
 **`level-rules`** (`packages/`; depends on `level-format`, `level-glb`, `slab-model`,
 `sec111-gateway` and `destruction-gateway`) holds every validator check as a pure
-function over the facts of a built level: the typed level, the description's seals, the
-GLB inspection, the base stage's image count and the prepared static level. It returns
-findings with a rule id, a subject and the message an author reads. Its destructibility
-unit runs the proof recipe on every slab through the shared builder. Consumer:
-`level-pipeline`.
+function over the facts of a built level, which the level format lists. One judgement
+returns the findings, each with a rule id, a subject and the message an author reads,
+and the ramp zone and the lane widths that the report shows. It is asynchronous, because
+destruction lib's Rapier backend loads that way. Its destructibility unit runs the proof
+recipe on every slab through the shared builder. Consumers: `level-pipeline`, and
+`level-cli` for `HANG_HEIGHT`, the height its section sheet marks.
 
 ### Bun-side components
 
 **`level-pipeline`** (`tools/`; depends on `level-format`, `level-glb`, `prop-kit`,
-`slab-model`, `level-rules` and `sec111-gateway`) owns the build sequence. It reads the
-description file and the base stage, builds a level or returns what blocks the build,
-and validates a built level into a report. A build takes a description and, optionally,
-a prepared static level that replaces the preparation; the tests of one file share one
-preparation this way. Consumers: `level-cli` and `qa-server`.
+`slab-model`, `level-rules` and `sec111-gateway`) owns the build sequence in three steps.
+The read returns the description file's bytes and the base stage, or names a description
+file it cannot read. The build takes both and, optionally, a prepared static level that
+replaces the preparation; the tests of one file share one preparation this way. It
+returns the built level or the build errors. The validation inspects the level GLB, runs
+`level-rules` and shapes the report. Consumers: `level-cli` and `qa-server`.
 
 **`snapshot-render`** (`tools/`; depends on `level-glb`) rasterises a level GLB on the
 CPU into plan, section and perspective sheets and encodes them as PNG. It is Bun-side
 because it compresses with the runtime's zlib and only `level-cli` consumes it.
 
-**`level-cli`** (`tools/`; depends on `level-pipeline`, `snapshot-render`, `prop-kit`
-and `sec111-gateway`) is the command-line tool. It owns argument parsing, file writes
-under the work directory, report text and exit statuses. Consumers: the art team's
-agents and the root recipes.
+**`level-cli`** (`tools/`; depends on `level-pipeline`, `snapshot-render`, `prop-kit`,
+`sec111-gateway`, `level-rules` for `HANG_HEIGHT` and `level-format` for `formatLength`)
+is the command-line tool. It owns argument parsing, file writes under the work directory,
+report text and exit statuses. Consumers: the art team's agents and the root recipes.
 
 **`qa-server`** (`tools/`; depends on `level-pipeline` and `qa-client`) is the loopback
 server of the QA app. Consumer: the human, through the QA recipe.
@@ -195,8 +198,8 @@ The workspace graph is acyclic and points down:
 - `slab-model`, `prop-kit` and `snapshot-render` depend only on that layer;
 - `level-rules` and `level-view` depend on the two layers below them;
 - `level-pipeline` adds `level-rules`, and `qa-client` adds `level-view`;
-- `level-cli` and `qa-server` sit on `level-pipeline`; `level-cli` also reads the
-  gateway, and `qa-server` depends on `qa-client`.
+- `level-cli` and `qa-server` sit on `level-pipeline`; `level-cli` also reads
+  `level-rules`, the gateway and `level-format`, and `qa-server` depends on `qa-client`.
 
 ## Collision the game owns
 
@@ -207,10 +210,9 @@ uses. The page installs one blocker box per slab, built from the slab's `size`,
 set per chunk; an intact slab's chunks tile its box exactly, so the solid is the same
 and only the seams differ.
 
-These behaviours were measured in sec-111's physics world, with one box per slab and
-with one set per chunk; both gave the same numbers. The wiring test of `sec111-gateway`
-repeats the stop and the release; a guard in `level-rules` repeats climb, gap and
-headroom.
+These behaviours were measured in sec-111's physics world, with one box per slab and with
+one set per chunk; both gave the same numbers. The wiring test of `sec111-gateway` repeats
+the stop and the release; a guard in `level-rules` repeats climb, gap and headroom.
 
 - An upright 4 x 2 x 0.05 m panel across the path stops the player capsule 0.405 m from
   the panel's centre plane. After `blockers.remove` the capsule walks through, and a
@@ -222,35 +224,32 @@ headroom.
 
 The static scene was measured too. Under one new root scaled by 3.89956, today's
 `prepareLevel` returns scale 1 and the unchanged interior, floors and spawns, with 226
-body boxes. Seven seal boxes make it 228 and move one minion spawn by one 0.25 m grid
-step. Today's reader also admits a destructible node with `extras`. One preparation
+body boxes. The 13 seal boxes make it 227 and move each +z minion spawn by one 0.25 m
+grid step. Today's reader also admits a destructible node with `extras`. One preparation
 takes about 3 s. The tests of `level-pipeline` repeat the scale and the admission.
 
 ## Command-line tools and recipes
 
-`level-cli` has four commands. The integrator adds one root recipe per command, plus the
-QA recipe. Every recipe passes the scratch directory as `--workdir`, so no package source
-names it. Every command takes `--description <path>`; the default is the committed file.
+`level-cli` has four commands. The integrator adds one root recipe per command, under the
+command's name, plus the QA recipe, which only the human runs. Every recipe passes the
+scratch directory as `--workdir <dir>`, so no package source names it. Every command also
+takes `--description <path>`; `level-pipeline` names the default, the committed file.
 
-```sh
-just kinds      # prop kinds and their parameters
-just validate   # build in memory, judge, print the report
-just build      # validate, then write the pair
-just snapshot   # plan, section and view sheets
-just qa         # start the QA server; only the human runs it
-```
-
-- `kinds` prints each prop kind with its parameters, ranges and defaults.
-- `validate` prints the hall facts, one line per finding, the summary and the verdict
-  line. Neither command writes a file.
+- `kinds` prints each prop kind and, one per line, its parameters with their ranges,
+  forms or choices and their defaults. It reads no description.
+- `validate` builds in memory and prints the report of the level format, or the errors
+  of a blocked build. Neither command writes a file.
 - `build` runs `validate` and writes `<workdir>/level/<name>.glb` and `<name>.json` only
-  when the validator accepts. It announces each file as `wrote <absolute path>`.
+  when the validator accepts.
 - `snapshot` builds without judging, so a rejected level can still be seen. It writes
-  three sheets to `<workdir>/snapshots/`. With an eye and a look-at point it adds one
-  custom perspective sheet.
+  `plan.png`, `section.png` and `view.png` to `<workdir>/snapshots/`, and `custom.png`,
+  one perspective sheet, when `--eye <x,y,z>` and `--look-at <x,y,z>` name a view.
 
-Standard output carries data and reports; standard error carries the `wrote` lines. Exit
-status 0 means accepted or done, 2 blocked or rejected, 3 a usage or file error.
+A command that writes needs `--workdir` and announces each file on standard error as
+`wrote <absolute path>`; usage and file errors go there too. Standard output carries data
+and reports. Exit status 0 means accepted or done; 2 a blocked build or a rejected level,
+with nothing written; 3 a usage error or a file that cannot be read or written; 1 a
+defect or a broken sibling install, which ends with Bun's error and its stack.
 
 ## The QA app
 
@@ -280,7 +279,7 @@ The routes are few:
 
 The server builds once. A description edit needs a restart, because QA judges one known
 description: the heads-up display and every mark carry its hash. A blocked build does not
-stop the server. The session facts carry the blocking problems, and the page shows them.
+stop the server. The session facts carry the build errors, and the page shows them.
 A rejected level is served with a visible verdict banner. `Host` must name loopback, and
 `Origin` too when it is present. A body must be one JSON object. A log that cannot be
 written never fails a request; the page says so once.
@@ -357,7 +356,7 @@ reports a script that fails to load or to start.
 The app never fails silently: each blocking condition shows a message and logs a line.
 
 - no WebGPU, or a renderer that fell back to WebGL: the page names the requirement;
-- a blocked build: the page lists each problem with its path;
+- a blocked build: the page lists each build error with its path;
 - a level file that fails to load or decode: the page names the file and the reason;
 - a request without an answer: the step or the mark fails with `no answer`;
 - a renderer or shader start failure: the page shows the error text;
@@ -388,14 +387,14 @@ imports siblings that only sec-111's own link map resolves. `PLAYER_BODY` is liv
 
 ## Snapshots
 
-`snapshot-render` draws the level GLB as stored, without a browser or a GPU. Dressing
-shows its vertex colours and seals their colour. The base stage shows flat greys, because
-the renderer reads no textures. Emissive materials show their emissive colour. One light,
-fixed at the upper left of each tile, shades every surface; outlines mark depth steps and
-cuts. The background is a loud colour, so an opening in the hall shows on a sheet.
-`level-cli` passes every input: the interior, floors and spawns from the prepared static
-level, one plan point per prop, the lens and the eye ratio from `GAME_VALUES`, the figure
-height from `PLAYER_BODY`, the eye height as their product, and the 2.17 m and 3 m lines.
+`snapshot-render` draws the level GLB as stored, without a browser or a GPU. Dressing shows
+its vertex colours and seals their colour. The base stage shows flat greys: the renderer
+reads no texture. Emissive materials show their emissive colour. One light at the upper
+left of each tile shades every surface; outlines mark depth steps and cuts. The background
+is a loud colour, so an opening shows on every tile but a cross section. `level-cli` passes
+every input: the interior, floors and spawns from the prepared static level, each prop's
+plan point, the lens and the eye ratio from `GAME_VALUES`, the figure height from
+`PLAYER_BODY`, their product as the eye height, and the hang height from `level-rules`.
 
 - The plan sheet has two top-down tiles at 20 pixels per metre: the floor plan below
   5.9 m, under the gantry decks, and the overhead plan below 16.2 m, under the trusses.
@@ -403,7 +402,9 @@ height from `PLAYER_BODY`, the eye height as their product, and the 2.17 m and 3
   number in description order.
 - The section sheet has two long elevations seen from the centre plane toward each side
   wall, and six cross sections toward the back wall, one every 20 m, each showing the 10 m
-  behind its station, the first with the back wall. Lines mark the floors, 2.17 m and 3 m.
+  behind its station, the first with the back wall. Lines mark each floor and the hang
+  height, 2.17 m above it. The 3 m top of sec-111's static prisms has no line: it
+  concerns static parts only, and dressing adds none.
 - The view sheet has eight perspective tiles with the game's lens at eye height: the
   player spawn looking each way along the hall, each minion spawn looking at the player
   spawn, and two overviews from 12 m up at the hall's ends. A 1.87 m figure marks each spawn.
@@ -415,11 +416,10 @@ exposure, glow, texture or material response. The human alone judges mood.
 ## Test strategy
 
 The whole root gate stays fast. A preparation costs about 3 s, so the gate runs at most
-three, all in `level-pipeline`, where the builds of one test file share one prepared
-static level. Every other test uses sec-111's committed prepared level through the
-gateway's testing entry, or a small hand-built box room. The integrator measures the
-test recipe at every milestone; a gate above 30 s is a blocker. Tests remove every file
-they create.
+three, all in `level-pipeline`, where the builds of one test file share one prepared static
+level. Every other test uses sec-111's committed prepared level through the gateway's
+testing entry, or a small hand-built box room. The integrator measures the test recipe at
+every milestone; a gate above 30 s is a blocker. Tests remove every file they create.
 
 Gateways own wiring and drift, nothing else:
 

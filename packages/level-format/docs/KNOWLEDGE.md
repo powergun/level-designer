@@ -14,8 +14,8 @@ and base names as map keys and strings.
   checked reads. It also owns the id rule, the shared value reads and the length slack.
 - `lighting`: the lighting section's one type, its one admission and its canonical key
   order, shared by the description and the level `.json`.
-- `slab`: the slab type, the shape of its record, its key order, the grid rounding and
-  the oriented box.
+- `slab`: the slab type, the shape of its record, its key order, the grid rounding, the
+  length formatter and the oriented box.
 - `description`: the description type and its admission.
 - `level`: the level type, the slab admission, the decoder and the encoder.
 
@@ -127,6 +127,11 @@ colour. A half step rounds away from zero, judged on the typed decimal and not o
 float product, and rounding never yields a negative zero. Rounding twice equals rounding
 once, and the rounded rotation of a unit quaternion stays within the unit tolerance.
 
+`formatLength` is the one way a message prints a length. It prints the length grid's
+rounding, so it shows the value `roundSlab` stores, with the digits `String` prints and
+no unit. The slab admission and the seal thickness message print their lengths through
+it.
+
 ## The slab admission
 
 `admitSlabs` takes the level's props and holds the format caps that follow destruction
@@ -149,6 +154,9 @@ limit passes despite float error, and a value one 0.1 mm step beyond fails. The 
 has its own slack of 0.00005 m2. Ranges without a length unit, such as metalness or
 strength, compare exactly. A unit vector or quaternion passes when its length is within
 0.000001 of 1, which admits components rounded to nine decimals.
+
+The facade exports the length slack as `LENGTH_SLACK` and the point-light cap as
+`MAX_POINT_LIGHTS`, so the validator and the report read these limits from their owner.
 
 ## The oriented box
 

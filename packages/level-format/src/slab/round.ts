@@ -20,6 +20,14 @@ function toGrid(value: number, steps: number): number {
   return rounded === 0 ? 0 : rounded;
 }
 
+/**
+ * A length in metres as messages print it: the grid rounding of `roundSlab`, then the digits
+ * `String` prints, with no unit.
+ */
+export function formatLength(metres: number): string {
+  return String(toGrid(metres, LENGTH_STEPS));
+}
+
 /** A length triple on the 0.1 mm grid. */
 function lengthsToGrid([x, y, z]: Vec3): Vec3 {
   return [toGrid(x, LENGTH_STEPS), toGrid(y, LENGTH_STEPS), toGrid(z, LENGTH_STEPS)];

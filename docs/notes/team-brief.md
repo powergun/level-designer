@@ -36,6 +36,13 @@ repository.
   output paths. Leave no stray file in the repository.
 - Make tests remove every file and folder they create.
 - After starting a background command, check that it finished. Do not wait to be told.
+- After a manifest change, install only through `just setup`. A bare `bun install` links
+  the rendering library copy back to its sibling files and fails the `render-gateway`
+  drift test.
+- As a reviewer, change no file in the repository, not even for a moment. Run probes
+  from the scratch directory against a package's facade.
+- Leave a scratch file that another member reads as a reference unchanged. Put a new
+  variant in a new file and name it.
 
 ## Reporting
 
@@ -48,4 +55,6 @@ repository.
   keeps the design's intent; do not silently change scope.
 - Before reporting done, reread the assignment and every later message from the lead.
   Later messages are requirements.
+- Send a question to the lead only when the documents cannot settle it. Give options and
+  a default, and keep working on what does not depend on the answer.
 - Write plain ASCII Markdown: lists over tables, no ASCII art, `->` for flows.

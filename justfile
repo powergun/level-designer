@@ -126,6 +126,31 @@ ws-info:
 
 # --------------------------------------------------------------------------------------------------------
 
+# The level designer's command-line tool. Each recipe passes the scratch directory as the work
+# directory; extra arguments pass through, such as `--description <path>`, and for snapshot
+# `--eye=<x,y,z> --look-at=<x,y,z>`. The tool's exit status (0, 2 or 3) is the recipe's:
+# powershell -Command reports any failure as 1, so on Windows the line exits explicitly.
+LEVEL_CLI := MISE + " bun tools/level-cli/main.ts"
+KEEP_STATUS := if os_family() == "windows" { "; exit $LASTEXITCODE" } else { "" }
+
+# Print each prop kind with its parameters, ranges and defaults.
+kinds *ARGS:
+    @{{LEVEL_CLI}} kinds --workdir .tmp {{ARGS}}{{KEEP_STATUS}}
+
+# Build the description in memory, judge it and print the report; writes nothing.
+validate *ARGS:
+    @{{LEVEL_CLI}} validate --workdir .tmp {{ARGS}}{{KEEP_STATUS}}
+
+# Validate, then write the level pair to .tmp/level/ when the validator accepts.
+build *ARGS:
+    @{{LEVEL_CLI}} build --workdir .tmp {{ARGS}}{{KEEP_STATUS}}
+
+# Build without judging and write the plan, section and view sheets to .tmp/snapshots/.
+snapshot *ARGS:
+    @{{LEVEL_CLI}} snapshot --workdir .tmp {{ARGS}}{{KEEP_STATUS}}
+
+# --------------------------------------------------------------------------------------------------------
+
 # Generate this repository's synopsis.xml files via the deployed adoctool binary.
 # Extra arguments pass through to adoctool, e.g. `just syn --language python`.
 syn *ARGS:

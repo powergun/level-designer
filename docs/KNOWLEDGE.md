@@ -35,12 +35,17 @@ beside each facade summarizes the unit's API.
 
 ### Components
 
+The gateways bridge the sibling repositories:
+
 - [sec111-gateway](../packages/sec111-gateway/docs/KNOWLEDGE.md): the bridge to
   sec-111, with a browser-safe main entry and Bun-side stage and testing entries.
 - [destruction-gateway](../packages/destruction-gateway/docs/KNOWLEDGE.md): the
   bridge to destruction lib, for Bun-side meshing and the destructibility proof.
 - [render-gateway](../packages/render-gateway/docs/KNOWLEDGE.md): the bridge to
   the rendering-poc library.
+
+The library components in `packages/` carry the level's data and judgement:
+
 - [level-format](../packages/level-format/docs/KNOWLEDGE.md): the level
   description and the level `.json`. It admits a description, encodes and
   decodes the level `.json`, rounds a slab to the format's grid and reads a
@@ -53,8 +58,22 @@ beside each facade summarizes the unit's API.
   slab becomes a destruction lib model. It runs under Bun only.
 - [prop-kit](../packages/prop-kit/docs/KNOWLEDGE.md): the prop kinds. It expands a
   prop into slabs by its kind's parameter table and places them.
+- [level-rules](../packages/level-rules/docs/KNOWLEDGE.md): the validator's
+  checks. It judges a built level from its facts by every rule the build does not
+  own, the destructibility proof included. Like slab-model, it reaches destruction
+  lib and runs under Bun only.
+
+The tools in `tools/` run under Bun:
+
 - [snapshot-render](../tools/snapshot-render/docs/KNOWLEDGE.md): the CPU renderer
-  of a level GLB into PNG sheets, in `tools/`.
+  of a level GLB into PNG sheets.
+- [level-pipeline](../tools/level-pipeline/docs/KNOWLEDGE.md): the one build
+  sequence. It reads the description and the base stage, builds a level or returns
+  its build errors, and validates a built level into a report. It is the only test
+  home that prepares a level.
+- [level-cli](../tools/level-cli/docs/KNOWLEDGE.md): the command-line tool. It
+  owns the argument parsing, the file writes under the work directory, the printed
+  text and the exit statuses.
 
 ## The sibling repositories
 
@@ -106,8 +125,8 @@ removing it when the gate ends, pass or fail, releases it.
 - the destruction lib declarations, generated again, and their guard check;
 - the type check of everything, tests included, with Bun types;
 - the browser-safe package sources: their type check, a browser bundle of
-  every browser-safe package entry that does not reach destruction lib, then
-  oxlint with the browser-safe rules;
+  the entries that do not reach destruction lib (sec111-gateway, render-gateway,
+  level-format, level-glb and prop-kit), then oxlint with the browser-safe rules;
 - the type check of the tool sources and the Bun-side gateway entries, with
   isolated declarations;
 - the check that `packages/` and `tools/` never name `.tmp/`;
@@ -116,6 +135,16 @@ removing it when the gate ends, pass or fail, releases it.
 
 A type check whose project matches no source file passes and says so; any
 other compiler error fails the gate.
+
+`just test` takes about 8 s, and a test recipe above 30 s is a blocker. One
+level preparation by sec-111 costs about 3 s, so only level-pipeline's tests
+prepare, three times in all: its build test prepares the fixture's static scene
+and hands the fixture's level GLB to the preparation, and its committed test
+builds `levels/dark-factory.json`. The build test's other builds reuse the
+fixture's preparation, and its one further call is refused at sec-111's survey
+within milliseconds. Every other test reads sec-111's committed prepared level
+through the gateway's testing entry, uses a hand-built room or injects a
+pipeline. The build test sets the recipe's length.
 
 For fast iteration, run the underlying tools on one package:
 
@@ -128,11 +157,23 @@ mise exec -- bun x --no-install oxlint packages/<name>
 The docs checks in `just lint` are easy to trip: a list holds at most ten
 items and about 200 words, text is ASCII only, and no file reaches 500 lines.
 
+## Tool recipes
+
+The recipes `kinds`, `validate`, `build` and `snapshot` run level-cli's program file
+with Bun from the repository root, one recipe per command. Each passes `.tmp` as the
+work directory, so no package source names it, and passes every extra argument through.
+Each recipe ends with the tool's exit status. On Windows the recipe line exits with the
+tool's status explicitly, because `powershell -Command` reports every failure as 1.
+
 ## File locations
 
 - `docs/art-direction/references/` holds the layout and mood reference images.
   They stay byte-identical; nothing in the pipeline rewrites them.
-- `.tmp/` is the git-ignored scratch directory for generated output and logs.
+- `levels/dark-factory.json` is the committed level description, the authoring
+  source of truth. Git ignores the author's draft beside it,
+  `levels/dark-factory.draft.json`.
+- `.tmp/` is the git-ignored scratch directory for generated output and logs. The
+  level pair lands in `.tmp/level/` and the sheets in `.tmp/snapshots/`.
 - `packages/destruction-gateway/generated/` holds the git-ignored destruction
   lib declarations.
 - `.claude/commands/cc-cmd-bevy/` is the git-ignored shared command bundle. It

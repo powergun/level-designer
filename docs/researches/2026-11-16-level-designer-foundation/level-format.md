@@ -1,17 +1,15 @@
 # Level format
 
 The level designer has one authoring input, the level description, and one output, the
-level pair: a `.glb` and a `.json`. This document defines both, the rules a renderer
-follows to reproduce the lighting, the validator's checks, and what sec-111 changes to
-play the pair.
+level pair: a `.glb` and a `.json`. This document defines both, the lighting rules a
+renderer follows, the validator's checks, and what sec-111 changes to play the pair.
 
 ## Frame and units
 
 - Lengths are scaled metres. The frame is right-handed with +Y up, and its origin is the
   base stage's origin. The back wall is at -Z and the sealed end at +Z.
 - Angles in the description are degrees. Rotations in the pair are unit quaternions
-  `[x, y, z, w]`, local to world. A unit quaternion or unit vector has a length within
-  0.000001 of 1.
+  `[x, y, z, w]`, local to world; a unit quaternion or vector is within 0.000001 of 1 long.
 - Surface colours are `#rrggbb` sRGB text. Light, glow and tint colours are linear RGB
   triples from 0 to 1.
 - Light intensity is candela for points; haze density is per metre.
@@ -19,9 +17,8 @@ play the pair.
 ## The level description
 
 The description is one JSON file that an agent edits by hand, `levels/dark-factory.json`.
-Every record takes exactly its listed keys; an unknown or missing key is an error with its
-path. The file stores decisions only. Floor heights, slab poses, meshes and seeds are
-derived at build time.
+A record takes exactly its listed keys; an unknown or missing key is an error at its path.
+The file stores decisions; the build derives floor heights, slab poses, meshes and seeds.
 
 The root keys are `schema`, `name`, `base`, `seals`, `finishes`, `glows`, `props` and
 `lighting`. The schema id is `level-designer-description/1`; a breaking change replaces
@@ -48,10 +45,11 @@ geometry; their `emissive` override dims or tints all of them together.
 
 ### Seals
 
-`seals` lists at most 16 boxes that close the hall: the end wall, four window panels, the
-door panel and the back slot fascia. A strip over the slit at the top of the +X wall
-joins them only if the owner's QA sees an opening there. A seal is static, visible and
-indestructible.
+`seals` lists at most 16 boxes that close the hall. The hall takes 13: the end wall,
+four window panels, the door panel, the back slot fascia, two side boxes and four pier
+plates. A side box closes the band between a side wall's top and the ceiling; the -X
+box also runs down behind the wall, across the open backs of its piers, and a plate
+closes the back of each +X pier. A seal is static, visible and indestructible.
 
 - `id`, `min` and `max`: an axis-aligned box in the level frame, at least 0.05 m thick;
 - `color`, and `metalness` and `roughness` from 0 to 1: its flat look.
@@ -87,12 +85,12 @@ missing required parameter, an unknown parameter and a value outside its range a
 errors that name the range.
 
 The lists fix each kind's parameters and slab count. The kind tables in `prop-kit` own
-every secondary dimension, such as a panel's thickness or a beam's depth, and a reviewer
-judges them against the references. Any slab face above 25 m2 or side above 40 m is
-split into the fewest equal runs that the slab admission accepts once they are rounded
-to the grid. Every panel turns its +Z face outward, because destruction lib's mesher
-tints the -Z face: a deck, a roof and a lid face up, a hanging slab faces down, and a
-partition faces local +Z.
+every secondary dimension, such as a panel's thickness, a beam's depth or the eave of a
+deck or roof over its long sides, and a reviewer judges them against the references. Any
+slab face above 25 m2 or side above 40 m is split into the fewest equal runs that the
+slab admission accepts once they are rounded to the grid. Every panel turns its +Z face
+outward, because destruction lib's mesher tints the -Z face: a deck, a roof and a lid
+face up, a hanging slab faces down, and a partition faces local +Z.
 
 Assembly line kinds, all metal unless stated:
 
@@ -172,9 +170,8 @@ Container and scene:
   requires no extension and uses no Draco, meshopt, KTX2 or `KHR_lights_punctual`.
   `KHR_materials_emissive_strength` may be used.
 - The default scene's first root is the node `stage`. Its matrix is the uniform scale
-  `base.scale`, and its children are the base stage's own roots. The base nodes,
-  accessors, images and buffer bytes are verbatim, so the four survey planes are
-  untouched.
+  `base.scale`, and its children are the base stage's roots. The base nodes, accessors,
+  images and buffer bytes are verbatim, so the four survey planes are untouched.
 - Every other scene root is an object node: one per seal, then one per prop, in
   description order. Its `extras` carry `role`: `seal`, or `destructible` with `prop`,
   the prop id. Its name repeats the id for people. Base nodes carry no role.
@@ -209,14 +206,12 @@ The shared builder sets the inner colour to the slab's colour.
 holds the props in description order; a prop has an `id` and `slabs`, a list of at least
 one slab. `lighting` is the section above, copied from the description.
 
-A slab is one destruction lib wall model: a box, one material, one rigid pose. It has
-five keys:
+A slab is one destruction lib wall model: a box, one material, one rigid pose, five keys:
 
 - `size`: `[width, height, thickness]` in metres. Each side is 0.02 to 40 m, and the
   face, width by height, is at most 25 m2.
 - `material`: `wood`, `brick`, `concrete` or `metal`.
-- `color`: the colour of the slab's faces, which destruction lib also uses for metal
-  debris.
+- `color`: the colour of the slab's faces and, in destruction lib, of its metal debris.
 - `position`: the world position of the slab's local origin, its base centre: X and Z
   centred, Y at the base.
 - `rotation`: the unit quaternion from the slab's frame to the level frame.
@@ -265,8 +260,7 @@ Both renderers, `level-view` now and sec-111's view at adoption, follow these ru
   and aimed at the centre of the interior box. Its orthographic shadow volume fits the
   interior box with no pad. The shadow is static PCF with the stored map size, biases and
   radius; it renders once.
-- Point: one point light with the given colour, candela intensity and range, decay 2 and
-  no shadow.
+- Point: a point light of the given colour, candela intensity and range, decay 2, no shadow.
 - Haze and exposure overwrite the same fields of the game's post configuration.
 - The clear colour is the renderer's constant (0.004, 0.005, 0.007).
 - Every level mesh casts and receives the key's shadow with two-sided shadow faces,
@@ -279,30 +273,51 @@ needs a point light beside it, within the cap of eight.
 
 ## Validator checks
 
-The validator judges a built level. A finding names its rule, its subject and a message,
-and every finding fails the level. Every limit below compares with a slack of 0.05 mm,
-or 0.00005 m2 for an area, so a value typed at its limit passes. A slab index `<k>`
-counts from 0. The measurements quoted below, on the player capsule and on the base
-stage's lanes, are repeated by the tests of `level-rules`.
+The validator judges a built level. The build errors and `prepare` block the build, and
+`level-pipeline` collects them. Every other rule is a check of `level-rules` over five
+facts of a built level: the typed description, the typed level, the inspection of the
+level GLB, the base stage's image count and the prepared static level. From the
+description the checks read only `base.scale`, the seals and each prop's `at`.
+
+A finding names its rule, its subject and a message, and every finding fails the level.
+The subject names what the author changes: the prop id, and the first prop's for a pair
+of props; the seal id; the mesh name; `lighting.points[<i>]`; `base.scale` for `scale`;
+the spawn name for `lane`; and `level` for `triangles`, `texture` and `proxies`. Findings
+come in the order of the rules below, and within a rule in description order.
+
+Every limit below compares with a slack of 0.05 mm, or 0.00005 m2 for an area, so a
+value typed at its limit passes. `level-format` owns the slack as `LENGTH_SLACK` and the
+one rendering of a length in a message, `formatLength`. It puts the length on the 0.1 mm
+grid with the slab rounding, a half step away from zero and never a negative zero, and
+prints the rounded number as `String` does, so with no trailing zero, no separator and
+no unit. Every message below shows its lengths and coordinates through it, and a count
+with thousands separators.
+
+A slab index `<k>` counts from 0. The spawns are named `player` and, for the minions in
+sec-111's order, `+x+z`, `-x+z`, `+x-z` and `-x-z`. The measurements quoted below, on the
+player capsule and on the base stage's lanes, are repeated by the tests of `level-rules`.
 
 ### Build errors
 
-These block the build. Each message starts with the path of the offending value. A path
-names a record key after a dot, a list item by its index in brackets, and a base material
-or a glow by its name, quoted in brackets: `props[3].params.length`,
-`glows["cyan"].strength` and `base.materials["Material.003"].tint`. A kind parameter is a
-record key of its kind.
+These block the build. A build error holds its rule, its path and its message, and each
+message starts with the path of the offending value. A path names a record key after a
+dot, a list item by its index in brackets, and a base material or a glow by its name,
+quoted in brackets: `props[3].params.length`, `glows["cyan"].strength` and
+`base.materials["Material.003"].tint`. A kind parameter is a record key of its kind. The
+build stops at the first step with errors and returns all of them. The steps are the
+description's admission (`shape`, `id`), the static scene (`base`), the preparation
+(`prepare`), the props (`place`, `kind`, `param`) and the slab admission (`slab`).
 
 - `shape`, owned by `level-format`: `<path>: expected <requirement>, got <value>`. It
-  covers keys, types, ranges, the lighting caps of eight points and one key, and the
-  description caps.
+  covers keys, types, ranges, the description caps and the lighting caps.
 - `id`, owned by `level-format`: `<path>: id "<id>" is already used at <other path>`.
 - `kind`, owned by `prop-kit`: `<path>: unknown kind "<kind>"; the kinds are <list>`.
 - `param`, owned by `prop-kit`: `<path>: <kind> takes <range or type>, got <value>`. It
   also rejects a `glow` that `glows` does not name.
 - `base`, owned by `level-glb`: `<path>: the base stage has no material (or mesh) named
   "<name>"`. The path is `base.materials["<name>"]` or `base.doubleSided[<i>]`.
-- `place`, owned by `level-pipeline`: `<path>: (<x>, <z>) lies outside the interior`.
+- `place`, owned by `level-pipeline`: `<path>: (<x>, <z>) lies outside the interior`. The
+  path is `props[<i>].at`, and the build does not expand that prop.
 - `slab`, owned by `level-format`: `<path> slab <k>: <w> x <h> x <t> m breaks <limit>`,
   or `the level has <n> slabs; the format admits 1,024`.
 
@@ -313,13 +328,18 @@ numbers. A failed preparation also blocks the build, because props stand on its 
 
 - `prepare`: `sec-111 level preparation failed: <sec-111's message>`. It covers the
   survey of the four planes, the body box limit, the spawn search and the flood seed.
+  `level-pipeline` reports the error that sec-111 throws as a build error at the path `$`.
 - `scale`: `sec-111 measures scale <s> on the static scene; set base.scale to <value>`.
+  It is a finding of `level-rules`. The value is `base.scale` times `<s>`, to the six
+  decimals that sec-111 keeps of a scale.
 
 ### The owner's checks
 
 - `triangles`: `the level has <n> triangles; the cap is 300,000`.
-- `light-inside`: `lighting.points[<i>] at (<x>, <y>, <z>) lies outside the interior`.
-- `light-floor`: `lighting.points[<i>] sits <d> m under the floor at (<x>, <z>)`.
+- `light-inside`: `lighting.points[<i>] at (<x>, <y>, <z>) lies outside the interior`. It
+  judges the point's plan position and the ceiling.
+- `light-floor`: `lighting.points[<i>] sits <d> m under the floor at (<x>, <z>)`. It
+  judges the height against the floor under the point, so a sunk light yields one finding.
 - `material`: `mesh "<name>" has a primitive without a material`.
 - `texture`: `the GLB holds <n> images beyond the base stage's; add the 1024 px check
   with the first texture owner`. The rule compares the level's image count with the
@@ -327,56 +347,88 @@ numbers. A failed preparation also blocks the build, because props stand on its 
 
 ### Placement rules
 
-The level designer owns these rules; their numbers come from sec-111's preparation. A
-prop stands when its lowest point is within 0.01 m of the floor under `at`. It hangs when
-its lowest point is 2.17 m or more above the highest floor under it. A standing slab is a
-slab of a standing prop whose lowest point is below 2.17 m; its plan outline is part of
-the prop's standing footprint. The ramp zone is the z extent of the step floors: the
-floors of the prepared body world after the base floor and the raised slab.
+The level designer owns these rules; their numbers come from sec-111's preparation. The
+floor under a plan point is sec-111's `floorHeightAt` on the prepared static level. A
+slab's plan outline is the outline of its box seen from above. The floors under a slab
+are the floors under its corners, each read 0.05 mm toward the slab's centre, so a slab
+that only touches a higher floor's edge stays on its own level.
 
-- `interior`: `prop <id> slab <k> leaves the interior by <d> m at (<x>, <y>, <z>)`.
+A prop stands when its lowest point is within 0.01 m of the floor under `at`. It hangs
+when its lowest point is 2.17 m or more above the highest floor under its slabs. A
+standing slab is a slab of a standing prop whose lowest point is less than 2.17 m above
+the floor under `at`. The prop's standing footprint is the union of its standing slabs'
+plan outlines. A roof that starts at 2.17 m or higher is no standing slab, so a tall
+hollow prop, such as a container, has its ring of walls for a footprint. The ramp zone
+is the z extent of the step floors, the floors of the prepared body world after the base
+floor and the raised slab; a hall without step floors has none.
+
+- `interior`: `prop <id> slab <k> leaves the interior by <d> m at (<x>, <y>, <z>)`, the
+  slab's corner farthest outside.
 - `support`: `prop <id> neither stands nor hangs: its lowest point is <h> m above the
-  floor; stand it on the floor or hang it at 2.17 m or higher`.
+  floor; stand it on the floor or hang it at 2.17 m or higher`. `<h>` counts from the
+  highest floor under its slabs, the floor that the hang test reads.
 - `floor`: `prop <id> spans the floor levels <a> and <b>; keep a standing prop on one
-  level`.
-- `ramp`: `prop <id> stands on the ramp, z <z0> to <z1>`.
+  level`, the lowest and the highest floor under its standing slabs.
+- `ramp`: `prop <id> stands on the ramp, z <z0> to <z1>`, the ramp zone that its
+  standing footprint reaches into.
 - `low-top`: `prop <id> slab <k> tops out <h> m above the floor; a standing slab reaches
   0.5 m or higher`. The player capsule climbs tops up to 0.30 m.
 - `overlap`: `props <a> and <b> intersect: slab <i> enters slab <j> by <d> m`. Contact
   up to 1 mm passes.
-- `seal`: `seal <id> reaches less than 0.02 m into the interior, so sec-111 cannot see
-  it`.
+- `seal`: `seal <id> reaches less than 0.02 m into the interior, so sec-111 cannot see it`.
 
 `floor` and `ramp` judge standing props only; a hanging prop may cross the slab edge and
-the ramp.
+the ramp. `low-top` reads the floor under `at`. `overlap` names the deepest pair of
+slabs of the two props; the depth is the least overlap of the two boxes along a
+separating axis. `seal` fails when the part of the seal inside the interior box is
+thinner than 0.02 m on an axis.
 
 ### Clearance rules
 
 These rules read plan distances between standing footprints, static standing obstacles
-and the spawns. A static standing obstacle is a box of the prepared body world that
-starts below 2.17 m above its floor.
+and the spawns. A static standing obstacle is an obstacle or enclosure box of the
+prepared body world that starts less than 2.17 m above the floor under its centre.
 
 - `gap`: `props <a> and <b> stand <d> m apart; keep a gap under 0.7 m or at least
-  1.5 m`. The same rule holds between a prop and a static obstacle. Touching is allowed.
-  The player enters a gap of 0.76 m, and the navmesh needs 1.5 m.
+  1.5 m`. A gap of 0.7 m fails, one of 1.5 m passes, and touching is allowed. The player
+  enters a gap of 0.76 m, and the navmesh needs 1.5 m.
+- `gap` also holds between a prop and each static obstacle: `prop <a> stands <d> m from
+  the static obstacle at (<x>, <z>); keep a gap under 0.7 m or at least 1.5 m`.
 - `spawn`: `prop <id> stands <d> m from the <name> spawn; keep 6 m`.
 - `lane`: `the main lane from the <name> minion spawn narrows to <w> m near (<x>, <z>);
   it needs <limit> m`.
 
-A main lane is the widest route from a minion spawn to the player spawn, measured on a
-0.1 m plan grid over the interior:
+`gap` judges a pair whose distance is 0.7 m or more and under 1.5 m, and only where a
+player fits between the two. A crossing is the shortest segment between the two
+footprints, or a segment from one that meets an edge of the other at a right angle; its
+lane is the rectangle 0.7 m wide along it. The pair fails when a crossing in that range
+has a free lane, one that overlaps no other standing footprint or static obstacle. `<d>`
+is the shortest such crossing, and the point is its end on the obstacle. Crates in a
+row, chained conveyors and a prop against a wall of several body boxes therefore pass.
 
-- a cell is blocked when a static standing obstacle or a standing footprint touches it;
-  everything outside the interior is blocked;
-- a free cell's clearance is the distance from its centre to the edge of the nearest
-  blocked cell;
+The rule has limits. A pair nearer than 0.7 m is not judged, so touching props that open
+into a wedge get no finding. A wall of flush body boxes can report one gap once per box.
+A pocket only 0.36 m deep still fails: a notch beside a shorter crate, a corridor mouth.
+
+The rules measure footprints, not the outlines that the parameters state. A tall
+enclosure's long sides stand inside its roof's edge by the eave, so without a glow each
+such side adds the eave to the gap that the typed outlines suggest.
+
+A main lane is the widest route from a minion spawn's cell to the player spawn's cell,
+on a plan grid of 0.1 m cells that starts at the interior's lowest x and z:
+
+- a cell is blocked when a static standing obstacle or a standing slab's plan outline
+  overlaps it by more than the slack, so a wall thinner than a cell blocks every cell it
+  crosses; a cell that reaches outside the interior is blocked;
+- a free cell's clearance runs from its centre to the edge of the nearest blocked cell;
 - a route steps between free cells that share a side, and its width is twice the least
-  clearance along it plus one cell.
+  clearance along it plus one cell; a spawn without a route has a lane of width 0.
 
-Each lane keeps 3 m, or its width on the static scene alone where that is narrower. On
+Each lane is measured on the static scene alone and again with the standing footprints.
+With them it keeps 3 m, or its width on the static scene alone where that is narrower.
+The message gives the measured width and the centre of the route's narrowest cell. On
 the base stage three lanes are wider than 7 m and the lane of the +x-z spawn measures
-1.8 m, so that lane keeps 1.8 m. The lanes are measured, not authored: a description
-holds no lane that could disagree with the floor.
+1.8 m, so that lane keeps 1.8 m. The lanes are measured, never authored.
 
 ### Destructibility
 
@@ -387,25 +439,39 @@ Destruction lib owns admission and damage, so the validator runs its code on eve
   the slab's pose. Each trial casts from 0.2 m outside the +Z face at its centre and
   must hit this slab. The rail trial then finds the material gone at the hit. The blast
   trial finds it gone and the retained cuboids changed. The steps are admit, register,
-  aim, rail and blast.
+  aim, rail and blast, and the message names the first that fails.
 - `proxies`: `destruction lib could not build the level's debris proxies: <message>`,
   from one Rapier sync of all slabs together.
 
 ### Report
 
-The report opens with the hall facts of the prepared static level: the interior, the
-floor heights, the ramp zone and the spawns. One tab-separated line per finding follows:
-rule, subject, message. A summary follows: triangles and points against their caps,
-body boxes against sec-111's limit, the lane widths, and slabs and props against the
-first-pass budget of 800 slabs in 200 props. The budget prints and never rejects. The
-last line is `accepted` or `rejected: <n> findings`.
+`level-pipeline` shapes the report as a value of four parts, and `level-cli` prints it:
+
+- the hall facts of the prepared static level: the interior, the floor heights, the ramp
+  zone and the spawns by name;
+- the findings;
+- the summary: triangles against the cap of `level-rules`, point lights against
+  `MAX_POINT_LIGHTS` of `level-format`, the boxes of the body world's three groups
+  against sec-111's limit, each lane's width beside the width it keeps, and slabs and
+  props against the first-pass budget of 800 slabs in 200 props, which the pipeline owns;
+- the verdict: accepted when it holds no finding. The budget never rejects.
+
+The printed report has one tab-separated line per fact. Each line starts with the fact's
+name and prints its lengths through `formatLength`. The hall facts are the lines
+`interior` with its two corners, `floors`, `ramp` with its z extent and one `spawn` per
+spawn with its name and position. One line per finding follows: rule, subject, message.
+The summary lines are `triangles`, `points`, `body-boxes`, one `lane` per minion spawn
+with its name, `slabs` and `props`, each with its count or width beside its cap, budget
+or kept width. The last line is `accepted` or `rejected: <n> findings`. A blocked build
+has no report: the tool prints one tab-separated line per build error, with its rule,
+path and message, and the last line `blocked: <n> errors`. Both last lines take the
+singular for one: `rejected: 1 finding` and `blocked: 1 error`.
 
 ## What sec-111 changes at adoption
 
 Adoption is a later sec-111 task. The pair carries every fact these changes read. Where
 the base stage file lives after adoption is the adoption task's decision. The level
-designer stays buildable after adoption, because in-game QA can send the level back for
-changes.
+designer stays buildable after adoption, because in-game QA can send the level back.
 
 Data and preparation:
 

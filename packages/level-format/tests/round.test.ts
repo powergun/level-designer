@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { decodeLevel, encodeLevel, isSurfaceColor, roundSlab } from "@level-designer/level-format";
+import {
+  decodeLevel,
+  encodeLevel,
+  formatLength,
+  isSurfaceColor,
+  roundSlab,
+} from "@level-designer/level-format";
 import type { Slab, Vec3 } from "@level-designer/level-format";
 import { expectRoundTrip, gridLevel, gridSlab } from "./fixtures.ts";
 
@@ -85,4 +91,30 @@ test("isSurfaceColor admits #rrggbb text in either case and nothing else", () =>
   ];
   expect(admitted).toEqual([true, true]);
   expect(refused.map(isSurfaceColor)).toEqual(refused.map(() => false));
+});
+
+describe("formatLength", () => {
+  test("prints the grid rounding, a half step away from zero", () => {
+    const shown = [123.45675, -123.45675, 1.4999999999999998].map(formatLength);
+    expect(shown).toEqual(["123.4568", "-123.4568", "1.5"]);
+  });
+
+  test("prints the same length that roundSlab stores", () => {
+    const size: Vec3 = [2.000049, 1.23456789, 0.00145];
+    expect(size.map(formatLength)).toEqual(roundedSize(size).map(String));
+  });
+
+  test("never prints a negative zero", () => {
+    expect(formatLength(-0.00004)).toBe("0");
+  });
+
+  test("prints plain digits: no trailing zero, no point on a whole number", () => {
+    expect([6, 40, 2.17, 0.3241, 12345.6].map(formatLength)).toEqual([
+      "6",
+      "40",
+      "2.17",
+      "0.3241",
+      "12345.6",
+    ]);
+  });
 });

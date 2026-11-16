@@ -239,3 +239,18 @@ Milestone 2 is built and reviewed: `slab-model`, `prop-kit` with the six box kin
 `snapshot-render`. An acceptance review found TASK-001.02 complete, and the root gates
 pass on Windows with a test recipe of 0.82 s. Status stays WIP. Remaining: the owner's QA
 of TASK-001.02, then milestones 3 to 6.
+
+(2026-11-16 18:45:33)
+The owner approved in writing marking TASK-001.02 DONE. Status stays WIP. Remaining:
+milestones 3 to 6, starting with TASK-001.03.
+
+(2026-11-16 22:14:46)
+Milestone 3 is built and reviewed: `level-rules`, `level-pipeline`, `level-cli` with its
+four recipes, and the seed description of the sealed hall with thirteen seals. An
+acceptance review found TASK-001.03 complete, and the root gates pass on Windows with a
+test recipe of 8.2 s. Status stays WIP. Remaining: the owner's QA of TASK-001.03, then
+milestones 4 to 6.
+
+(2026-11-16 22:22:05)
+The owner's QA of TASK-001.03 passed, and the owner approved in writing marking it DONE.
+Status stays WIP. Remaining: milestones 4 to 6, starting with TASK-001.04.

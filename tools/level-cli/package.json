@@ -1,0 +1,14 @@
+{
+  "name": "@level-designer/level-cli",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@level-designer/level-format": "workspace:*",
+    "@level-designer/level-pipeline": "workspace:*",
+    "@level-designer/level-rules": "workspace:*",
+    "@level-designer/prop-kit": "workspace:*",
+    "@level-designer/sec111-gateway": "workspace:*",
+    "@level-designer/snapshot-render": "workspace:*"
+  }
+}

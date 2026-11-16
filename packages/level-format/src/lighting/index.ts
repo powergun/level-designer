@@ -5,4 +5,4 @@
  */
 export type { Environment, Haze, KeyLight, Lighting, PointLight, Shadow } from "./lighting.js";
 export { canonicalLighting } from "./canonical.js";
-export { readLighting } from "./read.js";
+export { MAX_POINT_LIGHTS, readLighting } from "./read.js";

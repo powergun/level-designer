@@ -1,0 +1,179 @@
+{
+  "schema": "level-designer-description/1",
+  "name": "dark-factory",
+  "base": {
+    "scale": 3.89956,
+    "materials": {
+      "Material.001": { "metalness": 0, "roughness": 0.8 },
+      "Material.002": { "metalness": 0.05, "roughness": 0.78 },
+      "Material.003": { "metalness": 0.45, "roughness": 0.55 },
+      "Material.004": { "metalness": 0.3, "roughness": 0.6 },
+      "Material.006": { "metalness": 0.65, "roughness": 0.42 },
+      "Material": { "emissive": { "color": [1, 1, 1], "strength": 0.6 } }
+    },
+    "doubleSided": [
+      "Plane.001_Material.002_0",
+      "factory_tube_01.001_Material.003_0",
+      "factory_tube_03.001_Material.003_0",
+      "factory_tube_12.001_Material.003_0",
+      "factory_tube_18.001_Material.005_0",
+      "factory_tube_18.002_Material.005_0",
+      "factory_tube_18.003_Material.005_0"
+    ]
+  },
+  "seals": [
+    {
+      "id": "end-wall",
+      "min": [-17.7, -0.5, 30.22],
+      "max": [17.7, 19.2, 31.5],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "window-minus-x-rear",
+      "min": [-16.4, 6.25, -82.35],
+      "max": [-16.1, 11.6, -71.7],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "window-minus-x-mid",
+      "min": [-16.4, 6.25, -42.9],
+      "max": [-16.1, 11.6, -32.25],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "window-plus-x-rear",
+      "min": [16.06, 6.25, -82.35],
+      "max": [16.36, 11.6, -71.7],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "window-plus-x-mid",
+      "min": [16.06, 6.25, -42.9],
+      "max": [16.36, 11.6, -32.25],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "door-plus-x",
+      "min": [16.06, -0.1, -15.25],
+      "max": [16.36, 7.35, -7.8],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "back-slot",
+      "min": [-16.9, 17.95, -90.1],
+      "max": [16.9, 19, -89.8],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "wall-top-plus-x",
+      "min": [16.62, 13.5, -90.1],
+      "max": [16.9, 19, 31.5],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "wall-minus-x",
+      "min": [-16.9, -0.5, -90.1],
+      "max": [-16.62, 19, 31.5],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "pier-plus-x-1",
+      "min": [16.64, -0.5, -58.686],
+      "max": [16.9, 13.5, -56.004],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "pier-plus-x-2",
+      "min": [16.64, -0.5, -18.421],
+      "max": [16.9, 13.5, -15.739],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "pier-plus-x-3",
+      "min": [16.64, -0.5, 1.711],
+      "max": [16.9, 13.5, 4.394],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    },
+    {
+      "id": "pier-plus-x-4",
+      "min": [16.64, -0.5, 21.844],
+      "max": [16.9, 13.5, 24.526],
+      "color": "#55595d",
+      "metalness": 0,
+      "roughness": 0.9
+    }
+  ],
+  "finishes": {
+    "wood": { "metalness": 0, "roughness": 0.68 },
+    "brick": { "metalness": 0, "roughness": 0.78 },
+    "concrete": { "metalness": 0, "roughness": 0.7 },
+    "metal": { "metalness": 0.45, "roughness": 0.55 }
+  },
+  "glows": {},
+  "props": [],
+  "lighting": {
+    "environment": {
+      "intensity": 0.5,
+      "ambient": [0.06, 0.066, 0.08],
+      "overhead": [0.08, 0.086, 0.098]
+    },
+    "key": {
+      "color": [0.72, 0.82, 1],
+      "intensity": 3,
+      "direction": [0, 1, 0],
+      "shadow": { "mapSize": 4096, "bias": -0.0003, "normalBias": 0.039, "radius": 3 }
+    },
+    "points": [
+      {
+        "position": [9.83, 15.79, 16.73],
+        "color": [0.8, 0.9, 1],
+        "intensity": 395.4,
+        "range": 46.8
+      },
+      {
+        "position": [0.55, 15.79, -10.45],
+        "color": [0.8, 0.9, 1],
+        "intensity": 395.4,
+        "range": 46.8
+      },
+      {
+        "position": [-8.77, 15.79, -37.63],
+        "color": [0.8, 0.9, 1],
+        "intensity": 395.4,
+        "range": 46.8
+      },
+      {
+        "position": [0.55, 15.79, -64.77],
+        "color": [0.8, 0.9, 1],
+        "intensity": 395.4,
+        "range": 46.8
+      }
+    ],
+    "haze": { "density": 0.00769, "color": [0.006, 0.01, 0.017], "glow": 0.9 },
+    "exposure": 1
+  }
+}

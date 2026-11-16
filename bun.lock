@@ -24,6 +24,19 @@
         "@level-designer/sec111-gateway": "workspace:*",
       },
     },
+    "packages/level-rules": {
+      "name": "@level-designer/level-rules",
+      "dependencies": {
+        "@level-designer/destruction-gateway": "workspace:*",
+        "@level-designer/level-format": "workspace:*",
+        "@level-designer/level-glb": "workspace:*",
+        "@level-designer/sec111-gateway": "workspace:*",
+        "@level-designer/slab-model": "workspace:*",
+      },
+      "devDependencies": {
+        "@level-designer/prop-kit": "workspace:*",
+      },
+    },
     "packages/prop-kit": {
       "name": "@level-designer/prop-kit",
       "dependencies": {
@@ -44,6 +57,28 @@
       "dependencies": {
         "@level-designer/destruction-gateway": "workspace:*",
         "@level-designer/level-format": "workspace:*",
+      },
+    },
+    "tools/level-cli": {
+      "name": "@level-designer/level-cli",
+      "dependencies": {
+        "@level-designer/level-format": "workspace:*",
+        "@level-designer/level-pipeline": "workspace:*",
+        "@level-designer/level-rules": "workspace:*",
+        "@level-designer/prop-kit": "workspace:*",
+        "@level-designer/sec111-gateway": "workspace:*",
+        "@level-designer/snapshot-render": "workspace:*",
+      },
+    },
+    "tools/level-pipeline": {
+      "name": "@level-designer/level-pipeline",
+      "dependencies": {
+        "@level-designer/level-format": "workspace:*",
+        "@level-designer/level-glb": "workspace:*",
+        "@level-designer/level-rules": "workspace:*",
+        "@level-designer/prop-kit": "workspace:*",
+        "@level-designer/sec111-gateway": "workspace:*",
+        "@level-designer/slab-model": "workspace:*",
       },
     },
     "tools/snapshot-render": {
@@ -67,9 +102,15 @@
 
     "@level-designer/destruction-gateway": ["@level-designer/destruction-gateway@workspace:packages/destruction-gateway"],
 
+    "@level-designer/level-cli": ["@level-designer/level-cli@workspace:tools/level-cli"],
+
     "@level-designer/level-format": ["@level-designer/level-format@workspace:packages/level-format"],
 
     "@level-designer/level-glb": ["@level-designer/level-glb@workspace:packages/level-glb"],
+
+    "@level-designer/level-pipeline": ["@level-designer/level-pipeline@workspace:tools/level-pipeline"],
+
+    "@level-designer/level-rules": ["@level-designer/level-rules@workspace:packages/level-rules"],
 
     "@level-designer/prop-kit": ["@level-designer/prop-kit@workspace:packages/prop-kit"],
 

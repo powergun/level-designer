@@ -1,0 +1,16 @@
+{
+  "name": "@level-designer/level-rules",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@level-designer/destruction-gateway": "workspace:*",
+    "@level-designer/level-format": "workspace:*",
+    "@level-designer/level-glb": "workspace:*",
+    "@level-designer/sec111-gateway": "workspace:*",
+    "@level-designer/slab-model": "workspace:*"
+  },
+  "devDependencies": {
+    "@level-designer/prop-kit": "workspace:*"
+  }
+}
