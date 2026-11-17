@@ -88,6 +88,14 @@ slab's oriented box, and steps once before the capsule stands at the player spaw
 8 m/s, 24 m/s with `Shift`, and the look turns 0.0022 rad per mouse pixel; these three values are
 the page's own.
 
+The page starts in the game's start look, so its first frame is what the player sees first:
+toward -Z, the back wall, with the sealed end behind. `GAME_VALUES.player.startForward` holds
+that look as a direction in world axes. The page keeps its own yaw convention, in which yaw 0
+looks along +Z, and the `motion` unit is the one place that converts the direction into it: the
+start yaw is pi and the start pitch 0. A mark records its yaw folded into (-180, 180], so a mark
+taken at the start reads 180, as the heads-up display does. The walk tests steer in the start
+frame, so they hold whatever way the page starts.
+
 Fly to walk makes a new capsule, because the capsule has no teleport. Its feet start at the
 camera's eye less the eye height, never below the marked floor, and gravity drops it onto
 whatever the body world holds below, a stage obstacle's top included. The physics world itself

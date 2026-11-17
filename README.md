@@ -117,6 +117,11 @@ just qa           # print the run log's path, build, then serve at the printed a
   the server listens. A description edit needs a restart. Add `--port <n>` to the recipe
   to serve on another port; a taken port stops the server.
 - Open the printed address in Chrome with hardware acceleration; the page needs WebGPU.
+
+In the page:
+
+- The page starts where the player starts, at the player spawn, facing the back wall (-Z)
+  with the sealed end behind, as the game does.
 - Move: click to capture the mouse; `W`, `A`, `S`, `D` move and `Shift` sprints; `V`
   switches walk and fly; `E` and `Q` rise and sink in fly; `Esc` releases the mouse.
 - Mark: go to a problem, press `F3` (or `M`), type a comment and press `Enter`. The

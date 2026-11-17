@@ -4,12 +4,18 @@
   "base": {
     "scale": 3.89956,
     "materials": {
-      "Material.001": { "metalness": 0, "roughness": 0.8 },
-      "Material.002": { "metalness": 0.05, "roughness": 0.78 },
-      "Material.003": { "metalness": 0.45, "roughness": 0.55 },
+      "Material.001": { "tint": [0.36, 0.38, 0.41], "metalness": 0, "roughness": 0.55 },
+      "Material.002": { "tint": [0.57, 0.6, 0.65], "metalness": 0.05, "roughness": 0.78 },
+      "Material.003": { "metalness": 0, "roughness": 0.55 },
       "Material.004": { "metalness": 0.3, "roughness": 0.6 },
-      "Material.006": { "metalness": 0.65, "roughness": 0.42 },
-      "Material": { "emissive": { "color": [1, 1, 1], "strength": 0.6 } }
+      "Material.006": { "metalness": 0.3, "roughness": 0.42 },
+      "Material.007": { "tint": [0.4, 0.43, 0.47], "roughness": 1 },
+      "Material.008": { "tint": [0.6, 0.56, 0.5] },
+      "Material.009": { "tint": [0.6, 0.56, 0.5] },
+      "Material": {
+        "tint": [0.25, 0.25, 0.25],
+        "emissive": { "color": [0.6, 0.9, 1], "strength": 0.25 }
+      }
     },
     "doubleSided": [
       "Plane.001_Material.002_0",
@@ -128,52 +134,1331 @@
     }
   ],
   "finishes": {
-    "wood": { "metalness": 0, "roughness": 0.68 },
-    "brick": { "metalness": 0, "roughness": 0.78 },
-    "concrete": { "metalness": 0, "roughness": 0.7 },
-    "metal": { "metalness": 0.45, "roughness": 0.55 }
+    "wood": { "metalness": 0, "roughness": 0.75 },
+    "brick": { "metalness": 0, "roughness": 0.85 },
+    "concrete": { "metalness": 0, "roughness": 0.82 },
+    "metal": { "metalness": 0.55, "roughness": 0.7 }
   },
-  "glows": {},
-  "props": [],
+  "glows": {
+    "line": { "color": [0.1, 0.8, 0.9], "strength": 0.45 },
+    "eye": { "color": [1, 0.25, 0.05], "strength": 0.75 },
+    "strip": { "color": [0.25, 0.9, 1], "strength": 0.4 },
+    "gate": { "color": [0.7, 0.95, 1], "strength": 0.33 },
+    "alert": { "color": [1, 0.5, 0.1], "strength": 0.7 }
+  },
+  "props": [
+    {
+      "id": "yard-box-north",
+      "kind": "container",
+      "at": [-2.5, -60.8],
+      "yaw": 90,
+      "params": { "length": 6.06, "color": "#5a3327" }
+    },
+    {
+      "id": "yard-box-east",
+      "kind": "container",
+      "at": [6.5, -58.5],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#27405a" }
+    },
+    {
+      "id": "yard-box-south",
+      "kind": "container",
+      "at": [3.5, -51.2],
+      "yaw": 90,
+      "params": { "length": 6.06, "color": "#3c4a33" }
+    },
+    {
+      "id": "yard-box-west",
+      "kind": "container",
+      "at": [-4.5, -53.5],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#4a4e52" }
+    },
+    {
+      "id": "yard-crate-1",
+      "kind": "crate",
+      "at": [1, -54.92],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "yard-crate-2",
+      "kind": "crate",
+      "at": [-0.5, -55.22],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#5c4a30" }
+    },
+    {
+      "id": "yard-crate-3",
+      "kind": "crate",
+      "at": [0.7, -56.42],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#6b5637" }
+    },
+    {
+      "id": "yard-box-wall",
+      "kind": "container",
+      "at": [14.8, -52.87],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#6a5a2a" }
+    },
+    {
+      "id": "yard-crate-4",
+      "kind": "crate",
+      "at": [-15.1, -61.22],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "yard-crate-5",
+      "kind": "crate",
+      "at": [-15.4, -59.72],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#5c4a30" }
+    },
+    {
+      "id": "yard-stack-1",
+      "kind": "partition",
+      "at": [-13.9, -60.35],
+      "yaw": 90,
+      "params": {
+        "width": 3.5,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "metal",
+        "color": "#474c52"
+      }
+    },
+    {
+      "id": "yard-stack-2",
+      "kind": "partition",
+      "at": [-13.3, -60.35],
+      "yaw": 90,
+      "params": {
+        "width": 3.5,
+        "height": 1.2,
+        "thickness": 0.6,
+        "material": "metal",
+        "color": "#474c52"
+      }
+    },
+    {
+      "id": "yard-crate-6",
+      "kind": "crate",
+      "at": [-14.9, -54.52],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "yard-crate-7",
+      "kind": "crate",
+      "at": [-14.9, -52.72],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#5c4a30" }
+    },
+    {
+      "id": "yard-stack-3",
+      "kind": "partition",
+      "at": [-13.7, -53.47],
+      "yaw": 90,
+      "params": {
+        "width": 3.5,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "lane-box",
+      "kind": "container",
+      "at": [-6.2, -74],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#27405a" }
+    },
+    {
+      "id": "lane-crate-1",
+      "kind": "crate",
+      "at": [-14.9, -73.4],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "lane-crate-2",
+      "kind": "crate",
+      "at": [-14.9, -71.6],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#5c4a30" }
+    },
+    {
+      "id": "lane-crate-3",
+      "kind": "crate",
+      "at": [-15.2, -70.1],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#6b5637" }
+    },
+    {
+      "id": "lane-barrier",
+      "kind": "partition",
+      "at": [-9, -66],
+      "yaw": 0,
+      "params": {
+        "width": 3.5,
+        "height": 1.4,
+        "thickness": 0.4,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "fall-box-south",
+      "kind": "container",
+      "at": [-9.6, -35.51],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#27405a" }
+    },
+    {
+      "id": "fall-box-north",
+      "kind": "container",
+      "at": [-9.6, -41.57],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#5a3327" }
+    },
+    {
+      "id": "fall-crate-1",
+      "kind": "crate",
+      "at": [-11.72, -36],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "fall-crate-2",
+      "kind": "crate",
+      "at": [-15, -43.05],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#5c4a30" }
+    },
+    {
+      "id": "fall-crate-3",
+      "kind": "crate",
+      "at": [-15, -41.25],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "fall-crate-4",
+      "kind": "crate",
+      "at": [-15.3, -39.75],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#5c4a30" }
+    },
+    {
+      "id": "fall-stack-1",
+      "kind": "partition",
+      "at": [-15.5, -33.4],
+      "yaw": 90,
+      "params": {
+        "width": 4,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "metal",
+        "color": "#474c52"
+      }
+    },
+    {
+      "id": "fall-stack-2",
+      "kind": "partition",
+      "at": [-14.9, -33.4],
+      "yaw": 90,
+      "params": {
+        "width": 4,
+        "height": 1.2,
+        "thickness": 0.6,
+        "material": "metal",
+        "color": "#474c52"
+      }
+    },
+    {
+      "id": "fall-stack-3",
+      "kind": "partition",
+      "at": [-8.08, -40.25],
+      "yaw": 90,
+      "params": {
+        "width": 3.5,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "fall-stack-4",
+      "kind": "partition",
+      "at": [-7.48, -40.25],
+      "yaw": 90,
+      "params": {
+        "width": 3.5,
+        "height": 1.2,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "fall-crate-5",
+      "kind": "crate",
+      "at": [-7.78, -35.9],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#6b5637" }
+    },
+    {
+      "id": "fall-crate-6",
+      "kind": "crate",
+      "at": [-7.78, -34.7],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#5c4a30" }
+    },
+    {
+      "id": "fall-fence-south",
+      "kind": "partition",
+      "at": [-3.3, -31.3],
+      "yaw": 0,
+      "params": {
+        "width": 2.4,
+        "height": 1.3,
+        "thickness": 0.4,
+        "material": "brick",
+        "color": "#6e4636"
+      }
+    },
+    {
+      "id": "fall-fence-north",
+      "kind": "partition",
+      "at": [-7.3, -45.3],
+      "yaw": 0,
+      "params": {
+        "width": 2,
+        "height": 1.3,
+        "thickness": 0.4,
+        "material": "brick",
+        "color": "#6e4636"
+      }
+    },
+    {
+      "id": "east-box-short",
+      "kind": "container",
+      "at": [14.78, -4.17],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#3c4a33" }
+    },
+    {
+      "id": "east-crate-1",
+      "kind": "crate",
+      "at": [12.96, -6.5],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#6b5637" }
+    },
+    {
+      "id": "east-crate-2",
+      "kind": "crate",
+      "at": [12.66, -5],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#5c4a30" }
+    },
+    {
+      "id": "east-crate-3",
+      "kind": "crate",
+      "at": [12.96, -3.5],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#6b5637" }
+    },
+    {
+      "id": "east-box-long",
+      "kind": "container",
+      "at": [14.78, 11.1],
+      "yaw": 0,
+      "params": { "length": 12.2, "color": "#5a3327" }
+    },
+    {
+      "id": "east-panel-1",
+      "kind": "partition",
+      "at": [11.2, 8.2],
+      "yaw": -90,
+      "params": {
+        "width": 3,
+        "height": 2.8,
+        "thickness": 0.2,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "east-panel-2",
+      "kind": "partition",
+      "at": [11.7, 8.2],
+      "yaw": -90,
+      "params": {
+        "width": 3,
+        "height": 2.8,
+        "thickness": 0.2,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "east-panel-3",
+      "kind": "partition",
+      "at": [12.2, 8.2],
+      "yaw": -90,
+      "params": {
+        "width": 3,
+        "height": 2.8,
+        "thickness": 0.2,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "east-panel-4",
+      "kind": "partition",
+      "at": [12.7, 8.2],
+      "yaw": -90,
+      "params": {
+        "width": 3,
+        "height": 2.8,
+        "thickness": 0.2,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "east-panel-5",
+      "kind": "partition",
+      "at": [13.2, 8.2],
+      "yaw": -90,
+      "params": {
+        "width": 3,
+        "height": 2.8,
+        "thickness": 0.2,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "east-stack-1",
+      "kind": "partition",
+      "at": [13.26, 14.5],
+      "yaw": -90,
+      "params": {
+        "width": 4,
+        "height": 1.2,
+        "thickness": 0.6,
+        "material": "metal",
+        "color": "#474c52"
+      }
+    },
+    {
+      "id": "east-stack-2",
+      "kind": "partition",
+      "at": [12.66, 14.5],
+      "yaw": -90,
+      "params": {
+        "width": 4,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "metal",
+        "color": "#474c52"
+      }
+    },
+    {
+      "id": "west-crate-1",
+      "kind": "crate",
+      "at": [-11.4, -6.1],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "west-crate-2",
+      "kind": "crate",
+      "at": [-11.7, -4.6],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#5c4a30" }
+    },
+    {
+      "id": "west-crate-3",
+      "kind": "crate",
+      "at": [-11.7, -3.4],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#6b5637" }
+    },
+    {
+      "id": "west-crate-4",
+      "kind": "crate",
+      "at": [-11.8, 5.3],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#5c4a30" }
+    },
+    {
+      "id": "west-crate-5",
+      "kind": "crate",
+      "at": [-12.1, 6.8],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#6b5637" }
+    },
+    {
+      "id": "west-box",
+      "kind": "container",
+      "at": [-11.2, 13],
+      "yaw": 0,
+      "params": { "length": 6.06, "color": "#27405a" }
+    },
+    {
+      "id": "west-stack-1",
+      "kind": "partition",
+      "at": [-11.2, 16.33],
+      "yaw": 0,
+      "params": {
+        "width": 2.4,
+        "height": 1.2,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "west-stack-2",
+      "kind": "partition",
+      "at": [-11.2, 16.93],
+      "yaw": 0,
+      "params": {
+        "width": 2.4,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "apron-fence-nw",
+      "kind": "partition",
+      "at": [-6.1, -27.7],
+      "yaw": 0,
+      "params": {
+        "width": 3,
+        "height": 1.2,
+        "thickness": 0.4,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "apron-fence-ne",
+      "kind": "partition",
+      "at": [6.1, -27.7],
+      "yaw": 0,
+      "params": {
+        "width": 3,
+        "height": 1.2,
+        "thickness": 0.4,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "apron-fence-sw",
+      "kind": "partition",
+      "at": [-9, -19],
+      "yaw": -20,
+      "params": {
+        "width": 4,
+        "height": 1.3,
+        "thickness": 0.4,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "apron-fence-se",
+      "kind": "partition",
+      "at": [9, -19],
+      "yaw": 20,
+      "params": {
+        "width": 4,
+        "height": 1.3,
+        "thickness": 0.4,
+        "material": "concrete",
+        "color": "#62656a"
+      }
+    },
+    {
+      "id": "apron-crate-1",
+      "kind": "crate",
+      "at": [-11.7, -24],
+      "yaw": 0,
+      "params": { "size": 1.8, "color": "#6b5637" }
+    },
+    {
+      "id": "apron-crate-2",
+      "kind": "crate",
+      "at": [-12, -22.5],
+      "yaw": 0,
+      "params": { "size": 1.2, "color": "#5c4a30" }
+    },
+    {
+      "id": "dock-box",
+      "kind": "container",
+      "at": [0, 28.6],
+      "yaw": 90,
+      "params": { "length": 6.06, "color": "#4a4e52" }
+    },
+    {
+      "id": "line-w-enc-1",
+      "kind": "enclosure",
+      "at": [-4.5, -11.75],
+      "yaw": 0,
+      "params": {
+        "width": 3,
+        "length": 4.5,
+        "height": 2.8,
+        "material": "metal",
+        "color": "#3b4248",
+        "glow": "line"
+      }
+    },
+    {
+      "id": "line-w-conv-1",
+      "kind": "conveyor",
+      "at": [-4.5, -3.75],
+      "yaw": 0,
+      "params": { "length": 7.5, "width": 1, "height": 0.9, "color": "#343a40", "glow": "line" }
+    },
+    {
+      "id": "line-w-arm-1",
+      "kind": "robot-arm",
+      "at": [-5.75, -6.7],
+      "yaw": 90,
+      "params": {
+        "reach": 2.9,
+        "shoulder": 85,
+        "elbow": 60,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-arm-2",
+      "kind": "robot-arm",
+      "at": [-3.25, -4.7],
+      "yaw": -90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-arm-3",
+      "kind": "robot-arm",
+      "at": [-5.75, -2.7],
+      "yaw": 90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-arm-4",
+      "kind": "robot-arm",
+      "at": [-3.25, -0.7],
+      "yaw": -90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-enc-2",
+      "kind": "enclosure",
+      "at": [-4.5, 6],
+      "yaw": 0,
+      "params": {
+        "width": 3,
+        "length": 4,
+        "height": 3.2,
+        "material": "metal",
+        "color": "#3b4248",
+        "glow": "line"
+      }
+    },
+    {
+      "id": "line-w-conv-2",
+      "kind": "conveyor",
+      "at": [-4.5, 9.75],
+      "yaw": 0,
+      "params": { "length": 3.5, "width": 1, "height": 0.9, "color": "#343a40", "glow": "line" }
+    },
+    {
+      "id": "line-w-arm-5",
+      "kind": "robot-arm",
+      "at": [-5.75, 8.4],
+      "yaw": 90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-arm-6",
+      "kind": "robot-arm",
+      "at": [-3.25, 10.4],
+      "yaw": -90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-conv-3",
+      "kind": "conveyor",
+      "at": [-4.5, 16.25],
+      "yaw": 0,
+      "params": { "length": 5.5, "width": 1, "height": 0.9, "color": "#343a40", "glow": "line" }
+    },
+    {
+      "id": "line-w-arm-7",
+      "kind": "robot-arm",
+      "at": [-5.75, 14.3],
+      "yaw": 90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-arm-8",
+      "kind": "robot-arm",
+      "at": [-3.25, 16.3],
+      "yaw": -90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-w-arm-9",
+      "kind": "robot-arm",
+      "at": [-5.75, 18.3],
+      "yaw": 90,
+      "params": {
+        "reach": 2.9,
+        "shoulder": 85,
+        "elbow": 60,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-e-conv-1",
+      "kind": "conveyor",
+      "at": [4.5, -10.25],
+      "yaw": 0,
+      "params": { "length": 7.5, "width": 1, "height": 0.9, "color": "#343a40", "glow": "line" }
+    },
+    {
+      "id": "line-e-arm-1",
+      "kind": "robot-arm",
+      "at": [3.25, -13.2],
+      "yaw": 90,
+      "params": {
+        "reach": 2.9,
+        "shoulder": 85,
+        "elbow": 60,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-e-arm-2",
+      "kind": "robot-arm",
+      "at": [5.75, -11.2],
+      "yaw": -90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-e-arm-3",
+      "kind": "robot-arm",
+      "at": [3.25, -9.2],
+      "yaw": 90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-e-arm-4",
+      "kind": "robot-arm",
+      "at": [5.75, -7.2],
+      "yaw": -90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-e-enc-1",
+      "kind": "enclosure",
+      "at": [4.5, -2.25],
+      "yaw": 0,
+      "params": {
+        "width": 3,
+        "length": 4.5,
+        "height": 3,
+        "material": "metal",
+        "color": "#3b4248",
+        "glow": "line"
+      }
+    },
+    {
+      "id": "line-e-conv-2",
+      "kind": "conveyor",
+      "at": [4.5, 6],
+      "yaw": 0,
+      "params": { "length": 4, "width": 1, "height": 0.9, "color": "#343a40", "glow": "line" }
+    },
+    {
+      "id": "line-e-arm-5",
+      "kind": "robot-arm",
+      "at": [3.25, 4.8],
+      "yaw": 90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-e-arm-6",
+      "kind": "robot-arm",
+      "at": [5.75, 6.8],
+      "yaw": -90,
+      "params": {
+        "reach": 2.6,
+        "shoulder": 80,
+        "elbow": 70,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "line-e-enc-2",
+      "kind": "enclosure",
+      "at": [4.5, 12.25],
+      "yaw": 0,
+      "params": {
+        "width": 3,
+        "length": 4.5,
+        "height": 2.6,
+        "material": "metal",
+        "color": "#3b4248",
+        "glow": "line"
+      }
+    },
+    {
+      "id": "line-e-cab",
+      "kind": "enclosure",
+      "at": [6.5, 12.25],
+      "yaw": 0,
+      "params": {
+        "width": 1,
+        "length": 2,
+        "height": 2.1,
+        "material": "metal",
+        "color": "#262b30",
+        "glow": "line"
+      }
+    },
+    {
+      "id": "line-e-conv-3",
+      "kind": "conveyor",
+      "at": [4.5, 17.75],
+      "yaw": 0,
+      "params": { "length": 2.5, "width": 1, "height": 0.9, "color": "#343a40", "glow": "line" }
+    },
+    {
+      "id": "line-e-arm-7",
+      "kind": "robot-arm",
+      "at": [3.25, 17.5],
+      "yaw": 90,
+      "params": {
+        "reach": 2.9,
+        "shoulder": 85,
+        "elbow": 60,
+        "color": "#1b1e22",
+        "baseColor": "#343a40",
+        "glow": "eye"
+      }
+    },
+    {
+      "id": "west-cab-bank",
+      "kind": "enclosure",
+      "at": [-15.3, 11.6],
+      "yaw": 0,
+      "params": {
+        "width": 1,
+        "length": 8,
+        "height": 2.2,
+        "material": "metal",
+        "color": "#262b30",
+        "glow": "line"
+      }
+    },
+    {
+      "id": "crane-court",
+      "kind": "bridge-crane",
+      "at": [0.0355, -53.29],
+      "yaw": 0,
+      "params": {
+        "span": 29.37,
+        "travel": 10.78,
+        "railHeight": 13.3344,
+        "bridgeAt": 0.2905,
+        "trolleyAt": 0.5346,
+        "hookDrop": 2.5,
+        "color": "#c79a1a",
+        "runwayColor": "#27384a"
+      }
+    },
+    {
+      "id": "crane-fall",
+      "kind": "bridge-crane",
+      "at": [0.0355, -42.555],
+      "yaw": 0,
+      "params": {
+        "span": 29.37,
+        "travel": 10.69,
+        "railHeight": 13.3344,
+        "bridgeAt": 1,
+        "trolleyAt": 0.3911,
+        "hookDrop": 1.2,
+        "color": "#c79a1a",
+        "runwayColor": "#27384a"
+      }
+    },
+    {
+      "id": "crane-apron",
+      "kind": "bridge-crane",
+      "at": [0.0355, -27.145],
+      "yaw": 0,
+      "params": {
+        "span": 29.37,
+        "travel": 20.13,
+        "railHeight": 13.6585,
+        "bridgeAt": 0.6544,
+        "trolleyAt": 0.6423,
+        "hookDrop": 2.5,
+        "color": "#c79a1a",
+        "runwayColor": "#27384a"
+      }
+    },
+    {
+      "id": "crane-lines",
+      "kind": "bridge-crane",
+      "at": [0.0355, -6.345],
+      "yaw": 0,
+      "params": {
+        "span": 29.37,
+        "travel": 21.47,
+        "railHeight": 13.6585,
+        "bridgeAt": 0.9518,
+        "trolleyAt": 0.4987,
+        "hookDrop": 2.5,
+        "color": "#c79a1a",
+        "runwayColor": "#27384a"
+      }
+    },
+    {
+      "id": "jib-east",
+      "kind": "jib-crane",
+      "at": [14.15, 2.6],
+      "yaw": -90,
+      "params": { "height": 6.5, "boom": 7, "color": "#c79a1a" }
+    },
+    {
+      "id": "jib-west",
+      "kind": "jib-crane",
+      "at": [-13.85, 2.2],
+      "yaw": 90,
+      "params": { "height": 5.5, "boom": 6, "color": "#c79a1a" }
+    },
+    {
+      "id": "jib-line-w",
+      "kind": "jib-crane",
+      "at": [-6.45, 6],
+      "yaw": 90,
+      "params": { "height": 4, "boom": 3.5, "color": "#c79a1a" }
+    },
+    {
+      "id": "jib-line-e",
+      "kind": "jib-crane",
+      "at": [6.45, -2.25],
+      "yaw": -90,
+      "params": { "height": 4, "boom": 3.5, "color": "#c79a1a" }
+    },
+    {
+      "id": "jib-yard",
+      "kind": "jib-crane",
+      "at": [-4.5, -49.9],
+      "yaw": -90,
+      "params": { "height": 5, "boom": 6, "color": "#c79a1a" }
+    },
+    {
+      "id": "jib-fall",
+      "kind": "jib-crane",
+      "at": [-7.93, -37.5],
+      "yaw": 90,
+      "params": { "height": 3.8, "boom": 4.5, "color": "#c79a1a" }
+    },
+    {
+      "id": "strip-lip-1",
+      "kind": "light-strip",
+      "at": [-7.6, -29.6],
+      "yaw": 90,
+      "params": { "length": 12, "width": 0.2, "height": 5.6, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-lip-2",
+      "kind": "light-strip",
+      "at": [1.8, -29.6],
+      "yaw": 90,
+      "params": { "length": 6.8, "width": 0.2, "height": 5.6, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-lane",
+      "kind": "light-strip",
+      "at": [-4.6, -39.5],
+      "yaw": 0,
+      "params": { "length": 12, "width": 0.2, "height": 5.6, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-yard-west",
+      "kind": "light-strip",
+      "at": [-7.7, -58],
+      "yaw": 0,
+      "params": { "length": 12, "width": 0.2, "height": 5.6, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-lane-back",
+      "kind": "light-strip",
+      "at": [-9.5, -73],
+      "yaw": 0,
+      "params": { "length": 12, "width": 0.2, "height": 5.6, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-alert-back-w",
+      "kind": "light-strip",
+      "at": [-10.7, -89.75],
+      "yaw": 90,
+      "params": { "length": 5.8, "width": 0.2, "height": 4.6, "color": "#1a1c1f", "glow": "alert" }
+    },
+    {
+      "id": "strip-line-w-1",
+      "kind": "light-strip",
+      "at": [-4.5, -8.5],
+      "yaw": 0,
+      "params": { "length": 11, "width": 0.2, "height": 5.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-line-w-2",
+      "kind": "light-strip",
+      "at": [-4.5, 2.5],
+      "yaw": 0,
+      "params": { "length": 11, "width": 0.2, "height": 5.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-line-w-3",
+      "kind": "light-strip",
+      "at": [-4.5, 13.5],
+      "yaw": 0,
+      "params": { "length": 11, "width": 0.2, "height": 5.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-line-e-1",
+      "kind": "light-strip",
+      "at": [4.5, -8.5],
+      "yaw": 0,
+      "params": { "length": 11, "width": 0.2, "height": 5.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-line-e-2",
+      "kind": "light-strip",
+      "at": [4.5, 2.5],
+      "yaw": 0,
+      "params": { "length": 11, "width": 0.2, "height": 5.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-line-e-3",
+      "kind": "light-strip",
+      "at": [4.5, 13.5],
+      "yaw": 0,
+      "params": { "length": 11, "width": 0.2, "height": 5.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-gate-1",
+      "kind": "light-strip",
+      "at": [0, 30.1],
+      "yaw": 90,
+      "params": { "length": 6, "width": 0.2, "height": 2.9, "color": "#1a1c1f", "glow": "gate" }
+    },
+    {
+      "id": "strip-gate-2",
+      "kind": "light-strip",
+      "at": [0, 30.1],
+      "yaw": 90,
+      "params": { "length": 6, "width": 0.2, "height": 3.7, "color": "#1a1c1f", "glow": "gate" }
+    },
+    {
+      "id": "strip-gate-3",
+      "kind": "light-strip",
+      "at": [0, 30.1],
+      "yaw": 90,
+      "params": { "length": 6, "width": 0.2, "height": 4.5, "color": "#1a1c1f", "glow": "gate" }
+    },
+    {
+      "id": "strip-alert-south-w",
+      "kind": "light-strip",
+      "at": [-10.5, 30],
+      "yaw": 90,
+      "params": { "length": 7, "width": 0.2, "height": 4.8, "color": "#1a1c1f", "glow": "alert" }
+    },
+    {
+      "id": "strip-alert-south-e",
+      "kind": "light-strip",
+      "at": [10.5, 30],
+      "yaw": 90,
+      "params": { "length": 7, "width": 0.2, "height": 4.8, "color": "#1a1c1f", "glow": "alert" }
+    },
+    {
+      "id": "strip-court-1",
+      "kind": "light-strip",
+      "at": [1, -58.5],
+      "yaw": 90,
+      "params": { "length": 8, "width": 0.2, "height": 6.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-court-2",
+      "kind": "light-strip",
+      "at": [1, -53.3],
+      "yaw": 90,
+      "params": { "length": 8, "width": 0.2, "height": 6.5, "color": "#1a1c1f", "glow": "strip" }
+    },
+    {
+      "id": "strip-alert-back-e",
+      "kind": "light-strip",
+      "at": [12.1, -89.75],
+      "yaw": 90,
+      "params": { "length": 5.8, "width": 0.2, "height": 4.8, "color": "#1a1c1f", "glow": "alert" }
+    },
+    {
+      "id": "ramp-stack-1",
+      "kind": "partition",
+      "at": [0, -35],
+      "yaw": 0,
+      "params": {
+        "width": 2.4,
+        "height": 1.2,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "ramp-stack-2",
+      "kind": "partition",
+      "at": [0, -34.4],
+      "yaw": 0,
+      "params": {
+        "width": 2.4,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "strip-alert-back-w-2",
+      "kind": "light-strip",
+      "at": [-10.7, -89.75],
+      "yaw": 90,
+      "params": { "length": 5.8, "width": 0.2, "height": 5.3, "color": "#1a1c1f", "glow": "alert" }
+    },
+    {
+      "id": "east-wall-stack-1",
+      "kind": "partition",
+      "at": [15.8, -70],
+      "yaw": -90,
+      "params": {
+        "width": 4,
+        "height": 1.2,
+        "thickness": 0.6,
+        "material": "metal",
+        "color": "#474c52"
+      }
+    },
+    {
+      "id": "east-wall-crate-1",
+      "kind": "crate",
+      "at": [15.6, -43.2],
+      "yaw": 0,
+      "params": { "size": 1, "color": "#6b5637" }
+    },
+    {
+      "id": "east-wall-crate-2",
+      "kind": "crate",
+      "at": [15.6, -42.2],
+      "yaw": 0,
+      "params": { "size": 1, "color": "#5c4a30" }
+    },
+    {
+      "id": "east-wall-stack-2",
+      "kind": "partition",
+      "at": [15.8, -40.2],
+      "yaw": -90,
+      "params": {
+        "width": 2.4,
+        "height": 1,
+        "thickness": 0.6,
+        "material": "wood",
+        "color": "#6a5637"
+      }
+    },
+    {
+      "id": "line-w-cab",
+      "kind": "enclosure",
+      "at": [-6.5, 7.2],
+      "yaw": 0,
+      "params": {
+        "width": 1,
+        "length": 1.5,
+        "height": 2.1,
+        "material": "metal",
+        "color": "#262b30",
+        "glow": "line"
+      }
+    }
+  ],
   "lighting": {
     "environment": {
-      "intensity": 0.5,
-      "ambient": [0.06, 0.066, 0.08],
-      "overhead": [0.08, 0.086, 0.098]
+      "intensity": 7,
+      "ambient": [0.02, 0.03, 0.045],
+      "overhead": [0.03, 0.045, 0.065]
     },
     "key": {
-      "color": [0.72, 0.82, 1],
-      "intensity": 3,
+      "color": [0.5, 0.72, 1],
+      "intensity": 0.6,
       "direction": [0, 1, 0],
       "shadow": { "mapSize": 4096, "bias": -0.0003, "normalBias": 0.039, "radius": 3 }
     },
     "points": [
       {
-        "position": [9.83, 15.79, 16.73],
-        "color": [0.8, 0.9, 1],
-        "intensity": 395.4,
-        "range": 46.8
+        "position": [1.3, 4.4, -29.6],
+        "color": [0.55, 0.9, 1],
+        "intensity": 12,
+        "range": 8
       },
       {
-        "position": [0.55, 15.79, -10.45],
-        "color": [0.8, 0.9, 1],
-        "intensity": 395.4,
-        "range": 46.8
+        "position": [-4.6, 4.9, -35],
+        "color": [0.85, 0.92, 1],
+        "intensity": 10,
+        "range": 8
       },
       {
-        "position": [-8.77, 15.79, -37.63],
-        "color": [0.8, 0.9, 1],
-        "intensity": 395.4,
-        "range": 46.8
+        "position": [-4, 12, -34],
+        "color": [1, 0.95, 0.85],
+        "intensity": 50,
+        "range": 20
       },
       {
-        "position": [0.55, 15.79, -64.77],
-        "color": [0.8, 0.9, 1],
-        "intensity": 395.4,
-        "range": 46.8
+        "position": [-9, 5.6, -87.6],
+        "color": [1, 0.45, 0.1],
+        "intensity": 45,
+        "range": 10
+      },
+      {
+        "position": [0, 6.3, -9],
+        "color": [0.45, 0.9, 1],
+        "intensity": 44,
+        "range": 12
+      },
+      {
+        "position": [0, 6.3, 2],
+        "color": [0.45, 0.9, 1],
+        "intensity": 44,
+        "range": 12
+      },
+      {
+        "position": [0, 5.2, 27.8],
+        "color": [0.7, 0.95, 1],
+        "intensity": 24,
+        "range": 10
+      },
+      {
+        "position": [1, 7.2, -56],
+        "color": [0.45, 0.9, 1],
+        "intensity": 65,
+        "range": 14
       }
     ],
-    "haze": { "density": 0.00769, "color": [0.006, 0.01, 0.017], "glow": 0.9 },
+    "haze": { "density": 0.012, "color": [0.005, 0.015, 0.022], "glow": 0.4 },
     "exposure": 1
   }
 }

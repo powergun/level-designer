@@ -69,8 +69,17 @@ export const GAME_VALUES = {
       back: [0.05, 0.02, 0.03],
     },
   },
-  /** The player: speeds in m/s, the eye as a share of the body height, the pitch limit in rad. */
-  player: { walkSpeed: 3.5, sprintSpeed: 5.5, eyeRatio: 0.92, maxPitch: 1.55 },
+  /**
+   * The player: speeds in m/s, the eye as a share of the body height, the pitch limit in rad, and
+   * the unit view direction at the start in world axes, which needs no yaw convention to read.
+   */
+  player: {
+    walkSpeed: 3.5,
+    sprintSpeed: 5.5,
+    eyeRatio: 0.92,
+    maxPitch: 1.55,
+    startForward: [0, 0, -1],
+  },
   /** Fixed simulation ticks per second. */
   tickRate: 60,
   /** The renderer start and the page frame, private constants of sec-111's view and page. */

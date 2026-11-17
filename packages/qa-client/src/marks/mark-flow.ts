@@ -36,11 +36,18 @@ const HINT_AT_CAP =
   `The comment has reached its cap of ${MAX_COMMENT} characters; ` +
   "text beyond it was not taken.";
 
-/** Radians to degrees at 0.1, yaw folded into -180 to 180. */
-function degrees(radians: number, fold: boolean): number {
-  let value = (radians * 180) / Math.PI;
-  if (fold) value = ((((value + 180) % 360) + 360) % 360) - 180;
+/** A number at 0.1. */
+function tenths(value: number): number {
   return Math.round(value * 10) / 10;
+}
+
+/**
+ * Radians to degrees at 0.1, a yaw folded into (-180, 180], so a look along -Z reads 180. The
+ * rounding comes first, so a yaw that rounds to 180 is not folded to -180.
+ */
+function degrees(radians: number, fold: boolean): number {
+  const value = tenths((radians * 180) / Math.PI);
+  return fold ? tenths(180 - ((((180 - value) % 360) + 360) % 360)) : value;
 }
 
 /** A point at 1 mm. */

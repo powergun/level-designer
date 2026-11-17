@@ -8,9 +8,8 @@ the pair and the validator's rules. The [build plan](build-plan.md) orders the w
 
 ## Data flow
 
-The authoring source of truth is the committed level description,
-`levels/dark-factory.json`. The level pair is a deterministic build product. Nobody edits
-it, and only the description is committed.
+The authoring source of truth is the committed description, `levels/dark-factory.json`.
+The level pair is a deterministic build product that nobody edits or commits.
 
 One build runs six steps in order:
 
@@ -34,8 +33,7 @@ sec-111 returns it, typed and as its two files. Three consumers read a built lev
 - built level -> `snapshot-render` -> PNG sheets for agents;
 - built level -> `qa-server` -> `qa-client` -> the human's walk-through.
 
-The command-line tool, the QA server and the tests call this one pipeline, so they cannot
-disagree about what a description builds.
+`level-cli`, `qa-server` and the tests call this one pipeline, so they agree on each build.
 
 Preparation sees static geometry only: the base stage and the seals. sec-111 keeps
 deriving interior, floors, collision, spawns and navigation. The level designer reads
@@ -330,9 +328,10 @@ flag `?leak=1` swaps the near-black clear colour for a loud one, so an opening s
 ### Walk and fly
 
 Walk mode moves sec-111's player capsule in its physics world at a fixed 60 Hz tick. It
-starts at the player spawn. Its speeds and eye height are the game's values. The capsule
-meets the prepared body world and every slab's blocker box, so the human walks where the
-player will. The human cannot shoot: the validator proves destructibility.
+starts at the player spawn, facing the game's start direction, toward the back wall;
+`GAME_VALUES` holds that direction. Its speeds and eye height are the game's values. The
+capsule meets the prepared body world and every slab's blocker box, so the human walks
+where the player will. The human cannot shoot: the validator proves destructibility.
 
 Fly mode moves the camera freely with no collision, at 8 m/s, or 24 m/s with `Shift`; `E`
 rises and `Q` sinks. Switching back to walk drops the capsule from the camera onto the
@@ -358,7 +357,7 @@ parses it without a grammar. Each line holds:
 - `run`: the name of the run log, and `mark`: the number within the run;
 - `level` and `description`: the level name and the description hash, against stale marks;
 - `mode`, `eye`, `feet`: `walk` or `fly`; positions in scaled metres, `feet` null in fly;
-- `yaw` and `pitch` in degrees; yaw 0 looks along +Z and grows toward +X;
+- `yaw`, `pitch`: degrees; yaw 0 looks along +Z, grows toward +X and lies in (-180, 180];
 - `comment`: one line of text.
 
 ### Run log
@@ -398,6 +397,8 @@ While the page runs:
 - a mark that is not saved: the comment box stays open with the reason;
 - a page left open across a restart: its mark or log batch fails with `reload the page`,
   also on a blocked build, and the page stops posting and keeps one banner line;
+- a console error: one banner says that programs may have failed and props may be
+  missing, and names the run log;
 - a run log that cannot be written, or any uncaught error or rejection: one banner.
 
 ### Game values copied under the drift test
@@ -410,11 +411,12 @@ computed path, so their types stay out of this repository. It fails on a differe
 - the post configuration `arenaLook(1)`, whose haze and exposure the level overwrites;
 - the player: walk 3.5 m/s, sprint 5.5 m/s, eye ratio 0.92, pitch limit; the 60 Hz tick.
 
-Five values are private constants that no import reaches: the pixel-ratio cap 1.5, the 12
-signature slots, the 1/15 s frame clamp, the two warm-up frames and the clear colour. The
-guard finds each by name in sec-111's source text and compares its value, so a changed or
-renamed constant fails the test. The walk values are copied, not re-exported: arena-sim's
-facade imports siblings that only sec-111's own link map resolves. `PLAYER_BODY` is live.
+Six values are private constants that no import reaches: the pixel-ratio cap 1.5, the 12
+signature slots, the 1/15 s frame clamp, the two warm-up frames, the clear colour and the
+player's start look. The guard finds each by name in sec-111's source text and compares
+its value, or for the start look its relation to the copied start direction, so a change
+or a new name fails the test. The walk values are copied, not re-exported: arena-sim's
+facade imports siblings that only sec-111's link map resolves. `PLAYER_BODY` is live.
 
 ## Snapshots
 
@@ -472,8 +474,7 @@ Accepted limits, each recorded in the knowledge documents by the integrator:
 - The QA app blocks with one box per slab; the game splits the same box per chunk.
 - A switch to walk can land on a top the player cannot reach in the game, and is
   refused within about 0.65 m of the closed end of a narrow corridor.
-- The page captures `console.error` and `console.warn` only; the browser's own console
-  messages, such as WebGPU validation warnings and failed resource loads, go unlogged.
+- The browser's own console messages, such as WebGPU validation warnings, go unlogged.
 - An arm's links hinge on one edge and leave an open wedge at each joint, and a crane's
   hook block hangs free, without a cable.
 - Only the sheets and the human's QA show a prop that enters or floats off the base stage.

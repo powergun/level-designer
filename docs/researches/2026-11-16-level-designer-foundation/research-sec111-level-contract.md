@@ -107,7 +107,8 @@ Frame and shell:
 - Open end: z = 30.32, the full 33.3 x 18.7 section (623 m2). Side walls stop at 30.32,
   trusses at 30.63, sloped panels at 31.44.
 - Side walls: inner face at x -15.86 to -16.39 (-X) and 16.14 to 16.67 (+X), up to y 13.66.
-  Above, sloped panels lean inward from |x| 17.1 at y 12.63 to about |x| 14 at y 18.2.
+  Above, sloped panels lean inward from |x| 15.89 at y 12.63 to |x| 13.86 at y 18.2; in
+  three 2.2 m recesses per side they stand 1.25 further out, from |x| 17.14 to 15.11.
 - Piers: six per side, about 2.9 long in Z, at z [-78.9, -76.0], [-58.8, -56.0],
   [-38.6, -35.8], [-18.6, -15.6], [1.6, 4.4], [21.8, 24.6] (pitch 20.2). Faces at x -14.85
   and +15.12 up to y 10.4; corbels reach x -14.1 and +14.4 from y 10.4 to 13.66. Clear
@@ -128,10 +129,13 @@ Overhead:
 
 Floor-standing blockers (body-world islands; object in brackets):
 
-- -X wall strip: x < -14.6 along the hall, reaching x -9.8 at z [-60, -57] and z [-12, -9]
-  (tanks `factory_tube_16.*`). Pipe columns at x [-14.1, -12.9], z -19.6, -11.9 and 5.3.
-- +X wall strip: x > 14.9 on the front floor (panels `Plane.003`); x > 12.0 from z -89.9
-  to -14.4 (`factory_tube_11.001` at z [-17.5, -14.0]).
+- -X wall strip: x < -16.1 on the slab, with the piers at -14.8 and tubes reaching -13.9
+  and -13.4; x < -14.7 from the ramp to z -2.5 (a row of tubes, `factory_tube_20.001`);
+  x < -16.1 beyond, with the piers at -14.7. Tanks reach x -9.8 at z [-58.4, -55.7] and
+  z [-12.7, -8.7] (`factory_tube_16.*`). Pipe columns at x [-14.1, -12.9], z -19.6, -11.9
+  and 5.3.
+- +X wall strip: x > 16.2 along the hall, with the piers at 15.0 to 15.1, and x > 12.1 at
+  z [-17.2, -14.4] (`factory_tube_11.001`).
 - Slab island A: x [-3.3, 13.5], z [-83.7, -65.0] (tanks, crates `Cube.019`, partitions,
   `factory_tube_03.001`), under the back deck.
 - Slab island B: x [-2.7, 11.9], z [-47.2, -34.3] (crates `Cube.011` to `.017`, partition

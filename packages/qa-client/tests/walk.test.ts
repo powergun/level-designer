@@ -1,6 +1,15 @@
 import { expect, test } from "bun:test";
 import { floorHeightAt, GAME_VALUES, PLAYER_BODY } from "@level-designer/sec111-gateway";
-import { type BootedPage, bootReady, COMMITTED, slabPoint, WALK_SLABS } from "./page-fixture.ts";
+import {
+  type BootedPage,
+  bootReady,
+  COMMITTED,
+  inStartFrame,
+  slabPoint,
+  slabYaw,
+  START_FRAME,
+  WALK_SLABS,
+} from "./page-fixture.ts";
 
 /** The eye above the feet in walk: the game's body height times its eye ratio. */
 const EYE_HEIGHT = PLAYER_BODY.height * GAME_VALUES.player.eyeRatio;
@@ -30,6 +39,28 @@ function hold(page: BootedPage, code: string, seconds: number): void {
   page.window.release(code);
 }
 
+/** How far the eye stands ahead of a world plan point in the start frame. */
+function aheadOf(page: BootedPage, x: number, z: number): number {
+  const [ex, , ez] = eye(page);
+  return inStartFrame(ex, ez).ahead - inStartFrame(x, z).ahead;
+}
+
+/** The key that moves along a world plan direction, from the start frame's axes. */
+function keyToward(dx: number, dz: number): string {
+  const { forward, right } = START_FRAME;
+  const ahead = dx * forward[0] + dz * forward[1];
+  const side = dx * right[0] + dz * right[1];
+  if (Math.abs(ahead) >= Math.abs(side)) return ahead > 0 ? "KeyW" : "KeyS";
+  return side > 0 ? "KeyD" : "KeyA";
+}
+
+/** Fly from the spawn to a world plan point: first ahead or back, then to the side, at 8 m/s. */
+function flyTo(page: BootedPage, x: number, z: number): void {
+  const { ahead, right } = inStartFrame(x, z);
+  hold(page, ahead > 0 ? "KeyW" : "KeyS", Math.abs(ahead) / 8);
+  hold(page, right > 0 ? "KeyD" : "KeyA", Math.abs(right) / 8);
+}
+
 /** The plan distance the eye covers while `code` is held for 1 s. */
 function walked(page: BootedPage, code: string): number {
   const [x, , z] = eye(page);
@@ -41,8 +72,7 @@ function walked(page: BootedPage, code: string): number {
 test("the capsule passes under a hanging slab and stops 0.405 m before the panel's plane", async () => {
   const page = await bootReady();
   hold(page, "KeyW", 3);
-  const [, acrossZ] = slabPoint(WALK_SLABS.across);
-  expect(acrossZ - eye(page)[2]).toBeCloseTo(STOP_DISTANCE, 2);
+  expect(-aheadOf(page, ...slabPoint(WALK_SLABS.across))).toBeCloseTo(STOP_DISTANCE, 2);
 });
 
 test("a strafe slides along a slanted panel 0.405 m from its plane", async () => {
@@ -50,7 +80,7 @@ test("a strafe slides along a slanted panel 0.405 m from its plane", async () =>
   const start = page.view.frames.length;
   hold(page, "KeyD", 2);
   const [cx, cz] = slabPoint(WALK_SLABS.slanted);
-  const yaw = (WALK_SLABS.slanted.yawDeg * Math.PI) / 180;
+  const yaw = slabYaw(WALK_SLABS.slanted);
   // The panel's +Z face normal and its width direction in plan.
   const [nx, nz] = [Math.sin(yaw), Math.cos(yaw)];
   const [tx, tz] = [Math.cos(yaw), -Math.sin(yaw)];
@@ -60,40 +90,32 @@ test("a strafe slides along a slanted panel 0.405 m from its plane", async () =>
     return Math.abs(dx * tx + dz * tz) < reach ? [dx * nx + dz * nz] : [];
   });
   expect(Math.min(...beside)).toBeCloseTo(STOP_DISTANCE, 2);
-  // It slid: the face turned part of the sideways move into +Z.
-  expect(eye(page)[2] - COMMITTED.spawns.player[2]).toBeGreaterThan(0.5);
+  // It slid: the face turned part of the sideways move into a move forward.
+  const [sx, , sz] = COMMITTED.spawns.player;
+  expect(aheadOf(page, sx, sz)).toBeGreaterThan(0.5);
 });
 
 test("fly returns to walk on the floor under the camera, beyond the panel", async () => {
   const page = await bootReady();
-  const [x] = COMMITTED.spawns.player;
-  const [, acrossZ] = slabPoint(WALK_SLABS.across);
   hold(page, "KeyW", 3);
   page.window.press("KeyV");
   expect(page.text("status")).toBe("mode: fly");
   hold(page, "KeyE", 0.5);
   hold(page, "KeyW", 0.75);
   const [flyX, , flyZ] = eye(page);
-  expect(flyZ).toBeGreaterThan(acrossZ + 1);
+  expect(aheadOf(page, ...slabPoint(WALK_SLABS.across))).toBeGreaterThan(1);
   page.window.press("KeyV");
   expect(page.text("status")).toBe("mode: walk");
   page.timers.frames(60);
   const [walkX, walkY, walkZ] = eye(page);
   expect(walkX).toBeCloseTo(flyX, 2);
   expect(walkZ).toBeCloseTo(flyZ, 2);
-  expect(walkY).toBeCloseTo(floorHeightAt(COMMITTED, x, flyZ) + EYE_HEIGHT, 1);
+  expect(walkY).toBeCloseTo(floorHeightAt(COMMITTED, flyX, flyZ) + EYE_HEIGHT, 1);
   expect(walked(page, "KeyW")).toBeGreaterThan(2);
 });
 
 /** A plan point deep inside a 3 m stage obstacle of the committed hall, top at 3.32 m. */
 const OBSTACLE_POINT = [4.5, -38] as const;
-
-/** Fly from the spawn to a plan point: `A` moves along +X and `S` along -Z at yaw 0. */
-function flyTo(page: BootedPage, x: number, z: number): void {
-  const [sx, , sz] = COMMITTED.spawns.player;
-  hold(page, "KeyA", (x - sx) / 8);
-  hold(page, "KeyS", (sz - z) / 8);
-}
 
 test("a switch above a stage obstacle stands the capsule on it, and it walks", async () => {
   const page = await bootReady();
@@ -104,7 +126,7 @@ test("a switch above a stage obstacle stands the capsule on it, and it walks", a
   expect(page.text("status")).toBe("mode: walk");
   page.timers.frames(60);
   expect(eye(page)[1]).toBeGreaterThan(3 + EYE_HEIGHT);
-  expect(walked(page, "KeyD")).toBeGreaterThan(2);
+  expect(walked(page, keyToward(-1, 0))).toBeGreaterThan(2);
 });
 
 test("a switch with the camera inside a stage obstacle keeps fly and says why", async () => {
@@ -122,9 +144,8 @@ test("a switch with the camera inside a stage obstacle keeps fly and says why", 
 
 test("a switch with the camera inside a slab stands the capsule, and it walks out", async () => {
   const page = await bootReady();
-  const [, blockZ] = slabPoint(WALK_SLABS.block);
   page.window.press("KeyV");
-  hold(page, "KeyS", (COMMITTED.spawns.player[2] - blockZ) / 8);
+  flyTo(page, ...slabPoint(WALK_SLABS.block));
   page.window.press("KeyV");
   expect(page.text("status")).toBe("mode: walk");
   expect(walked(page, "KeyS")).toBeGreaterThan(2);
@@ -134,7 +155,7 @@ test("a switch within the capsule radius of the interior's side face keeps fly",
   const page = await bootReady();
   const edge = COMMITTED.metrics.interior.max[0];
   page.window.press("KeyV");
-  hold(page, "KeyA", (edge - 0.13 - COMMITTED.spawns.player[0]) / 8);
+  flyTo(page, edge - 0.13, COMMITTED.spawns.player[2]);
   expect(edge - eye(page)[0]).toBeLessThan(PLAYER_BODY.radius);
   page.window.press("KeyV");
   expect(page.text("status")).toBe(STUCK);
@@ -167,7 +188,8 @@ test("a physics start failure turns walk off, keeps fly and says so", async () =
   page.window.press("KeyV");
   expect(page.text("status")).toBe(message);
   hold(page, "KeyW", 1);
-  expect(eye(page)[2]).toBeGreaterThan(COMMITTED.spawns.player[2] + 7);
+  const [sx, , sz] = COMMITTED.spawns.player;
+  expect(aheadOf(page, sx, sz)).toBeGreaterThan(7);
 });
 
 test("walk sprints at the game's sprint speed, and fly moves at 8 and 24 m/s", async () => {
@@ -186,10 +208,8 @@ test("walk sprints at the game's sprint speed, and fly moves at 8 and 24 m/s", a
 test("a switch in an interior corner, 0.4 m from both side faces, gives walk, and it walks out", async () => {
   const page = await bootReady();
   const { max } = COMMITTED.metrics.interior;
-  const [sx, , sz] = COMMITTED.spawns.player;
   page.window.press("KeyV");
-  hold(page, "KeyA", (max[0] - 0.4 - sx) / 8);
-  hold(page, "KeyW", (max[2] - 0.4 - sz) / 8);
+  flyTo(page, max[0] - 0.4, max[2] - 0.4);
   const [x, , z] = eye(page);
   // A fly frame moves 0.13 m, so the camera lands within a frame of 0.4 m from each face.
   for (const gap of [max[0] - x, max[2] - z]) {
@@ -198,5 +218,22 @@ test("a switch in an interior corner, 0.4 m from both side faces, gives walk, an
   }
   page.window.press("KeyV");
   expect(page.text("status")).toBe("mode: walk");
-  expect(walked(page, "KeyD")).toBeGreaterThan(2);
+  expect(walked(page, keyToward(-1, 0))).toBeGreaterThan(2);
+});
+
+test("the first frame faces as the game's player starts", async () => {
+  const page = await bootReady();
+  page.timers.frames(1);
+  const pose = page.view.frames[0]?.pose;
+  if (pose === undefined) throw new Error("no frame was drawn");
+  const forward = [
+    Math.sin(pose.yaw) * Math.cos(pose.pitch),
+    Math.sin(pose.pitch),
+    Math.cos(pose.yaw) * Math.cos(pose.pitch),
+  ];
+  GAME_VALUES.player.startForward.forEach((value, axis) => {
+    expect(forward[axis]).toBeCloseTo(value, 9);
+  });
+  // Toward -Z, the back wall, as the player sees first in the game.
+  expect(forward[2]).toBeLessThan(0);
 });

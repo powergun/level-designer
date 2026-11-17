@@ -12,9 +12,9 @@ The main entry, `@level-designer/sec111-gateway`, is browser-safe. It offers:
 - from sec-111's physics: `createPhysicsWorld` and the types `PhysicsWorld`,
   `CapsuleBody` and `BlockerSet`;
 - `GAME_VALUES`: the game-owned values a QA page must match: the lens, the post look at
-  scale 1, the player's speeds, eye ratio and pitch limit, the tick rate, and the page
-  constants (pixel-ratio cap, signature slots, frame clamp, warm-up frames, clear
-  colour).
+  scale 1, the player's speeds, eye ratio, pitch limit and start direction, the tick rate,
+  and the page constants (pixel-ratio cap, signature slots, frame clamp, warm-up frames,
+  clear colour).
 
 The stage entry, `@level-designer/sec111-gateway/stage`, runs under Bun. It offers
 `prepareLevel` from sec-111's level preparation and `readBaseStage()`, the bytes of

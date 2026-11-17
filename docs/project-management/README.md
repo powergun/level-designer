@@ -12,8 +12,10 @@ TASK-001.03: DONE: build the rules, the pipeline and the tool until the sealed h
 
 TASK-001.04: DONE: build the QA app
 
-TASK-001.05: PLAN: dress and light the hall in the first art pass
+TASK-001.05: DONE: dress and light the hall in the first art pass
 
 TASK-001.06: PLAN: hand the first pass to the owner for QA
+
+TASK-001.07: WIP: look-dev the dark factory with procedural materials
 
 ## Archived Tasks

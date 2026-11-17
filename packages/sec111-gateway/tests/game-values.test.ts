@@ -7,6 +7,16 @@ import { GAME_VALUES } from "@level-designer/sec111-gateway";
 const SEC111 = join(import.meta.dir, "../../../../sec-111");
 const LOOK_SOURCE = join(SEC111, "engine/view/src/look/look.ts");
 const TUNING_SOURCE = join(SEC111, "games/arena-sim/src/tuning/tuning.ts");
+const ANGLES_SOURCE = join(SEC111, "games/arena-sim/src/space/angles.ts");
+
+/** The private start look of the game's input mapper: its source file and the text of yaw and pitch. */
+const START_LOOK_SOURCE = [
+  "games/arena-ui/src/input/mapper.ts",
+  /private readonly look: \{ yaw: number; pitch: number \} = \{ yaw: ([\d.-]+), pitch: ([\d.-]+) \};/,
+] as const;
+
+/** How far a copied direction may stray from the live relation, by float error alone. */
+const DIRECTION_SLACK = 1e-9;
 
 /** The private page constants: their source file and the text that holds each number. */
 const PAGE_SOURCES = {
@@ -71,8 +81,35 @@ async function liveValues(): Promise<unknown> {
   };
 }
 
+/**
+ * The path of the start direction when it breaks the live relation: a unit vector whose heading,
+ * by sec-111's own `headingOf`, is the mapper's start yaw and whose elevation is its start pitch.
+ * The game stores a yaw, not a direction, so the relation stands in for an equal value.
+ */
+async function startDrift(forward: readonly number[]): Promise<string[]> {
+  const angles: unknown = await import(ANGLES_SOURCE);
+  const headingOf: unknown = Reflect.get(Object(angles), "headingOf");
+  if (typeof headingOf !== "function") throw new Error(`no headingOf in ${ANGLES_SOURCE}`);
+  const [yaw = Number.NaN, pitch = Number.NaN] = matchedNumbers(...START_LOOK_SOURCE);
+  const [x = 0, y = 0, z = 0] = forward;
+  const heading = Number(Reflect.apply(headingOf, undefined, [x, z]));
+  const holds =
+    Math.abs(Math.hypot(x, y, z) - 1) < DIRECTION_SLACK &&
+    Math.abs(heading - yaw) < DIRECTION_SLACK &&
+    Math.abs(Math.asin(y) - pitch) < DIRECTION_SLACK;
+  return holds ? [] : ["$.player.startForward"];
+}
+
+/** Every drift of a copy: each value against its live value, and the start direction's relation. */
+async function drift(copy: {
+  readonly player: { readonly startForward: readonly number[] };
+}): Promise<string[]> {
+  const { startForward, ...player } = copy.player;
+  return [...driftOf({ ...copy, player }, await liveValues()), ...(await startDrift(startForward))];
+}
+
 test("every game value equals sec-111's live value", async () => {
-  expect(driftOf(GAME_VALUES, await liveValues())).toEqual([]);
+  expect(await drift(GAME_VALUES)).toEqual([]);
 });
 
 test("a deliberately changed game value is reported with its path", async () => {
@@ -80,14 +117,15 @@ test("a deliberately changed game value is reported with its path", async () => 
     ...GAME_VALUES,
     lens: { ...GAME_VALUES.lens, fovDeg: 93 },
     look: { ...GAME_VALUES.look, bloomStrength: 0.71 },
-    player: { ...GAME_VALUES.player, walkSpeed: 3.6 },
+    player: { ...GAME_VALUES.player, walkSpeed: 3.6, startForward: [0, 0, 1] },
     page: { ...GAME_VALUES.page, warmUpFrames: 3, clearColor: [0.004, 0.005, 0.008] },
   };
-  expect(driftOf(changed, await liveValues())).toEqual([
+  expect(await drift(changed)).toEqual([
     "$.lens.fovDeg",
     "$.look.bloomStrength",
     "$.player.walkSpeed",
     "$.page.warmUpFrames",
     "$.page.clearColor.2",
+    "$.player.startForward",
   ]);
 });

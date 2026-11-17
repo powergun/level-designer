@@ -32,7 +32,7 @@ test("F3 and M open the comment box with the captured pose", async () => {
     expect(page.document.pointerLockElement).toBeNull();
     expect(page.document.element("mark-text").focused).toBe(true);
     expect(page.document.element("mark-text").maxLength).toBe(MAX_COMMENT);
-    expect(page.text("mark-pose")).toMatch(/^walk eye .+ feet .+ yaw 0 pitch 0$/);
+    expect(page.text("mark-pose")).toMatch(/^walk eye .+ feet .+ yaw 180 pitch 0$/);
   }
 });
 
@@ -48,6 +48,8 @@ test("Enter shows saving mark, then the number and the path, and sends run, pose
   const [body] = page.fake.markBodies();
   expect(body?.run).toBe(FAKE_RUN);
   expect(body?.mode).toBe("walk");
+  // The start look faces -Z: the fold into (-180, 180] records it as 180, as the display shows.
+  expect(body?.yaw).toBe(180);
   expect(body?.feet).not.toBeNull();
   expect(body?.comment).toBe("gap too narrow here");
   const pose = page.view.frames.at(-1)?.pose;
@@ -193,4 +195,23 @@ test("a fly mark sends mode fly with null feet", async () => {
   const [body] = page.fake.markBodies();
   expect(body?.mode).toBe("fly");
   expect(body?.feet).toBeNull();
+});
+
+test("a yaw that rounds to 180 degrees is recorded as 180, never -180", async () => {
+  const page = await bootReady();
+  page.document.element("view").click();
+  page.timers.frames(1);
+  const startYaw = page.view.frames.at(-1)?.pose.yaw ?? 0;
+  // One pixel to the left measures the look's turn per pixel; then turn to 180.04 degrees.
+  page.window.moveMouse(-1, 0);
+  page.timers.frames(1);
+  const perPixel = (page.view.frames.at(-1)?.pose.yaw ?? 0) - startYaw;
+  const target = Math.PI + (0.04 * Math.PI) / 180;
+  page.window.moveMouse((startYaw + perPixel - target) / perPixel, 0);
+  page.timers.frames(1);
+  const yaw = page.view.frames.at(-1)?.pose.yaw ?? 0;
+  expect((yaw * 180) / Math.PI).toBeCloseTo(180.04, 6);
+  mark(page, "corner seam");
+  expect(await outcome(page)).toBe("mark 1 saved to /work/qa/marks.log");
+  expect(page.fake.markBodies()[0]?.yaw).toBe(180);
 });

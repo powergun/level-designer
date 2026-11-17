@@ -186,6 +186,12 @@ no source names a sibling, passes every extra argument through, such as `--port 
 and ends with the server's exit status. Only the human runs it: agents never start the
 server or a browser, and the tests start their own servers on temporary ports.
 
+## Authoring
+
+The art team dresses the hall by editing the level description and running the four tool
+recipes. The [authoring guide](AUTHORING-GUIDE.md) gives the hall in numbers, the placement
+rules in the validator's words, the budgets, the accepted limits and the authoring loop.
+
 ## File locations
 
 - `docs/art-direction/references/` holds the layout and mood reference images.

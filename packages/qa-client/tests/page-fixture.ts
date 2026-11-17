@@ -6,7 +6,7 @@ import {
   type TestPage,
   type TestPageOptions,
 } from "@level-designer/qa-client/testing";
-import { floorHeightAt, type PreparedLevel } from "@level-designer/sec111-gateway";
+import { floorHeightAt, GAME_VALUES, type PreparedLevel } from "@level-designer/sec111-gateway";
 import { readCommittedFiles, readCommittedLevel } from "@level-designer/sec111-gateway/testing";
 import { type LevelFileBytes, ProtocolFake } from "./protocol-fake.ts";
 
@@ -25,21 +25,50 @@ const LIGHTING: Level["lighting"] = {
   exposure: 1,
 };
 
-/** One slab of the walk level: its size, its base centre relative to the spawn, its yaw. */
+/**
+ * The player's frame at the start, in plan: `forward` is the game's start direction and `right`
+ * the quarter turn clockwise seen from above, where `D` strafes. The walk level and the walk
+ * tests use this frame, so they hold whatever way the page starts facing.
+ */
+export const START_FRAME: {
+  readonly forward: readonly [number, number];
+  readonly right: readonly [number, number];
+} = (() => {
+  const [x, , z] = GAME_VALUES.player.startForward;
+  const length = Math.hypot(x, z);
+  return { forward: [x / length, z / length], right: [-z / length, x / length] };
+})();
+
+/** The page's yaw of the start direction, radians: yaw 0 looks along +Z and grows toward +X. */
+const START_YAW = Math.atan2(START_FRAME.forward[0], START_FRAME.forward[1]);
+
+/** How far a world plan point lies ahead of the spawn and to its right, in the start frame. */
+export function inStartFrame(
+  x: number,
+  z: number,
+): { readonly ahead: number; readonly right: number } {
+  const [sx, , sz] = COMMITTED.spawns.player;
+  const [dx, dz] = [x - sx, z - sz];
+  const { forward, right } = START_FRAME;
+  return { ahead: dx * forward[0] + dz * forward[1], right: dx * right[0] + dz * right[1] };
+}
+
+/** One slab of the walk level: its size, its base centre in the start frame, its yaw there. */
 interface SlabPlan {
   readonly size: readonly [number, number, number];
-  /** Plan offset from the player spawn, and the base's height above the floor there. */
+  /** Offset from the player spawn to the right and ahead, and the base's height above the floor. */
   readonly offset: readonly [number, number, number];
+  /** The yaw from the start facing, degrees. */
   readonly yawDeg: number;
 }
 
 /**
- * The walk level's slabs, in level order, relative to the player spawn (yaw 0 looks along +Z):
+ * The walk level's slabs, in level order, in the player's start frame:
  *
- * - `across`: a 4 x 2 x 0.05 m panel 3 m ahead, which stops a walk along +Z;
+ * - `across`: a 4 x 2 x 0.05 m panel 3 m ahead, which stops a walk forward;
  * - `overhead`: a panel 1 m ahead whose underside hangs at 2.3 m, which a walk passes under;
  * - `block`: a 2 x 2 x 1 m block 5 m behind, for a camera inside a slab;
- * - `slanted`: a panel at a yaw of 37 degrees to the -X side, which a strafe slides along.
+ * - `slanted`: a panel at a yaw of 37 degrees to the right, which a strafe slides along.
  *
  * The slanted panel comes last, so a level whose slabs shared one blocker id would keep only it.
  */
@@ -47,20 +76,27 @@ export const WALK_SLABS = {
   across: { size: [4, 2, 0.05], offset: [0, 3, 0], yawDeg: 0 },
   overhead: { size: [4, 1, 0.05], offset: [0, 1, 2.3], yawDeg: 0 },
   block: { size: [2, 2, 1], offset: [0, -5, 0], yawDeg: 0 },
-  slanted: { size: [4, 2, 0.05], offset: [-1.6, -1, 0], yawDeg: 37 },
+  slanted: { size: [4, 2, 0.05], offset: [1.6, -1, 0], yawDeg: 37 },
 } as const satisfies Record<string, SlabPlan>;
 
 /** The world plan point of a slab's base centre. */
 export function slabPoint(plan: SlabPlan): readonly [number, number] {
   const [x, , z] = COMMITTED.spawns.player;
-  return [x + plan.offset[0], z + plan.offset[1]];
+  const [right, ahead] = plan.offset;
+  const { forward, right: side } = START_FRAME;
+  return [x + right * side[0] + ahead * forward[0], z + right * side[1] + ahead * forward[1]];
+}
+
+/** A slab's world yaw in the page convention, radians: its yaw from the start facing, turned. */
+export function slabYaw(plan: SlabPlan): number {
+  return START_YAW + (plan.yawDeg * Math.PI) / 180;
 }
 
 /** One slab of the plan, standing on the committed floor under its point. */
 function slabOf(plan: SlabPlan): LevelProp["slabs"][number] {
   const [x, z] = slabPoint(plan);
   const y = floorHeightAt(COMMITTED, x, z) + plan.offset[2];
-  const half = (plan.yawDeg * Math.PI) / 360;
+  const half = slabYaw(plan) / 2;
   return {
     size: plan.size,
     material: "concrete",

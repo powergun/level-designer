@@ -15,6 +15,9 @@
     "packages/destruction-gateway": {
       "name": "@level-designer/destruction-gateway",
     },
+    "packages/finish-paint": {
+      "name": "@level-designer/finish-paint",
+    },
     "packages/level-format": {
       "name": "@level-designer/level-format",
     },
@@ -132,6 +135,8 @@
     "@emnapi/wasi-threads": ["@emnapi/wasi-threads@1.2.2", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-c95qOXkHdydNKhscBTebqEC1CVAZpyqOfVfBzQ1qgzyl3gfeldUjIggDbIZgDKsHLgnsM+igH7TJ/eAasaVuMA=="],
 
     "@level-designer/destruction-gateway": ["@level-designer/destruction-gateway@workspace:packages/destruction-gateway"],
+
+    "@level-designer/finish-paint": ["@level-designer/finish-paint@workspace:packages/finish-paint"],
 
     "@level-designer/level-cli": ["@level-designer/level-cli@workspace:tools/level-cli"],
 

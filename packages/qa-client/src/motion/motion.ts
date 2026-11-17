@@ -11,6 +11,17 @@ const FLY_SPRINT_SPEED = 24;
 /** Look sensitivity, radians per mouse pixel: the QA page's own value. */
 const LOOK_SENSITIVITY = 0.0022;
 
+/**
+ * The page's yaw and pitch of a unit view direction in world axes: the one conversion into the
+ * page convention, where yaw 0 looks along +Z and grows toward +X, and pitch is positive up.
+ */
+function lookOf([x, y, z]: Vec3): { readonly yaw: number; readonly pitch: number } {
+  return { yaw: Math.atan2(x, z), pitch: Math.asin(y) };
+}
+
+/** The look at the start: the game's start direction, so the first frame is the player's first. */
+const START_LOOK = lookOf(GAME_VALUES.player.startForward);
+
 /** The pose of the moment: mode, eye, feet (null in fly), yaw and pitch in radians. */
 export interface MotionPose {
   readonly mode: MoveMode;
@@ -27,12 +38,13 @@ export interface MotionPose {
 export type Switch = "walk" | "fly" | "outside" | "stuck" | "walk-off";
 
 /**
- * Walk and fly from the held keys and the mouse. Yaw 0 looks along +Z and grows toward +X;
- * pitch is positive up. Without a walker (the physics failed to start) the page only flies.
+ * Walk and fly from the held keys and the mouse, starting in the game's start look. Yaw 0 looks
+ * along +Z and grows toward +X; pitch is positive up. Without a walker (the physics failed to
+ * start) the page only flies.
  */
 export class Motion {
-  private yaw = 0;
-  private pitch = 0;
+  private yaw: number = START_LOOK.yaw;
+  private pitch: number = START_LOOK.pitch;
   private flying: boolean;
   private flyEye: Vec3;
 

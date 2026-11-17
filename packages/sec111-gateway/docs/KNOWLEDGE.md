@@ -48,7 +48,9 @@ six destructible walls, not a level of this repository.
 
 - the lens: 92 degrees, 0.05 m, 160 m;
 - the post look `arenaLook(1)`;
-- the player: walk 3.5 m/s, sprint 5.5 m/s, eye ratio 0.92, pitch limit 1.55 rad;
+- the player: walk 3.5 m/s, sprint 5.5 m/s, eye ratio 0.92, pitch limit 1.55 rad, and the
+  start direction `[0, 0, -1]`, the unit view direction at the start in world axes: toward
+  -Z, the back wall;
 - the 60 Hz tick;
 - the page constants: pixel-ratio cap 1.5, 12 signature slots, the frame clamp of
   1/15 s (stored as the rate 15), 2 warm-up frames and the clear colour
@@ -58,6 +60,12 @@ The drift test guards every value. It imports sec-111's look and tuning sources 
 computed path, so their types never enter this repository's programs. The page
 constants are private to sec-111's sources, so the test reads each one with a text
 match in its source file, and fails when the text is gone.
+
+The start direction is pinned by a relation, because the game stores a yaw and a pitch: the
+test reads the input mapper's start look by text and asserts that the copied unit vector has
+that heading under sec-111's own `headingOf`, and that pitch as its elevation. It cannot see an
+X-mirrored convention, the camera's own convention, or a second place in sec-111 that sets the
+look.
 
 ## When sec-111 changes
 
@@ -80,8 +88,8 @@ sec-111's working tree is live input, committed or not:
   4 x 2 x 0.05 m panel stops on its near side, and walks through after the panel's
   removal.
 - The drift test: every game value equals sec-111's live value, and a deliberately
-  changed value of each group (lens, post look, player, page constant) is reported with
-  its path.
+  changed value of each group (lens, post look, player, start direction, page constant)
+  is reported with its path.
 - The bundle test: the main entry's page bundle holds one Rapier copy and none of the
   level preparation.
 

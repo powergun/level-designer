@@ -51,3 +51,46 @@ Rules:
 (2026-11-16 14:44:10)
 Planned. The authoring guide starts when the seed description of milestone 3 builds;
 the dressing passes follow.
+
+(2026-11-17 14:54:53)
+Milestone 4 passed the owner's QA and the owner started this subtask. Status WIP. The
+integrator writes the authoring guide while the art author studies the references and
+drafts the layout concept. Remaining: subtasks 5.1 to 5.5, the acceptance review and the
+owner's QA.
+
+(2026-11-17 16:14:56)
+Subtask 5.1 is done: the authoring guide passed its review, and its measurements corrected
+three hall numbers in the research report. Pass 5.2, storage and cover, is in the
+committed description and passed its art review. The owner approved one component change
+inside this subtask: the QA page now starts facing as the game does, toward the back
+wall; it is built and reviewed. The owner also ruled that the storage yard stays the
+opening view, with lighting to carry it. Remaining: passes 5.3 to 5.5, the acceptance
+review and the owner's QA.
+
+(2026-11-17 19:09:02)
+Passes 5.3 to 5.5 are in the committed description and passed their art reviews: two
+assembly lines, four bridge cranes, six jib cranes, the light strips, and the look and
+lighting. The validator accepts 127 props and 608 slabs with no finding; the root gates
+pass with a test recipe of 8.3 s. The owner saw the work in progress and asked for dimmer
+light tubes; pass 5.5 answers it with every glow under the renderer's bloom threshold.
+Pass 5.5 departs from the build plan's wording in two places. The environment is high,
+not low: a panel layer of the truss mesh shadows the vertical key on nine tenths of the
+floor, so the environment lights the hall. Four point lights hang above their strips, to
+stay clear of glints. No agent has seen the lighting; its values are computed from the
+renderer's source. Status stays WIP. Remaining: the acceptance re-review and the owner's
+QA.
+
+(2026-11-17 19:18:10)
+An acceptance review found the task complete: every outcome and rule holds on the tree,
+and every review finding traces to its fix. The authoring guide now also holds what the
+lighting pass learned: how the hall is lit, the measured brightness of its surfaces, the
+bloom threshold and the tuning handles. The root gates pass on Windows: 582 tests, a test
+recipe of 8.3 s and a clean lint. No agent launched the server or a browser, so the first
+look at the lighting and at the new start facing is the owner's. Status stays WIP.
+Remaining: the owner's QA on Windows and on macOS, then the owner's approval.
+
+(2026-11-17 19:46:54)
+The owner's QA passed: the mood aligns with the art direction. The owner approved in
+writing marking this subtask DONE. The owner also found that the dressed objects carry no
+procedural materials; that look development is part of the delivery and is TASK-001.07.
+Status DONE. Remaining: none.
