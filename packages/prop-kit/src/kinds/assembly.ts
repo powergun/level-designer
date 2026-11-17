@@ -1,4 +1,4 @@
-import { COLOR, glow, material, range } from "../admit/index.js";
+import { color, glow, material, range } from "../admit/index.js";
 import {
   CONCRETE_PANEL,
   CONVEYOR_STRIP_HEIGHT,
@@ -22,7 +22,7 @@ export const CONVEYOR: Kind = defineKind(
     length: range(1, 12),
     width: range(0.6, 1.6, 0.8),
     height: range(0.6, 1.2, 0.9),
-    color: COLOR,
+    color: color(true),
     glow: glow(false),
   },
   (p) => {
@@ -34,13 +34,14 @@ export const CONVEYOR: Kind = defineKind(
       panel: PANEL,
       eave: GLOW_DEPTH,
       material: "metal",
+      color: p.color,
     };
     const deckUnderside = p.height - PANEL;
     const strips =
       p.glow === undefined
         ? []
         : glowPair(shell, [deckUnderside - CONVEYOR_STRIP_HEIGHT, deckUnderside], p.glow);
-    return { color: p.color, roles: [...hollowBox(shell, false), ...strips] };
+    return [...hollowBox(shell, false), ...strips];
   },
 );
 
@@ -55,15 +56,23 @@ export const ENCLOSURE: Kind = defineKind(
     length: range(1, 8),
     height: range(1.5, 3.5, 2.4),
     material: material(["metal", "concrete"], "metal"),
-    color: COLOR,
+    color: color(true),
     glow: glow(false),
   },
   (p) => {
     const panel = p.material === "concrete" ? CONCRETE_PANEL : PANEL;
     const { width, length, height } = p;
-    const shell: Shell = { width, length, height, panel, eave: GLOW_DEPTH, material: p.material };
+    const shell: Shell = {
+      width,
+      length,
+      height,
+      panel,
+      eave: GLOW_DEPTH,
+      material: p.material,
+      color: p.color,
+    };
     const band = [ENCLOSURE_BAND_BASE, ENCLOSURE_BAND_BASE + ENCLOSURE_BAND_HEIGHT] as const;
     const bands = p.glow === undefined ? [] : glowPair(shell, band, p.glow);
-    return { color: p.color, roles: [...hollowBox(shell, true), ...bands] };
+    return [...hollowBox(shell, true), ...bands];
   },
 );

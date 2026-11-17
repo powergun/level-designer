@@ -1,97 +1,31 @@
 import { describe, expect, test } from "bun:test";
 import { slabBox } from "@level-designer/level-format";
-import type { Quaternion, Slab, SlabMaterial, Vec3 } from "@level-designer/level-format";
-import type { PropSlab } from "@level-designer/prop-kit";
+import type { Quaternion, SlabMaterial, Vec3 } from "@level-designer/level-format";
 import { expanded } from "./fixtures.ts";
 import type { Params, TestSite } from "./fixtures.ts";
+import { expectAxes, expectStated, expectVector } from "./stated.ts";
+import type { Axes, Stated } from "./stated.ts";
 
-/** The facing names of the kind tables. */
-type Facing = "+Z" | "+X" | "-Z" | "-X" | "up" | "down";
-
-/** Each facing's slab +X, +Y and +Z directions in the prop frame, as the kind tables state them. */
-const FACING_AXES: Readonly<Record<Facing, readonly [Vec3, Vec3, Vec3]>> = {
-  "+Z": [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-  ],
-  "+X": [
-    [0, 0, -1],
-    [0, 1, 0],
-    [1, 0, 0],
-  ],
-  "-Z": [
-    [-1, 0, 0],
-    [0, 1, 0],
-    [0, 0, -1],
-  ],
-  "-X": [
-    [0, 0, 1],
-    [0, 1, 0],
-    [-1, 0, 0],
-  ],
-  up: [
-    [-1, 0, 0],
-    [0, 0, 1],
-    [0, 1, 0],
-  ],
-  down: [
-    [1, 0, 0],
-    [0, 0, 1],
-    [0, -1, 0],
-  ],
-};
-
-/** One slab as the kind tables state it in the prop frame. */
-interface Stated {
-  readonly facing: Facing;
-  readonly size: Vec3;
-  readonly base: Vec3;
-  readonly glow?: string;
-}
-
-/** Asserts that two vectors agree to 1e-9. */
-function expectVector(actual: Vec3, expected: Vec3): void {
-  expected.forEach((value, axis) => expect(actual[axis]).toBeCloseTo(value, 9));
-}
-
-/** Asserts that the slab turns its three axes as the facing states. */
-function expectAxes(slab: Slab, axes: readonly [Vec3, Vec3, Vec3]): void {
-  slabBox(slab).axes.forEach((axis, i) => expectVector(axis, axes[i] ?? [0, 0, 0]));
-}
-
-/** Asserts that the prop at the origin expands to exactly the stated slabs, in order. */
-function expectStated(
-  slabs: readonly PropSlab[],
-  stated: readonly Stated[],
-  look: { readonly material: SlabMaterial; readonly color: string },
-): void {
-  expect(slabs.length).toBe(stated.length);
-  stated.forEach((want, k) => {
-    const got = slabs[k];
-    expect(got).toBeDefined();
-    if (got === undefined) {
-      return;
-    }
-    expectVector(got.slab.size, want.size);
-    expectVector(got.slab.position, want.base);
-    expectAxes(got.slab, FACING_AXES[want.facing]);
-    expect(got.slab.color).toBe(look.color);
-    expect(got.slab.material).toBe(want.glow === undefined ? look.material : "metal");
-    expect(got.glow).toBe(want.glow);
-  });
-}
-
-/** A test case: a prop, its look and its stated slabs at the origin. */
+/** A test case: a prop, its look, its stated slabs at the origin and, when they are a prefix, its count. */
 interface Case {
   readonly name: string;
   readonly kind: string;
   readonly params: Params;
   readonly material: SlabMaterial;
   readonly stated: readonly Stated[];
+  readonly count?: number;
 }
 
 const DARK = "#3b4046";
+const STEEL = "#8a9099";
+const RUST = "#7a4a2a";
+
+/** The axes of a level link: its width up, its height along +Z and its +Z face to +X. */
+const LEVEL: Axes = [
+  [0, 1, 0],
+  [0, 0, 1],
+  [1, 0, 0],
+];
 
 const CASES: readonly Case[] = [
   {
@@ -226,13 +160,73 @@ const CASES: readonly Case[] = [
     material: "metal",
     stated: [{ facing: "down", size: [0.6, 12, 0.08], base: [0, 17.04, -6], glow: "amber" }],
   },
+  {
+    name: "a robot arm of reach 2 with an upright upper arm and a level forearm, glow and base colour",
+    kind: "robot-arm",
+    params: { reach: 2, shoulder: 90, elbow: 90, color: DARK, baseColor: STEEL, glow: "cyan" },
+    material: "metal",
+    stated: [
+      { facing: "up", size: [0.4, 0.8, 0.05], base: [0, 0.875, -0.4], color: STEEL },
+      { facing: "+X", size: [0.8, 0.85, 0.05], base: [0.175, 0, 0], color: STEEL },
+      { facing: "-X", size: [0.8, 0.85, 0.05], base: [-0.175, 0, 0], color: STEEL },
+      { facing: "+Z", size: [0.3, 0.85, 0.05], base: [0, 0, 0.375], color: STEEL },
+      { facing: "-Z", size: [0.3, 0.85, 0.05], base: [0, 0, -0.375], color: STEEL },
+      { facing: "+X", size: [0.6, 0.4, 0.4], base: [0, 0.9, 0] },
+      { facing: "+X", size: [0.3, 0.9, 0.4], base: [0, 1.3, -0.05] },
+      { facing: LEVEL, size: [0.25, 0.8, 0.4], base: [0, 2.325, 0.1] },
+      { facing: LEVEL, size: [0.35, 0.3, 0.4], base: [0, 2.325, 0.9] },
+      { facing: LEVEL, size: [0.1, 0.18, 0.03], base: [0.215, 2.325, 0.96], glow: "cyan" },
+    ],
+  },
+  {
+    name: "a default bridge crane on span 10, travel 10 and rail height 6 with a runway colour",
+    kind: "bridge-crane",
+    params: { span: 10, travel: 10, railHeight: 6, color: DARK, runwayColor: RUST },
+    material: "metal",
+    stated: [
+      { facing: "-X", size: [10, 0.5, 0.05], base: [5, 6.05, 0], color: RUST },
+      { facing: "down", size: [0.3, 10, 0.05], base: [5, 6.025, -5], color: RUST },
+      { facing: "+X", size: [10, 0.5, 0.05], base: [-5, 6.05, 0], color: RUST },
+      { facing: "down", size: [0.3, 10, 0.05], base: [-5, 6.025, -5], color: RUST },
+      { facing: "-X", size: [3, 0.4, 0.3], base: [5, 6.55, 0] },
+      { facing: "+X", size: [3, 0.4, 0.3], base: [-5, 6.55, 0] },
+      { facing: "+Z", size: [9.7, 0.6, 0.05], base: [0, 6.6, 0.75] },
+      { facing: "down", size: [9.7, 0.3, 0.05], base: [0, 6.575, 0.6] },
+      { facing: "-Z", size: [9.7, 0.6, 0.05], base: [0, 6.6, -0.75] },
+      { facing: "down", size: [9.7, 0.3, 0.05], base: [0, 6.575, -0.9] },
+      { facing: "up", size: [1.2, 1.55, 0.05], base: [0, 7.675, -0.775] },
+      { facing: "+X", size: [1.55, 0.45, 0.05], base: [0.575, 7.2, 0] },
+      { facing: "-X", size: [1.55, 0.45, 0.05], base: [-0.575, 7.2, 0] },
+      { facing: "+Z", size: [1.1, 0.45, 0.05], base: [0, 7.2, 0.75] },
+      { facing: "-Z", size: [1.1, 0.45, 0.05], base: [0, 7.2, -0.75] },
+      { facing: "+Z", size: [0.4, 0.5, 0.3], base: [0, 4, 0] },
+    ],
+  },
+  {
+    name: "a default jib crane up to its boom; the tie and hoist have their own test",
+    kind: "jib-crane",
+    params: { color: DARK },
+    count: 9,
+    material: "metal",
+    stated: [
+      { facing: "up", size: [0.8, 0.8, 0.6], base: [0, 0.3, -0.4] },
+      { facing: "+X", size: [0.5, 5.8, 0.05], base: [0.225, 0.6, 0] },
+      { facing: "-X", size: [0.5, 5.8, 0.05], base: [-0.225, 0.6, 0] },
+      { facing: "+Z", size: [0.4, 5.8, 0.05], base: [0, 0.6, 0.225] },
+      { facing: "-Z", size: [0.4, 5.8, 0.05], base: [0, 0.6, -0.225] },
+      { facing: "+X", size: [3.75, 0.4, 0.05], base: [0, 5.05, 2.125] },
+      { facing: "down", size: [0.3, 3.75, 0.05], base: [0, 5.025, 0.25] },
+    ],
+  },
 ];
 
 describe("each kind expands to its stated slabs in slab order", () => {
   for (const c of CASES) {
     test(c.name, () => {
       const look = { material: c.material, color: String(c.params.color) };
-      expectStated(expanded(c.kind, c.params), c.stated, look);
+      const slabs = expanded(c.kind, c.params);
+      expect(slabs.length).toBe(c.count ?? c.stated.length);
+      expectStated(slabs.slice(0, c.stated.length), c.stated, look);
     });
   }
 });
@@ -272,5 +266,42 @@ describe("placement", () => {
     if (wall !== undefined) {
       expectVector(slabBox(wall.slab).axes[2], [1, 0, 0]);
     }
+  });
+});
+
+describe("pitched slabs", () => {
+  test("an upper arm at shoulder 60 rises toward +Z from its hinge on the shoulder top", () => {
+    const [sin, cos] = [Math.sqrt(3) / 2, 0.5];
+    const upper = expanded("robot-arm", { reach: 2, shoulder: 60, elbow: 120, color: DARK })[6];
+    expect(upper).toBeDefined();
+    if (upper !== undefined) {
+      expectAxes(upper.slab, [
+        [0, cos, -sin],
+        [0, sin, cos],
+        [1, 0, 0],
+      ]);
+      expectVector(upper.slab.position, [0, 1.3 + 0.15 * cos, 0.1 - 0.15 * sin]);
+    }
+  });
+
+  test("a jib tie touches the mast face and the web top each along one edge, 0.1 m wide", () => {
+    const slabs = expanded("jib-crane", { height: 5, boom: 4, color: DARK });
+    expect(slabs.length).toBe(9);
+    const tie = slabs[7]?.slab;
+    const hoist = slabs[8]?.slab;
+    expect(tie).toBeDefined();
+    if (tie === undefined || hoist === undefined) {
+      return;
+    }
+    const corners = slabBox(tie).corners;
+    const touches = (z: number, y: number): number =>
+      corners.filter((c) => Math.abs(c[2] - z) < 1e-9 && Math.abs(c[1] - y) < 1e-9).length;
+    expect(touches(0.25, 6.25)).toBe(2);
+    expect(touches(2.875, 5.45)).toBe(2);
+    expect(tie.size[0]).toBeCloseTo(0.1, 9);
+    expect(Math.min(...corners.map((c) => c[2]))).toBeCloseTo(0.25, 9);
+    expect(Math.min(...corners.map((c) => c[1]))).toBeCloseTo(5.45, 9);
+    expectVector(hoist.size, [0.4, 0.4, 0.3]);
+    expectVector(hoist.position, [0, 4.6, 3.7]);
   });
 });

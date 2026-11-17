@@ -23,3 +23,23 @@ export function unknownKind(propPath: string, kind: string, kinds: readonly stri
     message: `${path}: unknown kind ${describeValue(kind)}; the kinds are ${listed(kinds, "and")}`,
   };
 }
+
+/** One refused parameter: its name, the range or type it takes, and the value it got. */
+export interface ParamRefusal {
+  readonly name: string;
+  readonly takes: string;
+  readonly got: unknown;
+}
+
+/**
+ * The `param` problem of a refused parameter under `paramsPath`, such as `props[3].params`:
+ * `<path>: <kind> takes <range or type>, got <value>`.
+ */
+export function paramProblem(paramsPath: string, kind: string, refusal: ParamRefusal): PropProblem {
+  const path = keyPath(paramsPath, refusal.name);
+  return {
+    rule: "param",
+    path,
+    message: `${path}: ${kind} takes ${refusal.takes}, got ${describeValue(refusal.got)}`,
+  };
+}

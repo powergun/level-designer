@@ -36,9 +36,11 @@ declarations. They are the only package entries that use Node file access.
 `readBaseStage` reads the stage file at the path sec-111's level preparation names, so
 sec-111 stays the one owner of where the file lives.
 
-The testing entry re-exports sec-111's own `readCommittedLevel`, unchanged. The committed
-prepared level is sec-111's base stage with sec-111's own six destructible walls, not a
-level of this repository.
+The testing entry re-exports sec-111's own `readCommittedLevel` and `readCommittedFiles`,
+unchanged. The first returns the committed prepared level decoded; the second returns its
+two files, the document text and the navmesh bytes, for tests that serve or decode the
+files themselves. The committed prepared level is sec-111's base stage with sec-111's own
+six destructible walls, not a level of this repository.
 
 ## Game values
 
@@ -49,7 +51,8 @@ level of this repository.
 - the player: walk 3.5 m/s, sprint 5.5 m/s, eye ratio 0.92, pitch limit 1.55 rad;
 - the 60 Hz tick;
 - the page constants: pixel-ratio cap 1.5, 12 signature slots, the frame clamp of
-  1/15 s (stored as the rate 15) and 2 warm-up frames.
+  1/15 s (stored as the rate 15), 2 warm-up frames and the clear colour
+  (0.004, 0.005, 0.007) in linear RGB.
 
 The drift test guards every value. It imports sec-111's look and tuning sources by a
 computed path, so their types never enter this repository's programs. The page
@@ -72,7 +75,8 @@ sec-111's working tree is live input, committed or not:
 ## What the tests prove
 
 - The wiring test: the stage entry reads a GLB, and the testing entry a decoded level
-  with minion spawns. On that level, the player capsule walking toward an installed
+  with minion spawns and the two files that decode to one through the main entry. On
+  that level, the player capsule walking toward an installed
   4 x 2 x 0.05 m panel stops on its near side, and walks through after the panel's
   removal.
 - The drift test: every game value equals sec-111's live value, and a deliberately

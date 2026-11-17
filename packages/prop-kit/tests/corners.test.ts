@@ -1,30 +1,15 @@
 import { describe, expect, test } from "bun:test";
-import { admitSlabs, roundSlab, slabBox } from "@level-designer/level-format";
-import type { Slab } from "@level-designer/level-format";
+import { slabBox } from "@level-designer/level-format";
 import type { PropSlab } from "@level-designer/prop-kit";
-import { expanded, ODD_SITE, ORIGIN } from "./fixtures.ts";
+import { expectSound, grid, localNormal, localOffset } from "./checks.ts";
+import { ODD_SITE, ORIGIN } from "./fixtures.ts";
 import type { Params, TestSite } from "./fixtures.ts";
-import { deepestEntry, lowestPoint } from "./geometry.ts";
-
-/** The contact the `overlap` rule lets through, in metres. */
-const CONTACT = 0.001;
 
 /** One corner or threshold of a kind with the slab count the format and the kind table state. */
 interface Corner {
   readonly kind: string;
   readonly params: Params;
   readonly count: number;
-}
-
-const COLOR = "#3b4046";
-
-/** Every combination of the listed values, one params record per combination. */
-function grid(axes: Readonly<Record<string, readonly unknown[]>>): Params[] {
-  return Object.entries(axes).reduce<Params[]>(
-    (combos, [name, values]) =>
-      combos.flatMap((combo) => values.map((value) => ({ ...combo, [name]: value }))),
-    [{}],
-  );
 }
 
 /** Conveyor corners: 3 slabs, 5 with a glow. */
@@ -119,38 +104,22 @@ const LIGHT_STRIPS: readonly Corner[] = grid({
   glow: ["cyan"],
 }).map((p) => ({ kind: "light-strip", params: p, count: 1 }));
 
-/** The slabs of a corner on a site, rounded to the format's grid as the pipeline rounds them. */
-function roundedSlabs(corner: Corner, site: TestSite): Slab[] {
-  return expanded(corner.kind, { ...corner.params, color: COLOR }, site).map((s) =>
-    roundSlab(s.slab),
-  );
-}
-
-/** The world-frame offset of a point from the prop's vertical centre axis through `at`, turned back into the prop frame. */
-function localOffset(point: readonly number[], site: TestSite): readonly [number, number] {
-  const angle = (site.yaw * Math.PI) / 180;
-  const [dx, dz] = [(point[0] ?? 0) - site.at[0], (point[2] ?? 0) - site.at[1]];
-  return [dx * Math.cos(angle) - dz * Math.sin(angle), dx * Math.sin(angle) + dz * Math.cos(angle)];
-}
-
 /**
  * Whether the slab's +Z face looks outward by the format's meaning: a top faces up, a hanging
  * slab down, a partition along local +Z, and any other panel away from the centre axis.
  */
 function looksOutward(kind: string, slab: PropSlab, site: TestSite): boolean {
-  const box = slabBox(slab.slab);
-  const [nx, ny, nz] = box.axes[2];
+  const [lx, ny, lz] = localNormal(slab.slab, site);
   if (kind === "light-strip") {
     return ny < -0.999999;
   }
-  const [lx, lz] = localOffset([nx + site.at[0], 0, nz + site.at[1]], site);
   if (kind === "partition") {
     return lz > 0.999999;
   }
   if (Math.abs(ny) > 0.999999) {
     return ny > 0;
   }
-  const [ox, oz] = localOffset(box.center, site);
+  const [ox, oz] = localOffset(slabBox(slab.slab).center, site);
   return lx * ox + lz * oz > 1e-6;
 }
 
@@ -164,19 +133,14 @@ const ALL: readonly Corner[] = [
   ...LIGHT_STRIPS,
 ];
 
-describe("every kind at every corner and split threshold", () => {
+describe("every box kind at every corner and split threshold", () => {
   for (const corner of ALL) {
     const name = `${corner.kind} ${JSON.stringify(corner.params)}`;
     test(name, () => {
       for (const site of [ORIGIN, ODD_SITE]) {
-        const slabs = expanded(corner.kind, { ...corner.params, color: COLOR }, site);
-        expect(slabs.length).toBe(corner.count);
-        const rounded = roundedSlabs(corner, site);
-        expect(admitSlabs([{ id: "p", slabs: rounded }])).toEqual([]);
-        expect(deepestEntry(rounded)).toBeLessThanOrEqual(CONTACT);
+        const low = corner.kind === "light-strip" ? Number(corner.params.height) : 0;
+        const slabs = expectSound(corner.kind, corner.params, site, { count: corner.count, low });
         expect(slabs.every((slab) => looksOutward(corner.kind, slab, site))).toBe(true);
-        const hang = corner.kind === "light-strip" ? Number(corner.params.height) : 0;
-        expect(lowestPoint(slabs.map((s) => s.slab))).toBeCloseTo(site.floor + hang, 9);
       }
     });
   }

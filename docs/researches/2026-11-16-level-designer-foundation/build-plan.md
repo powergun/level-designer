@@ -10,14 +10,15 @@ document of this directory. Shapes, rules and messages come from the
 - Everyone works in one tree. An engineer edits only their own component. The integrator
   owns the root files: manifests, lockfile, recipes, tool configuration and root
   documents. The art author owns the description once the integrator has seeded it.
-- Each milestone opens with the integrator's skeleton subtask. It creates the
-  milestone's packages with the dependency lists of the architecture and the test-only
-  dependencies the checks need, a facade, a README, the rules file and a knowledge stub.
-  Engineers then fill their package, its README and its knowledge document.
+- Each milestone opens with the integrator's skeleton subtask. It creates each package
+  as a manifest, a README, the rules file and a knowledge stub: an empty facade and an
+  unused dependency fail the gates. When an engineer starts, the integrator adds that
+  package's dependency list from the architecture, the test-only dependencies its
+  checks need and its lint and knip entries. Engineers then fill their package, its
+  README and its knowledge document.
 - A subtask has one developer and one separate reviewer. The reviewer checks the work
   against these documents line by line and draws its own samples at the rule limits.
-- An engineer iterates with the per-package commands. Root gates run one at a time under
-  the gate lock.
+- An engineer iterates per package. Root gates run one at a time under the gate lock.
 - A subtask is done when its checks pass and the root gates pass. Its report separates
   what was verified from what is inferred. The owner commits each green milestone.
 - Subtasks listed as parallel touch different components and can run at once.
@@ -41,22 +42,15 @@ of 1.6 waits for the stage entry of 1.2.
 
 The root-file changes the linking needs:
 
-- `tsconfig.json`: allow `.ts` import extensions, and exclude the runtime half of
-  `destruction-gateway`, every `generated/` tree, and the stage and testing entries of
-  `sec111-gateway`.
-- `tsconfig.tests.json`: exclude the runtime half and the `generated/` trees.
-- `tsconfig.tools.json`: include the stage and testing entries of `sec111-gateway`.
-- `.oxlintrc.runtime.json`: exempt those two entries from the browser-safe rules.
-- `package.json`: the override that pins three.js to the library's version.
-- `.gitignore`: the `generated/` directory of a package.
-- `knip.jsonc`: the emit script of `destruction-gateway` and the detach script of
-  `render-gateway` as entries.
-- The setup recipe: after the frozen install, detach the rendering copy, then emit the
-  destruction declarations.
-- The lint recipe: emit the declarations and check the type half of
-  `destruction-gateway` before the first type check. After the browser-safe type check,
-  bundle the browser entries: `sec111-gateway` and `render-gateway` now, the QA page
-  from milestone 4. `destruction-gateway` is not bundled, because no page imports it.
+- The type checks allow `.ts` import extensions and leave out the runtime half of
+  `destruction-gateway` and every git-ignored `generated/` tree. The stage and testing
+  entries of `sec111-gateway` join the tool sources and leave the browser-safe rules.
+- `package.json` pins three.js to the library's version, and knip takes the emit script
+  of `destruction-gateway` and the detach script of `render-gateway` as entries.
+- The setup recipe detaches the rendering copy after the frozen install, then emits the
+  destruction declarations. The lint recipe emits them again, checks the type half of
+  `destruction-gateway` and, after the browser-safe type check, bundles the browser
+  entries; `destruction-gateway` is not bundled, because no page imports it.
 
 ### 1.2 `sec111-gateway`
 
@@ -73,8 +67,7 @@ The root-file changes the linking needs:
 
 ### 1.3 `destruction-gateway`
 
-- Scope: one entry in two halves, the emit script and the tests. Neither half holds
-  logic.
+- Scope: one entry in two halves, the emit script and the tests; no half holds logic.
 - Checks: the tests use every runtime name through the typed entry. A
   2 x 1.2 x 0.05 m model meshes to 20 triangles, one cast hits it, one rail removes
   material, and a Rapier sync of the slab yields a collider. A separate type check
@@ -254,9 +247,8 @@ Four more checks hold the footprint, the filled gap, the proof and the limits th
 - Checks: the build is accepted, with scale 1 and the body boxes under the limit. A
   test in `level-pipeline` builds the committed description and expects acceptance; it
   is the gate's third preparation. A reviewer reads the sheets and finds each of the
-  13 seals in place and no background colour inside the hall on the plan tiles, the
-  elevations and the view tiles, nor on a custom view from 15.5 m down into a pier on
-  each side.
+  13 seals in place and no background colour inside the hall: on the plan tiles, the
+  elevations, the view tiles and a custom view from 15.5 m down into a pier on each side.
 - Depends on: 3.5.
 
 Thirteen seals close the hall. Seven follow the measured openings of the contract
@@ -270,81 +262,95 @@ own sides instead.
 ## Milestone 4: the QA app
 
 Subtasks 4.2 and 4.3 run in parallel. Subtask 4.5 starts when 4.4 has delivered its
-protocol unit.
+protocol unit and its testing entry.
 
 ### 4.1 Skeleton (integrator)
 
-- Scope: the packages `level-view`, `qa-client` and `qa-server`, and a lint step that
-  bundles the page entry for the browser.
-- Checks: the root gates pass.
+- Scope: `level-view`, `qa-client` and `qa-server` as skeletons, and `readCommittedFiles`
+  in the testing entry of `sec111-gateway` with its documents. When each engineer
+  starts: the dependency list, the knip entry of `qa-server`'s program file and, for the
+  two page packages, the facade in the lint step that bundles the browser entries.
+- Checks: the root gates pass at each step; the gateway's wiring test decodes both files.
 - Depends on: milestone 3.
 
 ### 4.2 `level-view`
 
-- Scope: GLB loading, the mesh rules, the mapping rules, the frame call, the failure
-  hooks and the clear colour choice. No input and no page.
+- Scope: the start, GLB loading, the mesh rules, the mapping rules, the frame call, the
+  failure hooks and the clear colour choice. No input and no page.
 - Checks, under Bun without a GPU: the baseline lighting yields one directional light
   aimed at the interior centre whose shadow volume equals the interior box, and its
   point lights with decay 2 and no shadow. The look equals `GAME_VALUES` with the
-  level's haze and exposure. A texture-free fixture GLB gets the mesh rules. A renderer
-  that reports a WebGL fallback is refused with the component's own typed error. A
-  fired device-lost hook and a fired error hook each reach the caller's failure
-  callback. No pixel is asserted.
+  level's haze and exposure. A texture-free GLB, built by hand in the test, loads: its
+  meshes cast and receive shadows with two-sided shadow faces and frozen matrices. The
+  same mesh rules give a texture on a material anisotropy 8. The frame call sets the
+  camera to a given eye, yaw and pitch. A renderer that reports a WebGL fallback is
+  refused with the component's own typed error. A fired device-lost hook and a fired
+  error hook each reach the caller's failure callback. No pixel is asserted.
 - Depends on: 1.2, 1.4, 1.5.
 
 ### 4.3 `prop-kit`, the articulated and overhead kinds
 
-- Scope: `robot-arm` with `baseColor`, `bridge-crane` with `runwayColor`, and
-  `jib-crane`.
-- Checks: the checks of 2.3 at every parameter corner, and for the arm a seeded sweep
-  of shoulder and elbow between the corners. A runway of 60 m splits into runs of at
-  most 40 m. The reviewer judges these kinds as in 2.3.
+- Scope: `robot-arm` with `baseColor`, `bridge-crane` with `runwayColor` and the
+  `hookDrop` rule, `jib-crane`, a pitched slab role and an optional colour parameter.
+- Checks: the checks of 2.3 at every parameter corner, and for the arm a seeded,
+  edge-biased sweep of reach, shoulder and elbow between the corners. Every slab tops
+  out 0.55 m or higher, and every rotation stays a unit quaternion after rounding. An
+  arm's links stay above the floor and between its pedestal's side planes. A jib
+  crane's hoist at `height` 3 and a bridge crane's hook at its largest admitted
+  `hookDrop` hang 2.5 m or more above the floor. A `hookDrop` 0.1 mm beyond is refused
+  with its range, and `hookDrop` 3.6 passes at `railHeight` 6.1. A bridge crane tops out
+  2.4 m or less above `railHeight`. A runway of 60 m splits into runs of at most 40 m.
+  The reviewer judges these kinds as in 2.3.
 - Depends on: 2.3.
 
 ### 4.4 `qa-client`
 
-- Scope: the page of the architecture document. The protocol unit lands first.
-- Checks of boot: the real page entry boots on a hand-built document against a scripted
-  fake of the protocol. The status strip names the running step. Both regions carry
-  their inline heights. A request that never answers ends in `failed: no answer`. The
-  log batch is flushed before each step and on an error. A `console.error` and a
-  `console.warn` reach the log. `?leak=1` selects the loud clear colour.
-- Checks of failures and marks: each visible-failure message appears in the status
-  strip and in the log. `F3` and `M` open the comment box; `Enter` saves and shows the
-  number and path; `Esc` cancels; an empty comment is blocked with a message; a refused
-  mark of another run shows `reload the page`; a failed save keeps the comment.
-- Checks of walk: on sec-111's committed prepared level the page installs one blocker
-  box per slab from a level `.json`, the capsule stops at a slab, and fly returns to
-  walk on the floor under the camera.
-- Depends on: 4.2, 1.2, 1.5.
+- Scope: the architecture's page; the protocol unit lands first, then the testing entry.
+- Checks of boot: the real page entry boots on the hand-built document against a
+  scripted fake of the protocol and the scripted view. The status strip names the
+  running step. Both regions carry their inline minimum heights. A request that never
+  answers ends in `failed: no answer`, on an injected timer. The log batch is flushed
+  before each step and on an error. A `console.error` and a `console.warn` reach the
+  log. `?leak=1` selects the loud clear colour. The boot watch reports a page program
+  that fails to load and one that does not start.
+- Checks of failures and marks: each visible failure shows its message on the page and
+  sends it in a log batch. `F3` and `M` open the comment box; `Enter` shows `saving mark`,
+  then the number and path; `Esc` cancels; an empty comment is blocked with a message;
+  another run's mark shows `reload the page`; a failed save keeps the comment.
+- Checks of walk: the fake serves sec-111's committed prepared files and a level `.json`
+  with a slab across the path. The page installs one blocker box per slab, the capsule
+  stops at the slab, and fly returns to walk on the floor or the top under the camera.
+- Depends on: 4.1, 4.2, 1.2, 1.5.
 
 ### 4.5 `qa-server`
 
 - Scope: the server of the architecture document.
 - Checks, with an injected build and one real server on a temporary port: the real page
   boots against the real handler, and the page and the four level files are served.
-  One mark request appends exactly one line with every field. A mark of another run and
-  a comment above 2,000 characters are refused with a message. The run log holds the
-  start facts with the sibling paths, the verdict, each request and the stop line. A
-  missing sibling install is a logged start failure that names the sibling.
-- More checks: a taken port and a foreign `Host` are refused; a request without `Origin`
-  is served. A blocked build still serves the session facts. The page bundle holds one
-  three.js core, one Rapier root and no destruction lib module. Tests remove what they
-  create.
+  One mark request appends exactly one line with every field. A mark of another run, a
+  comment above 2,000 characters and a malformed pose are refused with a reason. The
+  run log holds the start facts with the sibling paths, the verdict, each request and
+  the last line of a stopped server.
+- Checks of start failures: a missing sibling install, an unreadable description and a
+  taken port are each logged and printed, with status 1; each names its subject.
+- More checks: a foreign `Host` is refused; a request without `Origin` is served. A
+  blocked build serves the session facts with its errors, and no level file. The page
+  program's bundle holds one three.js core, one Rapier root and no destruction lib
+  module, and the boot watch's bundle holds none of the three.
 - Depends on: 3.4, 4.4.
 
 ### 4.6 Recipe and documents (integrator)
 
 - Scope: the QA recipe, the launch and QA steps in the README, and the knowledge
   documents with the accepted limits.
-- Checks: the lint gate passes; the recipe passes the work directory.
+- Checks: the lint gate passes; the recipe passes the work directory and both siblings.
 - Depends on: 4.5.
 
 ### 4.7 Silent-failure audit (reviewer)
 
-- Scope: one list of every step of boot, walk, fly, mark and logging, every way each
-  step can fail or stall, and the message the human sees. The list covers a stalled
-  step, a lost GPU device, a console-only error and a page left open across a restart.
+- Scope: one list of every step of the server's start and of boot, walk, fly, mark and
+  logging, every way it can fail or stall, and the message the human sees. It covers a
+  stalled step, a lost GPU device, a console-only error and a page open across a restart.
 - Checks: every row of the list maps to one test in `qa-client` or `qa-server`. The
   integrator measures the test recipe; above 30 s the milestone stays open.
 - Depends on: 4.4, 4.5.
@@ -354,8 +360,7 @@ protocol unit.
 The art team is one author and one reviewer. The author edits a draft copy of the
 description and replaces the committed file only when the validator accepts the draft,
 so the root gate stays green beside milestone 4. Passes run one after another, because
-they edit one file. The section "The art pass" below gives the team's inputs, loop and
-exit.
+they edit one file. "The art pass" below gives the team's inputs, loop and exit.
 
 ### 5.1 Authoring guide (integrator)
 
@@ -391,14 +396,14 @@ exit.
 - Scope: bridge cranes resting on the pier corbels under the trusses, jib cranes beside
   the lines, and light strips.
 - Checks: the validator accepts inside the budget; the section sheet shows every runway
-  beam on its corbels and every hook above 2.17 m.
+  beam on its corbels and every crane clear of the trusses.
 - Depends on: 5.3.
 
 ### 5.5 Look and lighting
 
 - Scope: finishes, glows, base overrides and the lighting section, moved toward the
   dark factory by the numbers: a low environment, deeper haze, glowing strips, and
-  point lights last. No prop moves.
+  point lights last. No prop moves. The key stays vertical: the roof shadows a tilted one.
 - Checks: the validator accepts. No agent judges the result; the owner does.
 - Depends on: 5.4.
 
@@ -426,8 +431,7 @@ exit.
 - The budget: 800 slabs in 200 props. The caps: 1,024 slabs, 300,000 triangles and
   eight point lights.
 - The accepted limits: thin edges ignore SMG rounds, nothing collapses, debris does not
-  rest on slabs, and a hollow prop wider than about 1 m can become a hiding spot once
-  destroyed.
+  rest on slabs, and a destroyed hollow prop wider than about 1 m can hide the player.
 
 ### The loop
 
@@ -445,9 +449,8 @@ again. The author reads every sheet after every pass. A sheet shows layout, scal
 silhouette; it shows no mood. When the validator accepts the draft, the author copies it
 over the committed description.
 
-After each pass the reviewer reads the sheets against the references and reruns the
-validator. The reviewer also places its own probe props at the rule limits, on a copy of
-the draft.
+After each pass the reviewer reads the sheets against the references, reruns the
+validator and places its own probe props at the rule limits, on a copy of the draft.
 
 ### Ready for the owner's QA
 
@@ -481,9 +484,10 @@ just qa      # prints the address and the path of the run log
 - Judge the seals with `?leak=1` added to the address: no loud colour shows at the end
   wall, the four window panels, the door panel, the back slot, above either side wall
   or, from fly height, down into a pier.
-- Judge the play space: spawn areas, main lanes, gaps, and collision against every kind
-  of prop.
+- Judge the play space: spawn areas, main lanes, gaps, and collision against each kind.
 - Send back two files: the marks file and the run log.
+- When the view looks wrong and the page shows no message, copy the browser console's
+  text into a mark or send it with the two files.
 
 If the app fails on the owner's machine, the run log tells us why:
 `<workdir>/qa/logs/qa-<local start time>.log`. It opens before the sibling check and the

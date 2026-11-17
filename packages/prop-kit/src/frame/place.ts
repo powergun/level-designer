@@ -1,22 +1,11 @@
 import type { Quaternion, Slab, Vec3 } from "@level-designer/level-format";
+import { multiply } from "./quaternion.js";
 
 /** Where a prop stands: the plan position `[x, z]` of its origin, its yaw in degrees and the floor height under it. */
 export interface Site {
   readonly at: readonly [number, number];
   readonly yaw: number;
   readonly floor: number;
-}
-
-/** The Hamilton product `a * b` of two quaternions `[x, y, z, w]`. */
-function multiply(a: Quaternion, b: Quaternion): Quaternion {
-  const [ax, ay, az, aw] = a;
-  const [bx, by, bz, bw] = b;
-  return [
-    aw * bx + ax * bw + ay * bz - az * by,
-    aw * by - ax * bz + ay * bw + az * bx,
-    aw * bz + ax * by - ay * bx + az * bw,
-    aw * bw - ax * bx - ay * by - az * bz,
-  ];
 }
 
 /**

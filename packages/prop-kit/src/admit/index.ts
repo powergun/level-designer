@@ -5,7 +5,7 @@
  */
 export { admitParams } from "./params.js";
 export type { ParamContext } from "./params.js";
-export { unknownKind } from "./problem.js";
-export type { PropProblem } from "./problem.js";
-export { COLOR, glow, material, range } from "./spec.js";
+export { paramProblem, unknownKind } from "./problem.js";
+export type { ParamRefusal, PropProblem } from "./problem.js";
+export { color, glow, material, range } from "./spec.js";
 export type { ColorSpec, ParamSpec, ParamTable, ParamValues } from "./spec.js";

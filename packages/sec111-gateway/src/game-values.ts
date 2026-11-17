@@ -83,5 +83,7 @@ export const GAME_VALUES = {
     frameClampRate: 15,
     /** Frames rendered before the level is shown. */
     warmUpFrames: 2,
+    /** The scene's clear colour behind everything, linear RGB. */
+    clearColor: [0.004, 0.005, 0.007],
   },
 } as const;

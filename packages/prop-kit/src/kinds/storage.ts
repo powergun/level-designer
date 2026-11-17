@@ -1,4 +1,4 @@
-import { COLOR, material, range } from "../admit/index.js";
+import { color, material, range } from "../admit/index.js";
 import { CONTAINER_HEIGHT, CONTAINER_WIDTH, PANEL } from "./dimensions.js";
 import { hollowBox } from "./hollow.js";
 import { defineKind } from "./kind.js";
@@ -10,10 +10,9 @@ import type { Kind } from "./kind.js";
  */
 export const CONTAINER: Kind = defineKind(
   "container",
-  { length: range(3, 12.2, 6.06), color: COLOR },
-  (p) => ({
-    color: p.color,
-    roles: hollowBox(
+  { length: range(3, 12.2, 6.06), color: color(true) },
+  (p) =>
+    hollowBox(
       {
         width: CONTAINER_WIDTH,
         length: p.length,
@@ -21,23 +20,29 @@ export const CONTAINER: Kind = defineKind(
         panel: PANEL,
         eave: 0,
         material: "metal",
+        color: p.color,
       },
       true,
     ),
-  }),
 );
 
 /** A crate: a wood cube of side `size`, four sides under a flush lid. 5 slabs. */
 export const CRATE: Kind = defineKind(
   "crate",
-  { size: range(0.6, 1.8, 1.2), color: COLOR },
-  (p) => ({
-    color: p.color,
-    roles: hollowBox(
-      { width: p.size, length: p.size, height: p.size, panel: PANEL, eave: 0, material: "wood" },
+  { size: range(0.6, 1.8, 1.2), color: color(true) },
+  (p) =>
+    hollowBox(
+      {
+        width: p.size,
+        length: p.size,
+        height: p.size,
+        panel: PANEL,
+        eave: 0,
+        material: "wood",
+        color: p.color,
+      },
       true,
     ),
-  }),
 );
 
 /**
@@ -51,20 +56,19 @@ export const PARTITION: Kind = defineKind(
     height: range(1, 4),
     thickness: range(0.1, 0.6, 0.3),
     material: material(["wood", "brick", "concrete", "metal"], "concrete"),
-    color: COLOR,
+    color: color(true),
   },
-  (p) => ({
-    color: p.color,
-    roles: [
-      {
-        box: [
-          [-p.width / 2, p.width / 2],
-          [0, p.height],
-          [-p.thickness / 2, p.thickness / 2],
-        ],
-        facing: "+Z",
-        material: p.material,
-      },
-    ],
-  }),
+  (p) => [
+    {
+      form: "box",
+      box: [
+        [-p.width / 2, p.width / 2],
+        [0, p.height],
+        [-p.thickness / 2, p.thickness / 2],
+      ],
+      facing: "+Z",
+      material: p.material,
+      color: p.color,
+    },
+  ],
 );

@@ -1,0 +1,92 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #010101;
+  color: #d8e4ea;
+  font:
+    14px / 1.4 ui-monospace,
+    Consolas,
+    monospace;
+}
+
+#view {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* One column over the view: the regions stack in document order, so none covers another. */
+#overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#hud,
+#status,
+#verdict,
+#banner,
+#errors,
+#mark {
+  flex: none;
+  margin: 0;
+  padding: 0.3em 0.8em;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: rgba(0, 0, 0, 0.62);
+  pointer-events: auto;
+}
+
+/* The space between the top regions and the bottom ones; clicks pass to the view. */
+#gap {
+  flex: 1 1 0;
+  min-height: 2em;
+}
+
+#verdict {
+  background: rgba(120, 70, 0, 0.85);
+}
+
+/* The alarm banner shows the newest alarm first and scrolls past its bound. */
+#banner {
+  max-height: 30vh;
+  overflow-y: auto;
+  background: rgba(140, 0, 20, 0.88);
+}
+
+/* The status strip grows with its message up to its bound, then scrolls: no part is out of reach. */
+#status {
+  max-height: 30vh;
+  overflow-y: auto;
+}
+
+#errors {
+  max-height: 35vh;
+  overflow-y: auto;
+  background: rgba(60, 0, 10, 0.9);
+}
+
+#mark {
+  align-self: center;
+  width: 60%;
+  padding: 0.8em;
+  background: rgba(10, 20, 30, 0.95);
+}
+
+#mark textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+}
+
+[hidden] {
+  display: none !important;
+}

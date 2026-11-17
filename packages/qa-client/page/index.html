@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Level designer QA</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/page.css" />
+    <script type="module" id="watch" src="/watch.js"></script>
+    <script type="module" id="program" src="/program.js"></script>
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="overlay">
+      <div id="hud"></div>
+      <div id="verdict" hidden></div>
+      <div id="banner" hidden></div>
+      <pre id="errors" hidden></pre>
+      <div id="gap"></div>
+      <div id="mark" hidden>
+        <div id="mark-pose"></div>
+        <textarea id="mark-text" rows="3" placeholder="What is wrong here?"></textarea>
+        <div id="mark-hint"></div>
+      </div>
+      <div id="status">loading the page program</div>
+    </div>
+  </body>
+</html>

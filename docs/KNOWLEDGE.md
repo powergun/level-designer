@@ -16,7 +16,8 @@ packages under `packages/` and `tools/`.
   uses no Bun or Node modules and no Bun or Node globals. The exceptions are the
   stage and testing entries of `sec111-gateway`, which read sec-111's files
   under Bun. The browser-safe type check and oxlint rules exempt them, and the
-  tool-source type check covers them.
+  tool-source type check covers them. The two page scripts of `qa-client` sit in
+  its `page/` directory beside `src/`, and the browser-safe checks cover them too.
 - `tools/*` holds the components that run under Bun and may use Bun and Node
   modules.
 
@@ -27,11 +28,12 @@ the three bump in lockstep. Bun installs packages in isolated mode, so a package
 reaches only the dependencies its own manifest declares.
 
 Each package exposes its public entries through its manifest, normally one, the
-package facade. Two gateways are deliberate exceptions: sec111-gateway has three
-entries, and destruction-gateway routes its one entry to a type half and a
-runtime half; their knowledge documents give the reasons. Units inside a
-package meet through their own facades. A generated, git-ignored `synopsis.xml`
-beside each facade summarizes the unit's API.
+package facade. Three packages are deliberate exceptions: sec111-gateway has three
+entries, destruction-gateway routes its one entry to a type half and a runtime
+half, and qa-client has four entries, so the server reads the protocol and the
+page files without loading sec-111's physics. Their knowledge documents give the
+reasons. Units inside a package meet through their own facades. A generated,
+git-ignored `synopsis.xml` beside each facade summarizes the unit's API.
 
 ### Components
 
@@ -63,7 +65,19 @@ The library components in `packages/` carry the level's data and judgement:
   own, the destructibility proof included. Like slab-model, it reaches destruction
   lib and runs under Bun only.
 
-The tools in `tools/` run under Bun:
+The QA app lets the human walk and fly through the level in a browser:
+
+- [level-view](../packages/level-view/docs/KNOWLEDGE.md): draws a level pair
+  through the rendering-poc pipeline with the game's look and the level's
+  lighting. It starts on WebGPU only and takes no input.
+- [qa-client](../packages/qa-client/docs/KNOWLEDGE.md): the QA page: boot, walk,
+  fly, marks, heads-up display and the page side of the run log. It owns the
+  protocol it shares with qa-server and imports no destruction lib.
+- [qa-server](../tools/qa-server/docs/KNOWLEDGE.md): the loopback server, in
+  `tools/`. It builds the committed description once through level-pipeline,
+  bundles and serves the page, and writes the run log and the marks file.
+
+The other tools in `tools/` run under Bun:
 
 - [snapshot-render](../tools/snapshot-render/docs/KNOWLEDGE.md): the CPU renderer
   of a level GLB into PNG sheets.
@@ -126,7 +140,8 @@ removing it when the gate ends, pass or fail, releases it.
 - the type check of everything, tests included, with Bun types;
 - the browser-safe package sources: their type check, a browser bundle of
   the entries that do not reach destruction lib (sec111-gateway, render-gateway,
-  level-format, level-glb and prop-kit), then oxlint with the browser-safe rules;
+  level-format, level-glb, prop-kit, level-view, and qa-client's facade and two
+  page scripts), then oxlint with the browser-safe rules;
 - the type check of the tool sources and the Bun-side gateway entries, with
   isolated declarations;
 - the check that `packages/` and `tools/` never name `.tmp/`;
@@ -165,6 +180,12 @@ work directory, so no package source names it, and passes every extra argument t
 Each recipe ends with the tool's exit status. On Windows the recipe line exits with the
 tool's status explicitly, because `powershell -Command` reports every failure as 1.
 
+The `qa` recipe runs qa-server's program file the same way. It passes `.tmp` as the
+work directory and one `--sibling` each for `../sec-111` and `../destruction-poc`, so
+no source names a sibling, passes every extra argument through, such as `--port <n>`,
+and ends with the server's exit status. Only the human runs it: agents never start the
+server or a browser, and the tests start their own servers on temporary ports.
+
 ## File locations
 
 - `docs/art-direction/references/` holds the layout and mood reference images.
@@ -173,11 +194,47 @@ tool's status explicitly, because `powershell -Command` reports every failure as
   source of truth. Git ignores the author's draft beside it,
   `levels/dark-factory.draft.json`.
 - `.tmp/` is the git-ignored scratch directory for generated output and logs. The
-  level pair lands in `.tmp/level/` and the sheets in `.tmp/snapshots/`.
+  level pair lands in `.tmp/level/` and the sheets in `.tmp/snapshots/`. The QA
+  app writes one run log per run to `.tmp/qa/logs/qa-<local start time>.log` and
+  appends every mark to `.tmp/qa/marks.log`.
 - `packages/destruction-gateway/generated/` holds the git-ignored destruction
   lib declarations.
 - `.claude/commands/cc-cmd-bevy/` is the git-ignored shared command bundle. It
   supplies the adoctool, tokex and tsane binaries that the recipes run.
+
+## Accepted limits
+
+The owner accepts these limits of the first pass in the level and the game:
+
+- SMG rounds do nothing on a slab's thin edges, a shot-through prop never
+  collapses, settled debris does not rest on slabs, and a destroyed object keeps
+  its shadow.
+- A damaged glowing slab loses its glow in the game, while a point light beside it
+  stays.
+- A hollow prop wider than about 1 m can become a hiding spot once destroyed,
+  because its footprint stays a navigation obstacle. Adoption fixes it.
+- An arm's links hinge on one edge and leave an open wedge at each joint, and a
+  crane's hook block hangs free, without a cable.
+- Only the sheets and the human's QA show a prop that enters or floats off the
+  base stage.
+
+The owner accepts these limits of the QA app and the snapshots:
+
+- The QA app shows the GLB look of an intact slab. The game shows the same until
+  the slab's first damage, then its own wall finish.
+- The QA app blocks with one box per slab; the game splits the same box per chunk.
+- A switch from fly to walk drops the capsule from the camera onto whatever lies
+  below, so the human can stand on tops the player cannot reach in the game.
+- The switch is refused within about 0.65 m of the closed end of a narrow
+  corridor; the page stays in fly and says why.
+- The QA page logs only `console.error` and `console.warn` calls. The browser's own
+  console messages, such as WebGPU validation warnings and failed resource loads,
+  never reach the run log.
+- Snapshots show no mood, and the QA frame rate overstates the game's.
+
+The first pass cannot express props standing on props, stock lower than 0.5 m,
+racks, strips under 0.5 m, round columns and joints, glass, or single lit ceiling
+fixtures. These wait for the owner's feedback.
 
 ## Hosts
 

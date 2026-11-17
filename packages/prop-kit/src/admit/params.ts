@@ -1,4 +1,5 @@
 import { describeValue, isSurfaceColor, keyPath } from "@level-designer/level-format";
+import { paramProblem } from "./problem.js";
 import type { PropProblem } from "./problem.js";
 import type { ParamSpec, ParamTable, ParamValues } from "./spec.js";
 import { listed } from "./text.js";
@@ -63,10 +64,7 @@ function fallback(spec: ParamSpec): Read | undefined {
   if (spec.type === "material") {
     return { ok: true, value: spec.default };
   }
-  if (spec.type === "glow" && !spec.required) {
-    return { ok: true, value: undefined };
-  }
-  return undefined;
+  return spec.required ? undefined : { ok: true, value: undefined };
 }
 
 /**
@@ -106,11 +104,13 @@ export function admitParams<T extends ParamTable>(
   const names = Object.keys(table);
   const problems: PropProblem[] = [...raw.keys()]
     .filter((key) => !Object.hasOwn(table, key))
-    .map((key) => ({
-      rule: "param",
-      path: keyPath(paramsPath, key),
-      message: `${keyPath(paramsPath, key)}: ${kind} takes only ${listed(names, "and")}, got ${describeValue(key)}`,
-    }));
+    .map((key) =>
+      paramProblem(paramsPath, kind, {
+        name: key,
+        takes: `only ${listed(names, "and")}`,
+        got: key,
+      }),
+    );
   const value: Record<string, unknown> = {};
   for (const [name, spec] of Object.entries(table)) {
     const given = raw.get(name);
@@ -118,12 +118,7 @@ export function admitParams<T extends ParamTable>(
     if (outcome.ok) {
       value[name] = outcome.value;
     } else {
-      const path = keyPath(paramsPath, name);
-      problems.push({
-        rule: "param",
-        path,
-        message: `${path}: ${kind} takes ${outcome.takes}, got ${describeValue(given)}`,
-      });
+      problems.push(paramProblem(paramsPath, kind, { name, takes: outcome.takes, got: given }));
     }
   }
   if (problems.length > 0) {

@@ -1,4 +1,4 @@
-import { COLOR, glow, range } from "../admit/index.js";
+import { color, glow, range } from "../admit/index.js";
 import { LIGHT_STRIP_DEPTH } from "./dimensions.js";
 import { defineKind } from "./kind.js";
 import type { Kind } from "./kind.js";
@@ -13,22 +13,21 @@ export const LIGHT_STRIP: Kind = defineKind(
     length: range(0.5, 12),
     width: range(0.1, 0.6, 0.2),
     height: range(2.5, 17),
-    color: COLOR,
+    color: color(true),
     glow: glow(true),
   },
-  (p) => ({
-    color: p.color,
-    roles: [
-      {
-        box: [
-          [-p.width / 2, p.width / 2],
-          [p.height, p.height + LIGHT_STRIP_DEPTH],
-          [-p.length / 2, p.length / 2],
-        ],
-        facing: "down",
-        material: "metal",
-        glow: p.glow,
-      },
-    ],
-  }),
+  (p) => [
+    {
+      form: "box",
+      box: [
+        [-p.width / 2, p.width / 2],
+        [p.height, p.height + LIGHT_STRIP_DEPTH],
+        [-p.length / 2, p.length / 2],
+      ],
+      facing: "down",
+      material: "metal",
+      color: p.color,
+      glow: p.glow,
+    },
+  ],
 );

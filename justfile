@@ -149,6 +149,12 @@ build *ARGS:
 snapshot *ARGS:
     @{{LEVEL_CLI}} snapshot --workdir .tmp {{ARGS}}{{KEEP_STATUS}}
 
+# Serve the QA app for the human; agents never run it. It builds the committed description,
+# prints the address and the run log's path, and serves until Ctrl+C. Extra arguments pass
+# through, such as `--port <n>`. The server's exit status (0, 1 or 3) is the recipe's.
+qa *ARGS:
+    @{{MISE}} bun tools/qa-server/main.ts --workdir .tmp --sibling ../sec-111 --sibling ../destruction-poc {{ARGS}}{{KEEP_STATUS}}
+
 # --------------------------------------------------------------------------------------------------------
 
 # Generate this repository's synopsis.xml files via the deployed adoctool binary.
@@ -193,7 +199,9 @@ lint:
     @{{MISE}} bun build --target browser --root . --outdir .tmp/runtime \
         packages/sec111-gateway/src/index.ts packages/render-gateway/src/index.ts \
         packages/level-format/src/index.ts packages/level-glb/src/index.ts \
-        packages/prop-kit/src/index.ts
+        packages/prop-kit/src/index.ts packages/level-view/src/index.ts \
+        packages/qa-client/src/index.ts packages/qa-client/page/watch.ts \
+        packages/qa-client/page/program.ts
     @{{MISE}} bun x --no-install oxlint --no-error-on-unmatched-pattern -c .oxlintrc.runtime.json
 
     @echo "==== checking tool sources ===="

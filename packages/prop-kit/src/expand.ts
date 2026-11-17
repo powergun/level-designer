@@ -38,8 +38,8 @@ export function expandProp(
     return shaping;
   }
   const site: Site = { at: prop.at, yaw: prop.yaw, floor };
-  const slabs = shaping.shape.roles.flatMap((role) =>
-    splitRole(role, shaping.shape.color).map((slab) => {
+  const slabs = shaping.roles.flatMap((role) =>
+    splitRole(role).map((slab) => {
       const placed = placeSlab(slab, site);
       return role.glow === undefined ? { slab: placed } : { slab: placed, glow: role.glow };
     }),

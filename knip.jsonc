@@ -7,9 +7,11 @@
   "bun": { "entry": ["{src,tests}/**/*.test.ts"] },
   "workspaces": {
     // just setup and just lint run the gateways' install scripts with Bun; the render gateway's
-    // browser entry is a bundler input of its test; the tool recipes run level-cli's program.
+    // browser entry is a bundler input of its test; the tool recipes run level-cli's program
+    // and the QA recipe runs qa-server's.
     "packages/destruction-gateway": { "entry": ["emit.ts"] },
     "packages/render-gateway": { "entry": ["detach.ts", "tests/browser-entry.ts"] },
-    "tools/level-cli": { "entry": ["main.ts"] }
+    "tools/level-cli": { "entry": ["main.ts"] },
+    "tools/qa-server": { "entry": ["main.ts"] }
   }
 }

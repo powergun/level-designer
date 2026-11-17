@@ -134,3 +134,18 @@ test("kinds prints each parameter's range, form or choices and its default", asy
   const presence = glow.required ? "required" : "optional";
   expect(output.out).toContain(`param\t${glow.name}\tglow\ta name of glows\t${presence}`);
 });
+
+test("kinds prints an optional colour as optional and a required one as required", async () => {
+  const { pipeline } = fakePipeline({ build: { ok: true, built: scene.built } });
+  const output = capture();
+  await run(["kinds"], pipeline, output.streams);
+  const colors = listKinds()
+    .flatMap((kind) => kind.params)
+    .filter((param) => param.type === "color");
+  const optional = colors.find((param) => !param.required);
+  if (optional === undefined) throw new Error("no kind takes an optional colour");
+  expect(output.out).toContain(`param\t${optional.name}\tcolor\t#rrggbb\toptional`);
+  for (const param of colors.filter((candidate) => candidate.required)) {
+    expect(output.out).toContain(`param\t${param.name}\tcolor\t#rrggbb\trequired`);
+  }
+});

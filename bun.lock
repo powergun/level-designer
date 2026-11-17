@@ -37,10 +37,30 @@
         "@level-designer/prop-kit": "workspace:*",
       },
     },
+    "packages/level-view": {
+      "name": "@level-designer/level-view",
+      "dependencies": {
+        "@level-designer/level-format": "workspace:*",
+        "@level-designer/render-gateway": "workspace:*",
+        "@level-designer/sec111-gateway": "workspace:*",
+        "three": "0.186.1",
+      },
+      "devDependencies": {
+        "@types/three": "0.186.0",
+      },
+    },
     "packages/prop-kit": {
       "name": "@level-designer/prop-kit",
       "dependencies": {
         "@level-designer/level-format": "workspace:*",
+      },
+    },
+    "packages/qa-client": {
+      "name": "@level-designer/qa-client",
+      "dependencies": {
+        "@level-designer/level-format": "workspace:*",
+        "@level-designer/level-view": "workspace:*",
+        "@level-designer/sec111-gateway": "workspace:*",
       },
     },
     "packages/render-gateway": {
@@ -81,6 +101,17 @@
         "@level-designer/slab-model": "workspace:*",
       },
     },
+    "tools/qa-server": {
+      "name": "@level-designer/qa-server",
+      "dependencies": {
+        "@level-designer/level-pipeline": "workspace:*",
+        "@level-designer/qa-client": "workspace:*",
+      },
+      "devDependencies": {
+        "@level-designer/level-format": "workspace:*",
+        "@level-designer/sec111-gateway": "workspace:*",
+      },
+    },
     "tools/snapshot-render": {
       "name": "@level-designer/snapshot-render",
       "dependencies": {
@@ -112,7 +143,13 @@
 
     "@level-designer/level-rules": ["@level-designer/level-rules@workspace:packages/level-rules"],
 
+    "@level-designer/level-view": ["@level-designer/level-view@workspace:packages/level-view"],
+
     "@level-designer/prop-kit": ["@level-designer/prop-kit@workspace:packages/prop-kit"],
+
+    "@level-designer/qa-client": ["@level-designer/qa-client@workspace:packages/qa-client"],
+
+    "@level-designer/qa-server": ["@level-designer/qa-server@workspace:tools/qa-server"],
 
     "@level-designer/render-gateway": ["@level-designer/render-gateway@workspace:packages/render-gateway"],
 

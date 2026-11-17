@@ -1,8 +1,13 @@
 import { expect, test } from "bun:test";
 import type { BlockerSet } from "@level-designer/sec111-gateway";
-import { createPhysicsWorld, floorHeightAt, GAME_VALUES } from "@level-designer/sec111-gateway";
+import {
+  createPhysicsWorld,
+  decodePreparedLevel,
+  floorHeightAt,
+  GAME_VALUES,
+} from "@level-designer/sec111-gateway";
 import { readBaseStage } from "@level-designer/sec111-gateway/stage";
-import { readCommittedLevel } from "@level-designer/sec111-gateway/testing";
+import { readCommittedFiles, readCommittedLevel } from "@level-designer/sec111-gateway/testing";
 
 /** The GLB container magic, `glTF` as a little-endian word. */
 const GLB_MAGIC = 0x46546c67;
@@ -18,6 +23,10 @@ test("the stage entry reads the base stage and the testing entry the committed l
   expect(new DataView(stage.buffer, stage.byteOffset).getUint32(0, true)).toBe(GLB_MAGIC);
   const level = await readCommittedLevel();
   expect(level.spawns.minions.length).toBeGreaterThan(0);
+  // The committed level's two files decode through the main entry, as the QA page decodes them.
+  const files = await readCommittedFiles();
+  const decoded = decodePreparedLevel(files.document, files.navMesh);
+  expect(decoded.spawns.minions.length).toBeGreaterThan(0);
 });
 
 test("a capsule stops before an installed panel and walks on after its removal", async () => {

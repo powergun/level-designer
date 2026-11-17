@@ -61,3 +61,25 @@ down. A jib crane's 0.5 m plinth sits on the `low-top` limit, and a hoist under 
 becomes a standing slab. A bridge crane's `hookDrop` and `railHeight` ranges admit a
 hook under 2.17 m or under the floor, so the kind needs a rule across both. The format
 document must state the origin of each of the three kinds.
+
+(2026-11-17 10:57:31)
+Milestone 3 is green and the owner started this subtask. Status WIP. The architect first
+reconciles the design documents with the built components and settles the five facts
+above. Remaining: subtasks 4.1 to 4.7, the acceptance review and the owner's QA.
+
+(2026-11-17 13:47:35)
+Subtasks 4.1 to 4.7 are built and reviewed: `level-view`, `qa-client`, `qa-server`, the
+three new prop kinds, the QA recipe and the root documents. Each subtask passed its own
+review, the silent-failure audit is closed, and an acceptance review found the task
+complete. The root gates pass on Windows: 580 tests, a test recipe of 8.5 s and a clean
+lint. One scope deviation: `level-cli`'s kind listing now prints an optional colour as
+optional, which the two new colour parameters need. No agent launched the server or a
+browser, so the first real run is the owner's. Status stays WIP. Remaining: the owner's
+QA on Windows and on macOS, then the owner's approval.
+
+(2026-11-17 14:48:36)
+The owner's QA passed: the app ran end to end in walk and in fly mode, and `F3` saved two
+marks with their comments. The run log of the Windows run holds no warning and no error:
+the server started, the page reached `ready`, both marks were saved, and the server
+stopped on the owner's interrupt. The owner approved in writing marking this subtask
+DONE. Status DONE. Remaining: none.

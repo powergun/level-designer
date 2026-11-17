@@ -45,11 +45,8 @@ geometry; their `emissive` override dims or tints all of them together.
 
 ### Seals
 
-`seals` lists at most 16 boxes that close the hall. The hall takes 13: the end wall,
-four window panels, the door panel, the back slot fascia, two side boxes and four pier
-plates. A side box closes the band between a side wall's top and the ceiling; the -X
-box also runs down behind the wall, across the open backs of its piers, and a plate
-closes the back of each +X pier. A seal is static, visible and indestructible.
+`seals` lists at most 16 boxes that close the hall; the hall takes 13, which the build
+plan lists. A seal is static, visible and indestructible.
 
 - `id`, `min` and `max`: an axis-aligned box in the level frame, at least 0.05 m thick;
 - `color`, and `metalness` and `roughness` from 0 to 1: its flat look.
@@ -72,25 +69,34 @@ light fixtures are glowing slabs.
 - `id`: the prop's stable name;
 - `kind`: one of the nine kinds below;
 - `at`: `[x, z]`, the plan position of the prop's origin;
-- `yaw`: degrees about +Y; at 0 the prop's length runs along +Z, and a positive yaw
-  turns it toward +X;
-- `params`: the kind's parameters.
+- `yaw`: degrees about +Y; at 0 the length runs along +Z; a positive yaw turns it to +X;
+- `params`: the kind's parameters by name, such as `{ "length": 8, "color": "#3b4046",
+  "glow": "cyan" }` for a conveyor.
 
-A prop's frame has +Y up, its length along local +Z and its width along local +X. The
-origin of a conveyor, an enclosure, a container, a crate, a partition and a light strip
-is the centre of its plan outline. The build drops the origin onto the floor under `at`,
-and a hanging kind measures its height from that floor. Every kind takes `color`. In the
-lists below a value in brackets is the default; a parameter without one is required. A
-missing required parameter, an unknown parameter and a value outside its range are
-errors that name the range.
+A prop's frame has +Y up, its length along local +Z and its width along local +X. A
+bridge crane's origin is the centre of the rectangle between its runway beams. A robot
+arm's is the centre of its pedestal and a jib crane's the centre of its mast; both
+reach along local +Z. Every other kind's origin is the centre of its plan outline. The
+build drops the origin onto the floor under `at`, and a hanging kind measures its height
+from that floor. Every kind takes `color`. In the lists below a value in brackets is the
+default; a parameter without one is required. A missing required parameter, an unknown
+parameter and a value outside its range are errors that name the range.
 
 The lists fix each kind's parameters and slab count. The kind tables in `prop-kit` own
-every secondary dimension, such as a panel's thickness, a beam's depth or the eave of a
-deck or roof over its long sides, and a reviewer judges them against the references. Any
-slab face above 25 m2 or side above 40 m is split into the fewest equal runs that the
-slab admission accepts once they are rounded to the grid. Every panel turns its +Z face
-outward, because destruction lib's mesher tints the -Z face: a deck, a roof and a lid
-face up, a hanging slab faces down, and a partition faces local +Z.
+every secondary dimension, such as a panel's thickness or a beam's depth, and a reviewer
+judges them against the references. Any slab face above 25 m2 or side above 40 m is
+split into the fewest equal runs that the slab admission accepts once they are rounded
+to the grid. Every panel turns its +Z face outward, because destruction lib's mesher
+tints the -Z face: a deck, a roof, a lid and a plinth face up, a hanging slab and a
+flange face down, a side of a hollow part faces away from that part's vertical axis, and
+a partition faces local +Z. A kind names the side of its other two-faced slabs.
+
+Three rules keep every parameter corner inside the placement rules. No slab tops out
+lower than 0.55 m above the floor, clear of `low-top`. A hanging part keeps its underside
+2.5 m or more above the floor under `at`; the hall's floors differ by 0.3241 m, so it
+clears the 2.17 m of `support` over both. An arm's links and a jib's tie are pitched:
+each keeps the facing `+X` and turns about local X. Slabs that meet at an angle touch
+along one edge, and neither enters the other.
 
 Assembly line kinds, all metal unless stated:
 
@@ -101,11 +107,14 @@ Assembly line kinds, all metal unless stated:
   `metal` or `concrete` (`metal`), optional `glow`. Four sides and a roof; a glow adds
   one band on each long side, the two sides along the length. 5 or 7 slabs before
   splitting; the roof and each long side split in two above 25 m2, so 5 to 10 slabs.
-- `robot-arm`: `reach` 1.5 to 3.5 (2.5), `shoulder` 0 to 90 degrees (55), `elbow` 20 to
+- `robot-arm`: `reach` 1.5 to 3.5 (2.5), `shoulder` 30 to 90 degrees (55), `elbow` 60 to
   160 degrees (100), optional `baseColor` for the pedestal, optional `glow`. A hollow
-  pedestal, then shoulder, upper arm, forearm and head as thick slabs whose faces look
-  along local X; a glow adds an accent block on the head. The arm reaches along local
-  +Z. 9 or 10 slabs.
+  pedestal, then shoulder, upper arm, forearm and head: four thick slabs that face local
+  +X, as thick as the pedestal is wide and between its side planes. The upper arm rises
+  `shoulder` degrees above local +Z, `elbow` is the angle between it and the forearm,
+  which the head continues, and `reach` is the length of the three from the shoulder to
+  the head's tip; within these ranges the forearm never points back and no link meets
+  the floor. A glow adds an accent block on the head's +X face. 9 or 10 slabs.
 
 Storage and cover kinds:
 
@@ -119,25 +128,20 @@ Overhead and light kinds, all metal:
 
 - `bridge-crane`: `span` 10 to 30, `travel` 10 to 60, `railHeight` 6 to 15.5, `bridgeAt`
   and `trolleyAt` 0 to 1 (0.5), `hookDrop` 0.5 to 8 (2), optional `runwayColor` for the
-  runway beams. Two runway beams along local Z, `span` apart, with their undersides
-  `railHeight` above the floor; two girders, two end trucks, a trolley and a hook
-  block. Beams and girders are a web over a bottom flange. 16 slabs before splitting.
-- `jib-crane`: `height` 3 to 8 (5), `boom` 2 to 8 (4). A four-panel mast on a 0.5 m
-  plinth, a boom along local +Z as web and flange, a tie and a hoist. 9 slabs.
+  runway beams. Two runway beams along local Z, `span` apart and `travel` long, with
+  their undersides `railHeight` above the floor. Two girders on two end trucks cross
+  them at `bridgeAt` of the travel, from the -Z end; a trolley rides the girders at
+  `trolleyAt` of the span, from the -X end; a hook block hangs free under the trolley,
+  its underside `hookDrop` below the runway beams' undersides. Beams and girders are a
+  web over a bottom flange. A runway web and an end truck face the crane's centre line,
+  a girder web faces away from the other girder, and the hook block faces local +Z. The
+  crane rises at most 2.4 m above `railHeight`. 16 slabs before splitting.
+- `jib-crane`: `height` 3 to 8 (5), `boom` 2 to 8 (4). A four-panel mast on a plinth; a
+  boom as web and flange, its underside `height` above the floor and its tip `boom`
+  from the mast's centre; a tie from the mast down to the boom; and a hoist that hangs
+  at most 0.5 m below the boom. The web, the tie and the hoist face local +X. 9 slabs.
 - `light-strip`: `length` 0.5 to 12, `width` 0.1 to 0.6 (0.2), `height` 2.5 to 17,
   required `glow`. One horizontal slab whose underside hangs `height` above the floor.
-
-One prop entry:
-
-```json
-{
-  "id": "line-a-conveyor-03",
-  "kind": "conveyor",
-  "at": [-4.0, 12.5],
-  "yaw": 0,
-  "params": { "length": 8, "color": "#3b4046", "glow": "cyan" }
-}
-```
 
 ### Lighting
 
@@ -184,20 +188,20 @@ Container and scene:
 Meshes and materials:
 
 - Each mesh of an object has one primitive. Every primitive of the file is an indexed
-  triangle list with a FLOAT VEC3 `POSITION` and a material.
+  triangle list with a FLOAT VEC3 `POSITION` and a material, and the whole file holds at
+  most 300,000 triangles.
 - A seal is a box of 12 triangles with normals. A slab primitive carries `NORMAL` and a
   linear `COLOR_0`, and no texture coordinate.
 - Base materials keep their indices, take the description's overrides and become
   single-sided. A base mesh listed as double-sided points to a double-sided twin of its
   material. The other appended materials are one per seal, one per finish in use, and
   one per pair of finish and glow in use.
-- The whole file holds at most 300,000 triangles.
 
 The intact mesh of a slab comes from destruction lib's wall mesher at core's default
-chunk width, moved by the slab's pose. Its triangle count therefore equals what the game
-builds for the undamaged slab. The mesher paints the +Z face with the slab's colour, the
--Z face with a light tint of it, and the four edge faces with the model's inner colour.
-The shared builder sets the inner colour to the slab's colour.
+chunk width, moved by the slab's pose, so its triangle count equals what the game builds
+for the undamaged slab. The mesher paints the +Z face with the slab's colour, the -Z face
+with a light tint of it, and the four edge faces with the model's inner colour, which the
+shared builder sets to the slab's colour.
 
 ### The level `.json`
 
@@ -223,23 +227,20 @@ the build both call; no other component checks them.
 Slab values lie on a grid: lengths at 0.1 mm, quaternion components at nine decimals.
 `level-format` owns the grid and the rounding to it. The pipeline rounds every slab
 once, right after expansion, and the mesh, the rules and the proof read the rounded
-slabs. Rounding never yields negative zero. The encoder only formats: it fixes the key
-order and ends the text with a newline. Decoding an encoded level therefore returns the
-same level, and equal descriptions give equal bytes on one host.
+slabs. The encoder only formats: it fixes the key order and ends the text with a
+newline. Decoding an encoded level therefore returns the same level, and equal
+descriptions give equal bytes on one host.
 
 ### Stored and derived facts
 
-Each fact has one stored home:
-
-- the description stores every authoring decision, the base stage's scale among them;
-- the GLB stores geometry, the intact look and the roles;
-- the `.json` stores the slab descriptions, their grouping into props, and the lighting.
-
+Each fact has one stored home. The description stores every authoring decision, the base
+stage's scale among them. The GLB stores geometry, the intact look and the roles. The
+`.json` stores the slab descriptions, their grouping into props, and the lighting.
 Everything else is derived:
 
 - `prop-kit` derives slab sizes and poses from kind parameters and the prepared floor;
-- `level-format` reads a slab's stored fields as an oriented box with its corners;
-- `slab-model` derives the model and the intact mesh;
+- `level-format` reads a slab as an oriented box, and `slab-model` derives the model
+  and the intact mesh;
 - a consumer of the pair derives the link between a slab and its mesh node from the
   prop id and the slab order;
 - sec-111 derives the model seed and tuning, chunk layout, blockers, footprints and
@@ -258,11 +259,12 @@ Both renderers, `level-view` now and sec-111's view at adoption, follow these ru
   `environment.intensity` scales it.
 - Key: one directional light of the given colour and intensity, placed along `direction`
   and aimed at the centre of the interior box. Its orthographic shadow volume fits the
-  interior box with no pad. The shadow is static PCF with the stored map size, biases and
-  radius; it renders once.
+  interior box in the light's frame, with no pad. Only a vertical key keeps the casters
+  above the interior out of that volume; the roof shadows a tilted key. The shadow is
+  static PCF with the stored map size, biases and radius; it renders once.
 - Point: a point light of the given colour, candela intensity and range, decay 2, no shadow.
 - Haze and exposure overwrite the same fields of the game's post configuration.
-- The clear colour is the renderer's constant (0.004, 0.005, 0.007).
+- The clear colour is the game's constant (0.004, 0.005, 0.007), copied in `GAME_VALUES`.
 - Every level mesh casts and receives the key's shadow with two-sided shadow faces,
   filters textures at anisotropy 8, and freezes its matrix. Sidedness and emissive
   strength come from the GLB materials.
@@ -287,11 +289,9 @@ come in the order of the rules below, and within a rule in description order.
 
 Every limit below compares with a slack of 0.05 mm, or 0.00005 m2 for an area, so a
 value typed at its limit passes. `level-format` owns the slack as `LENGTH_SLACK` and the
-one rendering of a length in a message, `formatLength`. It puts the length on the 0.1 mm
-grid with the slab rounding, a half step away from zero and never a negative zero, and
-prints the rounded number as `String` does, so with no trailing zero, no separator and
-no unit. Every message below shows its lengths and coordinates through it, and a count
-with thousands separators.
+one rendering of a length in a message, `formatLength`: the length on the 0.1 mm grid of
+the slab rounding, printed as `String` prints it, with no unit. Every message below shows
+its lengths and coordinates through it, and a count with thousands separators.
 
 A slab index `<k>` counts from 0. The spawns are named `player` and, for the minions in
 sec-111's order, `+x+z`, `-x+z`, `+x-z` and `-x-z`. The measurements quoted below, on the
@@ -303,17 +303,20 @@ These block the build. A build error holds its rule, its path and its message, a
 message starts with the path of the offending value. A path names a record key after a
 dot, a list item by its index in brackets, and a base material or a glow by its name,
 quoted in brackets: `props[3].params.length`, `glows["cyan"].strength` and
-`base.materials["Material.003"].tint`. A kind parameter is a record key of its kind. The
-build stops at the first step with errors and returns all of them. The steps are the
-description's admission (`shape`, `id`), the static scene (`base`), the preparation
-(`prepare`), the props (`place`, `kind`, `param`) and the slab admission (`slab`).
+`base.materials["Material.003"].tint`. The build stops at the first step with errors and
+returns all of them. The steps are the description's admission (`shape`, `id`), the
+static scene (`base`), the preparation (`prepare`), the props (`place`, `kind`, `param`)
+and the slab admission (`slab`).
 
 - `shape`, owned by `level-format`: `<path>: expected <requirement>, got <value>`. It
   covers keys, types, ranges, the description caps and the lighting caps.
 - `id`, owned by `level-format`: `<path>: id "<id>" is already used at <other path>`.
 - `kind`, owned by `prop-kit`: `<path>: unknown kind "<kind>"; the kinds are <list>`.
 - `param`, owned by `prop-kit`: `<path>: <kind> takes <range or type>, got <value>`. It
-  also rejects a `glow` that `glows` does not name.
+  also rejects a `glow` that `glows` does not name, and a `hookDrop` above `railHeight`
+  less 2.5 m, as `hookDrop 0.5 to <limit> at railHeight <r>`. That limit is reached by
+  arithmetic, so it compares with the length slack and prints through `formatLength`. It
+  is judged only when every parameter of the prop passes on its own.
 - `base`, owned by `level-glb`: `<path>: the base stage has no material (or mesh) named
   "<name>"`. The path is `base.materials["<name>"]` or `base.doubleSided[<i>]`.
 - `place`, owned by `level-pipeline`: `<path>: (<x>, <z>) lies outside the interior`. The
@@ -412,7 +415,13 @@ A pocket only 0.36 m deep still fails: a notch beside a shorter crate, a corrido
 
 The rules measure footprints, not the outlines that the parameters state. A tall
 enclosure's long sides stand inside its roof's edge by the eave, so without a glow each
-such side adds the eave to the gap that the typed outlines suggest.
+such side adds the eave to the gap that the typed outlines suggest. `gap` judges a pair
+by its nearest parts and never counts the pair's own parts as filling, so a footprint
+whose side steps back could hide a pocket beside the step or report a filled gap past
+its own part. The kinds keep every standing footprint straight-sided to 0.03 m, which
+leaves a slot of at most 0.73 m, too narrow for the capsule: an arm's links lie between
+its pedestal's side planes, a jib crane stands on its plinth alone, and a bridge crane
+has no standing footprint.
 
 A main lane is the widest route from a minion spawn's cell to the player spawn's cell,
 on a plan grid of 0.1 m cells that starts at the interior's lowest x and z:
@@ -437,9 +446,9 @@ Destruction lib owns admission and damage, so the validator runs its code on eve
 - `destructible`: `prop <id> slab <k>: <step> failed`. The proof runs two independent
   trials, each on a fresh model from the shared builder, alone in a collision scene at
   the slab's pose. Each trial casts from 0.2 m outside the +Z face at its centre and
-  must hit this slab. The rail trial then finds the material gone at the hit. The blast
-  trial finds it gone and the retained cuboids changed. The steps are admit, register,
-  aim, rail and blast, and the message names the first that fails.
+  must hit this slab. The rail must then leave the material gone at the hit; the blast
+  must leave it gone and the retained cuboids changed. The message names the first
+  failing step of admit, register, aim, rail and blast.
 - `proxies`: `destruction lib could not build the level's debris proxies: <message>`,
   from one Rapier sync of all slabs together.
 
@@ -456,22 +465,14 @@ Destruction lib owns admission and damage, so the validator runs its code on eve
   props against the first-pass budget of 800 slabs in 200 props, which the pipeline owns;
 - the verdict: accepted when it holds no finding. The budget never rejects.
 
-The printed report has one tab-separated line per fact. Each line starts with the fact's
-name and prints its lengths through `formatLength`. The hall facts are the lines
-`interior` with its two corners, `floors`, `ramp` with its z extent and one `spawn` per
-spawn with its name and position. One line per finding follows: rule, subject, message.
-The summary lines are `triangles`, `points`, `body-boxes`, one `lane` per minion spawn
-with its name, `slabs` and `props`, each with its count or width beside its cap, budget
-or kept width. The last line is `accepted` or `rejected: <n> findings`. A blocked build
-has no report: the tool prints one tab-separated line per build error, with its rule,
-path and message, and the last line `blocked: <n> errors`. Both last lines take the
-singular for one: `rejected: 1 finding` and `blocked: 1 error`.
+The printed report has one tab-separated line per hall fact, finding and summary count,
+each under its name or rule; the last line is `accepted` or `rejected: <n> findings`. A
+blocked build has no report: the tool prints one line per build error, with its rule,
+path and message, then `blocked: <n> errors`. Both last lines take the singular for one.
 
 ## What sec-111 changes at adoption
 
-Adoption is a later sec-111 task. The pair carries every fact these changes read. Where
-the base stage file lives after adoption is the adoption task's decision. The level
-designer stays buildable after adoption, because in-game QA can send the level back.
+Adoption is a later sec-111 task. The pair carries every fact these changes read.
 
 Data and preparation:
 
@@ -481,18 +482,17 @@ Data and preparation:
   `destructible` nodes, applies slab placement rules, and bakes navigation obstacles
   from rotated slab boxes. The walls file is deleted, and the scale becomes 1.
 - Assets and tests: the pair joins the assets under its own name; the prepared pair is
-  regenerated; tests pinned to the six walls get new fixtures. The level designer's
-  tests that are pinned to sec-111's committed prepared level are re-pinned then.
+  regenerated; tests pinned to the six walls get new fixtures, and the level designer's
+  tests pinned to sec-111's committed prepared level are re-pinned.
 
 Runtime and presentation:
 
 - Walls engine: one slab is one single-layer assembly with a full rotation and its own
   material and thickness, metal included; the debris source cap rises to the slab count.
 - Wall view: it draws an intact slab from its GLB mesh node, found by prop id and slab
-  order, and switches to its own layer view at the slab's first damage. Finishes are
-  keyed by material.
+  order, and its own layer view, with a finish per material, from the first damage.
 - View: the material audit, the end wall and the hardcoded lighting are deleted. Looks,
   sidedness and emissive strength come from the GLB; lights, haze and exposure come from
   the lighting section by the mapping rules; the stage is no longer scaled.
-- Characters: ragdoll statics come from rotated slabs, one per prop.
-- Recording: the wall codec takes a variable slab count and the slab description.
+- Characters and recording: ragdoll statics come from rotated slabs, one per prop; the
+  wall codec takes a variable slab count and the slab description.

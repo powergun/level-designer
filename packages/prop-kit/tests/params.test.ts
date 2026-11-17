@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { listKinds } from "@level-designer/prop-kit";
-import { refused } from "./fixtures.ts";
+import { expanded, refused } from "./fixtures.ts";
 
 const DARK = "#3b4046";
 
@@ -21,7 +21,7 @@ describe("the kind error", () => {
       rule: "kind",
       path: "props[3].kind",
       message:
-        'props[3].kind: unknown kind "Crate"; the kinds are conveyor, enclosure, container, crate, partition and light-strip',
+        'props[3].kind: unknown kind "Crate"; the kinds are conveyor, enclosure, robot-arm, container, crate, partition, bridge-crane, jib-crane and light-strip',
     });
     for (const near of [" crate", "crates"]) {
       const problem = onlyProblem(near, { color: DARK });
@@ -141,70 +141,150 @@ describe("the param error names the glows", () => {
   });
 });
 
+describe("the articulated and overhead kinds", () => {
+  test("an arm angle beyond its range names the range", () => {
+    expect(onlyProblem("robot-arm", { shoulder: 29.9999, color: DARK }).message).toBe(
+      "props[3].params.shoulder: robot-arm takes shoulder 30 to 90, got 29.9999",
+    );
+  });
+
+  test("an optional colour names the colour form, and its absence passes", () => {
+    expect(onlyProblem("robot-arm", { color: DARK, baseColor: "grey" }).message).toBe(
+      'props[3].params.baseColor: robot-arm takes baseColor as #rrggbb text, got "grey"',
+    );
+    expect(expanded("robot-arm", { color: DARK }).every((s) => s.slab.color === DARK)).toBe(true);
+  });
+
+  test("a hookDrop 0.1 mm beyond railHeight less 2.5 m names the limit it reached", () => {
+    const crane = { span: 12, travel: 20, railHeight: 6.1, color: DARK };
+    expect(onlyProblem("bridge-crane", { ...crane, hookDrop: 3.6001 })).toEqual({
+      rule: "param",
+      path: "props[3].params.hookDrop",
+      message:
+        "props[3].params.hookDrop: bridge-crane takes hookDrop 0.5 to 3.6 at railHeight 6.1, got 3.6001",
+    });
+    expect(expanded("bridge-crane", { ...crane, hookDrop: 3.6 }).length).toBe(16);
+  });
+
+  test("a hookDrop beyond its own range names the plain range, not the limit", () => {
+    const crane = { span: 12, travel: 20, railHeight: 15.5, color: DARK };
+    expect(onlyProblem("bridge-crane", { ...crane, hookDrop: 8.0001 }).message).toBe(
+      "props[3].params.hookDrop: bridge-crane takes hookDrop 0.5 to 8, got 8.0001",
+    );
+    expect(onlyProblem("bridge-crane", { ...crane, railHeight: 6, hookDrop: 7 }).message).toBe(
+      "props[3].params.hookDrop: bridge-crane takes hookDrop 0.5 to 3.5 at railHeight 6, got 7",
+    );
+  });
+
+  test("the hookDrop limit waits until every other parameter passes", () => {
+    const problem = onlyProblem("bridge-crane", {
+      span: 12,
+      travel: 20,
+      railHeight: 6,
+      hookDrop: 7,
+    });
+    expect(problem.path).toBe("props[3].params.color");
+  });
+});
+
+/** An optional glow, as the listing shows it. */
+const optionalGlow = { name: "glow", type: "glow", required: false } as const;
+
+/** The required colour every kind takes, as the listing shows it. */
+const requiredColor = { name: "color", type: "color", required: true } as const;
+
+/** The format's kinds with their parameters, ranges, choices and defaults, in its order. */
+const LISTING: ReturnType<typeof listKinds> = [
+  {
+    name: "conveyor",
+    params: [
+      { name: "length", type: "number", min: 1, max: 12 },
+      { name: "width", type: "number", min: 0.6, max: 1.6, default: 0.8 },
+      { name: "height", type: "number", min: 0.6, max: 1.2, default: 0.9 },
+      requiredColor,
+      optionalGlow,
+    ],
+  },
+  {
+    name: "enclosure",
+    params: [
+      { name: "width", type: "number", min: 1, max: 6 },
+      { name: "length", type: "number", min: 1, max: 8 },
+      { name: "height", type: "number", min: 1.5, max: 3.5, default: 2.4 },
+      { name: "material", type: "material", choices: ["metal", "concrete"], default: "metal" },
+      requiredColor,
+      optionalGlow,
+    ],
+  },
+  {
+    name: "robot-arm",
+    params: [
+      { name: "reach", type: "number", min: 1.5, max: 3.5, default: 2.5 },
+      { name: "shoulder", type: "number", min: 30, max: 90, default: 55 },
+      { name: "elbow", type: "number", min: 60, max: 160, default: 100 },
+      requiredColor,
+      { name: "baseColor", type: "color", required: false },
+      optionalGlow,
+    ],
+  },
+  {
+    name: "container",
+    params: [{ name: "length", type: "number", min: 3, max: 12.2, default: 6.06 }, requiredColor],
+  },
+  {
+    name: "crate",
+    params: [{ name: "size", type: "number", min: 0.6, max: 1.8, default: 1.2 }, requiredColor],
+  },
+  {
+    name: "partition",
+    params: [
+      { name: "width", type: "number", min: 1, max: 8 },
+      { name: "height", type: "number", min: 1, max: 4 },
+      { name: "thickness", type: "number", min: 0.1, max: 0.6, default: 0.3 },
+      {
+        name: "material",
+        type: "material",
+        choices: ["wood", "brick", "concrete", "metal"],
+        default: "concrete",
+      },
+      requiredColor,
+    ],
+  },
+  {
+    name: "bridge-crane",
+    params: [
+      { name: "span", type: "number", min: 10, max: 30 },
+      { name: "travel", type: "number", min: 10, max: 60 },
+      { name: "railHeight", type: "number", min: 6, max: 15.5 },
+      { name: "bridgeAt", type: "number", min: 0, max: 1, default: 0.5 },
+      { name: "trolleyAt", type: "number", min: 0, max: 1, default: 0.5 },
+      { name: "hookDrop", type: "number", min: 0.5, max: 8, default: 2 },
+      requiredColor,
+      { name: "runwayColor", type: "color", required: false },
+    ],
+  },
+  {
+    name: "jib-crane",
+    params: [
+      { name: "height", type: "number", min: 3, max: 8, default: 5 },
+      { name: "boom", type: "number", min: 2, max: 8, default: 4 },
+      requiredColor,
+    ],
+  },
+  {
+    name: "light-strip",
+    params: [
+      { name: "length", type: "number", min: 0.5, max: 12 },
+      { name: "width", type: "number", min: 0.1, max: 0.6, default: 0.2 },
+      { name: "height", type: "number", min: 2.5, max: 17 },
+      requiredColor,
+      { name: "glow", type: "glow", required: true },
+    ],
+  },
+];
+
 describe("the kind listing", () => {
   test("lists every kind with the format's parameters, ranges, choices and defaults", () => {
-    const optionalGlow = { name: "glow", type: "glow", required: false } as const;
-    expect(listKinds()).toEqual([
-      {
-        name: "conveyor",
-        params: [
-          { name: "length", type: "number", min: 1, max: 12 },
-          { name: "width", type: "number", min: 0.6, max: 1.6, default: 0.8 },
-          { name: "height", type: "number", min: 0.6, max: 1.2, default: 0.9 },
-          { name: "color", type: "color" },
-          optionalGlow,
-        ],
-      },
-      {
-        name: "enclosure",
-        params: [
-          { name: "width", type: "number", min: 1, max: 6 },
-          { name: "length", type: "number", min: 1, max: 8 },
-          { name: "height", type: "number", min: 1.5, max: 3.5, default: 2.4 },
-          { name: "material", type: "material", choices: ["metal", "concrete"], default: "metal" },
-          { name: "color", type: "color" },
-          optionalGlow,
-        ],
-      },
-      {
-        name: "container",
-        params: [
-          { name: "length", type: "number", min: 3, max: 12.2, default: 6.06 },
-          { name: "color", type: "color" },
-        ],
-      },
-      {
-        name: "crate",
-        params: [
-          { name: "size", type: "number", min: 0.6, max: 1.8, default: 1.2 },
-          { name: "color", type: "color" },
-        ],
-      },
-      {
-        name: "partition",
-        params: [
-          { name: "width", type: "number", min: 1, max: 8 },
-          { name: "height", type: "number", min: 1, max: 4 },
-          { name: "thickness", type: "number", min: 0.1, max: 0.6, default: 0.3 },
-          {
-            name: "material",
-            type: "material",
-            choices: ["wood", "brick", "concrete", "metal"],
-            default: "concrete",
-          },
-          { name: "color", type: "color" },
-        ],
-      },
-      {
-        name: "light-strip",
-        params: [
-          { name: "length", type: "number", min: 0.5, max: 12 },
-          { name: "width", type: "number", min: 0.1, max: 0.6, default: 0.2 },
-          { name: "height", type: "number", min: 2.5, max: 17 },
-          { name: "color", type: "color" },
-          { name: "glow", type: "glow", required: true },
-        ],
-      },
-    ]);
+    expect(listKinds()).toEqual(LISTING);
   });
 });

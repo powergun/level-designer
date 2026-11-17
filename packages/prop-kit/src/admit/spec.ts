@@ -8,9 +8,10 @@ export interface NumberSpec {
   readonly default?: number;
 }
 
-/** The required `#rrggbb` surface colour every kind takes. */
-export interface ColorSpec {
+/** A `#rrggbb` surface colour; every kind requires `color`, and a kind may take an optional one. */
+export interface ColorSpec<R extends boolean = boolean> {
   readonly type: "color";
+  readonly required: R;
 }
 
 /** A slab material out of `choices`, with its default. */
@@ -35,13 +36,15 @@ export type ParamTable = Readonly<Record<string, ParamSpec>>;
 /** The admitted value type of one spec. */
 type ValueOf<S extends ParamSpec> = S extends NumberSpec
   ? number
-  : S extends ColorSpec
+  : S extends ColorSpec<true>
     ? string
-    : S extends MaterialSpec<infer M>
-      ? M
-      : S extends GlowSpec<true>
-        ? string
-        : string | undefined;
+    : S extends ColorSpec
+      ? string | undefined
+      : S extends MaterialSpec<infer M>
+        ? M
+        : S extends GlowSpec<true>
+          ? string
+          : string | undefined;
 
 /** The typed parameter value of a kind: every parameter admitted, defaults filled in. */
 export type ParamValues<T extends ParamTable> = { readonly [K in keyof T]: ValueOf<T[K]> };
@@ -53,8 +56,10 @@ export function range(min: number, max: number, fallback?: number): NumberSpec {
     : { type: "number", min, max, default: fallback };
 }
 
-/** The colour parameter. */
-export const COLOR: ColorSpec = { type: "color" };
+/** A colour parameter; an optional colour has no default and admits as nothing. */
+export function color<R extends boolean>(required: R): ColorSpec<R> {
+  return { type: "color", required };
+}
 
 /** A material parameter out of `choices`, with its default. */
 export function material<M extends SlabMaterial>(

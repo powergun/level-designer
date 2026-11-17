@@ -3,7 +3,7 @@
   "extends": ["./.oxlintrc.json"],
   "overrides": [
     {
-      "files": ["packages/*/src/**/*.ts"],
+      "files": ["packages/*/src/**/*.ts", "packages/qa-client/page/**/*.ts"],
       "excludeFiles": [
         "**/*.test.ts",
         "packages/sec111-gateway/src/stage/**",

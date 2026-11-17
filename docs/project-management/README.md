@@ -10,7 +10,7 @@ TASK-001.02: DONE: build the slab model, the prop kit and the snapshot renderer
 
 TASK-001.03: DONE: build the rules, the pipeline and the tool until the sealed hall builds
 
-TASK-001.04: PLAN: build the QA app
+TASK-001.04: DONE: build the QA app
 
 TASK-001.05: PLAN: dress and light the hall in the first art pass
 

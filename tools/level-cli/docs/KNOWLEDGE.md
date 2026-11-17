@@ -60,10 +60,13 @@ Every line is tab-separated and starts with its fact's name.
 - A blocked build prints one line per build error (rule, path, message), then
   `blocked: <n> errors`, or `blocked: 1 error` for one.
 - The kind listing prints `kind <name>`, then one `param` line per parameter: its name, its
-  type, its range, form or choices, and its default, `required` or `optional`.
+  type, its range, form or choices, and its default, `required` or `optional`. A colour and a
+  glow print `required` or `optional` as `prop-kit`'s listing states.
 
-Every length prints with `level-format`'s `formatLength`, the kind parameters' ranges and
-defaults included, and a point as its three lengths joined by commas. Counts and caps print
+Every length prints with `level-format`'s `formatLength`, and a point as its three lengths
+joined by commas. The kind parameters' ranges and defaults print through it too: most are
+lengths, and the arm's angles and the bridge crane's fractions lie on its 0.1 mm grid, so they
+print unchanged. Counts and caps print
 as plain integers. Every number comes from its owner's value: the report's from the
 pipeline's report, the listing's from `prop-kit`.
 

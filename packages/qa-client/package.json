@@ -1,0 +1,16 @@
+{
+  "name": "@level-designer/qa-client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./page/*": "./page/*",
+    "./protocol": "./src/protocol/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "dependencies": {
+    "@level-designer/level-format": "workspace:*",
+    "@level-designer/level-view": "workspace:*",
+    "@level-designer/sec111-gateway": "workspace:*"
+  }
+}

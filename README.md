@@ -8,7 +8,7 @@ designer's code.
 ## Current state
 
 The repository holds the Bun workspace, its development pipeline, the art direction
-references and eleven components in three groups.
+references and fourteen components in four groups.
 
 The gateways are the only bridges to the sibling repositories:
 
@@ -32,6 +32,16 @@ The library components carry the level's data and judgement:
   slab generators and the placement of a prop;
 - [level-rules](packages/level-rules/README.md): the validator's checks: the judgement of
   a built level by every rule the build does not own, the destructibility proof included.
+
+The QA app lets the human walk and fly through the level in a browser:
+
+- [level-view](packages/level-view/README.md): draws a level pair through the game's
+  renderer with the game's look and the level's lighting;
+- [qa-client](packages/qa-client/README.md): the QA page: boot, walk in the game's
+  collision, fly, marks, heads-up display and the protocol it shares with the server;
+- [qa-server](tools/qa-server/README.md): the loopback server under Bun: it builds the
+  committed description, serves the page and the level, and writes the run log and the
+  marks file.
 
 The tools run under Bun:
 
@@ -90,5 +100,46 @@ another file, such as the git-ignored draft `levels/dark-factory.draft.json`.
 `snapshot` adds a custom view with `--eye=<x,y,z> --look-at=<x,y,z>`. The exit status
 is 0 for accepted or done, 2 for a blocked build or a rejected level, 3 for a usage or
 file error, and 1 for a defect or a broken sibling install.
+
+## QA the level
+
+The owner alone runs the QA app; agents never start the server or a browser.
+
+```sh
+just setup        # once, and again after a manifest change
+just qa           # print the run log's path, build, then serve at the printed address
+```
+
+- Before the first setup, check out sec-111, destruction-poc and rendering-poc beside
+  this repository, and run `just setup` inside sec-111 and inside destruction-poc.
+- The QA recipe prints the run log's path as soon as the log opens, builds
+  `levels/dark-factory.json` once, then prints the address `http://127.0.0.1:4327/` once
+  the server listens. A description edit needs a restart. Add `--port <n>` to the recipe
+  to serve on another port; a taken port stops the server.
+- Open the printed address in Chrome with hardware acceleration; the page needs WebGPU.
+- Move: click to capture the mouse; `W`, `A`, `S`, `D` move and `Shift` sprints; `V`
+  switches walk and fly; `E` and `Q` rise and sink in fly; `Esc` releases the mouse.
+- Mark: go to a problem, press `F3` (or `M`), type a comment and press `Enter`. The
+  status strip shows the mark number and the file; `Esc` cancels.
+- Stop the server with Ctrl+C. A stop during the start says that it waits for the
+  running step. The exit status is 0 after a stop, 1 for a start failure and 3 for a
+  usage error.
+- Send back two files: `.tmp/qa/marks.log` and the run log
+  `.tmp/qa/logs/qa-<start time>.log`.
+
+Judge what agents cannot see:
+
+- the mood against the references, the shadows, the haze and the glow;
+- the seals, with `?leak=1` added to the address: no loud magenta shows at the end wall,
+  the window and door panels, the back slot, above either side wall or, from fly height,
+  down into a pier;
+- the play space: spawn areas, main lanes, gaps, and collision against each prop kind.
+
+When the app fails, the run log explains why. It opens before the sibling check and the
+build, and records the start facts, the build, every request, every page step and how
+the run ended. Only a run log that cannot be opened prints on the terminal alone.
+The browser's own console messages never reach the run log. When the view looks wrong
+and the page shows no message, copy the text of the browser's console into a mark, or
+send it with the two files.
 
 Read [project knowledge](docs/KNOWLEDGE.md) next.

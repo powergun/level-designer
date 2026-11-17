@@ -254,3 +254,14 @@ milestones 4 to 6.
 (2026-11-16 22:22:05)
 The owner's QA of TASK-001.03 passed, and the owner approved in writing marking it DONE.
 Status stays WIP. Remaining: milestones 4 to 6, starting with TASK-001.04.
+
+(2026-11-17 13:47:35)
+Milestone 4 is built and reviewed: the QA app (`level-view`, `qa-client` and `qa-server`
+behind the QA recipe) and the robot arm, the bridge crane and the jib crane in
+`prop-kit`. An acceptance review found TASK-001.04 complete, and the root gates pass on
+Windows with a test recipe of 8.5 s. Status stays WIP. Remaining: the owner's QA of
+TASK-001.04, then milestones 5 and 6.
+
+(2026-11-17 14:48:36)
+The owner's QA of TASK-001.04 passed, and the owner approved in writing marking it DONE.
+Status stays WIP. Remaining: milestones 5 and 6, starting with TASK-001.05.

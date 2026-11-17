@@ -42,3 +42,9 @@ export const CONTAINER_WIDTH = 2.44;
 
 /** The height of a container, fixed by the format. */
 export const CONTAINER_HEIGHT = 2.59;
+
+/**
+ * The least height of a hanging part's underside above the floor under `at`. It clears the
+ * 2.17 m that `support` reads over the hall's higher floor, 0.3241 m up, with room to spare.
+ */
+export const LEAST_HANG = 2.5;

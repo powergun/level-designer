@@ -16,7 +16,7 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true
   },
-  "include": ["packages/*/src/**/*.ts"],
+  "include": ["packages/*/src/**/*.ts", "packages/qa-client/page/**/*.ts"],
   "exclude": [
     "**/*.test.ts",
     "packages/sec111-gateway/src/stage/**",
