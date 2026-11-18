@@ -14,7 +14,16 @@ type Prepared = Extract<Awaited<ReturnType<typeof prepareLevel>>, { readonly kin
 export type PreparedStatic = Pick<Prepared, "level" | "files">;
 
 /** The build error rules, in the order of the build steps that raise them. */
-type BuildRule = "shape" | "id" | "base" | "prepare" | "place" | "kind" | "param" | "slab";
+type BuildRule =
+  | "shape"
+  | "id"
+  | "base"
+  | "prepare"
+  | "place"
+  | "kind"
+  | "param"
+  | "finish"
+  | "slab";
 
 /**
  * One reason a build is blocked: its rule, the path of the offending value and the message an

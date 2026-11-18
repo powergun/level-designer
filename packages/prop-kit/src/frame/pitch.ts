@@ -1,7 +1,7 @@
 import type { Quaternion, Slab } from "@level-designer/level-format";
 import { FACINGS } from "./facing.js";
 import { multiply } from "./quaternion.js";
-import type { PitchedRole, PlanePoint } from "./role.js";
+import type { PitchedRole, PlanePoint, SlabPaint } from "./role.js";
 
 /** Radians per degree. */
 const RADIANS = Math.PI / 180;
@@ -23,9 +23,10 @@ export function pitchPoint(
 /**
  * The slab of a pitched role in the prop frame. Its height runs along the pitched direction and
  * its width a right angle above it; its rotation is the turn about X by 90 degrees less the pitch
- * after the `+X` facing, a product of unit quaternions.
+ * after the `+X` facing, a product of unit quaternions. It carries the role's finish path and
+ * the prop's paint.
  */
-export function pitchedSlab(role: PitchedRole): Slab {
+export function pitchedSlab(role: PitchedRole, paint: SlabPaint): Slab {
   const half = ((90 - role.pitch) * RADIANS) / 2;
   const turn: Quaternion = [Math.sin(half), 0, 0, Math.cos(half)];
   const [z, y] = pitchPoint(role.hinge, role.pitch, 0, role.width / 2);
@@ -36,5 +37,7 @@ export function pitchedSlab(role: PitchedRole): Slab {
     color: role.color,
     position: [(x0 + x1) / 2, y, z],
     rotation: multiply(turn, FACINGS["+X"].quaternion),
+    finish: role.finish,
+    ...paint,
   };
 }

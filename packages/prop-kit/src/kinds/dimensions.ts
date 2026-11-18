@@ -32,6 +32,12 @@ export const ENCLOSURE_BAND_BASE = 1.2;
 export const ENCLOSURE_BAND_HEIGHT = 0.1;
 
 /**
+ * The widest metal enclosure that takes the cabinet role on all four walls: a cabinet beside a
+ * housing. A wider one is a machine housing with its plate on the +X side.
+ */
+export const CABINET_WIDTH = 1.2;
+
+/**
  * The thickness of a light strip, a batten housing. Down a long hall the player sees its edge
  * more than its underside, so the edge is deeper than a panel.
  */

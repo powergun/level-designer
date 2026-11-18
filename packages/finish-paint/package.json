@@ -1,5 +1,9 @@
 {
   "name": "@level-designer/finish-paint",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@level-designer/level-format": "workspace:*"
+  }
 }

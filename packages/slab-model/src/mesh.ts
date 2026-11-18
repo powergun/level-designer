@@ -3,25 +3,24 @@ import {
   rotateVector,
   toWorldPoint,
 } from "@level-designer/destruction-gateway";
-import type { MeshData, RigidTransform } from "@level-designer/destruction-gateway";
+import type { MeshData, RigidTransform, WallModel } from "@level-designer/destruction-gateway";
+import { slabFrame } from "@level-designer/finish-paint";
 import type { Slab } from "@level-designer/level-format";
 import { buildSlabModel } from "./model.js";
 
 /**
  * The intact indexed mesh of one slab in level coordinates: xyz positions and unit normals,
- * linear RGB colours per vertex, and triangle indices.
+ * the slab's linear RGB colour, and per vertex its face's pattern coordinates, its face's
+ * width and height, and the slab's number, seed and wear with the face's class.
  */
 interface IntactMesh {
   readonly positions: Float32Array;
   readonly normals: Float32Array;
   readonly colors: Float32Array;
+  readonly pattern: Float32Array;
+  readonly faceSize: Float32Array;
+  readonly slab: Float32Array;
   readonly indices: Uint32Array;
-}
-
-/** The surfaces of every chunk of the slab's model, in slab-local metres. */
-function chunkSurfaces(slab: Slab): MeshData[] {
-  const model = buildSlabModel(slab);
-  return model.chunks.map((chunk) => createChunkGeometry(model, chunk.index).surface);
 }
 
 /** Writes the xyz triples of `local` into `world` at `offset`, each moved by `move`. */
@@ -43,30 +42,65 @@ function moveTriples(
   }
 }
 
+/** The xyz triple of vertex `i` of a slab-local array. */
+function tripleAt(values: Float32Array, i: number): readonly [number, number, number] {
+  return [values[3 * i] ?? 0, values[3 * i + 1] ?? 0, values[3 * i + 2] ?? 0];
+}
+
+/**
+ * Writes the slab data of one surface from its slab-local vertices, starting at `vertex`:
+ * the model's linear base colour, the face's frame by finish-paint's slab frame rule, and
+ * the slab's number, seed and wear with the face's class.
+ */
+function writeSlabData(
+  slab: Slab,
+  model: WallModel,
+  surface: MeshData,
+  mesh: IntactMesh,
+  vertex: number,
+): void {
+  const { r, g, b } = model.baseColor;
+  for (let i = 0; i < surface.positions.length / 3; i++) {
+    const v = vertex + i;
+    const face = slabFrame(slab.size, tripleAt(surface.positions, i), tripleAt(surface.normals, i));
+    mesh.colors.set([r, g, b], 3 * v);
+    mesh.pattern.set([face.x, face.y], 2 * v);
+    mesh.faceSize.set([face.width, face.height], 2 * v);
+    mesh.slab.set([slab.number, slab.seed, slab.wear, face.faceClass], 4 * v);
+  }
+}
+
 /**
  * The slab's intact mesh: destruction lib's wall mesher over every chunk of the shared
- * builder's model, moved by the slab's pose. Colours are the mesher's, already linear; each
- * triangle keeps its own three vertices.
+ * builder's model, moved by the slab's pose. Each triangle keeps its own three vertices, and
+ * every vertex carries the slab's colour and its face's finish data.
  */
 export function meshSlab(slab: Slab): IntactMesh {
-  const surfaces = chunkSurfaces(slab);
-  const length = surfaces.reduce((sum, surface) => sum + surface.positions.length, 0);
+  const model = buildSlabModel(slab);
+  const surfaces = model.chunks.map((chunk) => createChunkGeometry(model, chunk.index).surface);
+  const vertices = surfaces.reduce((sum, surface) => sum + surface.positions.length / 3, 0);
   const [px, py, pz] = slab.position;
   const [qx, qy, qz, qw] = slab.rotation;
   const pose: RigidTransform = {
     position: { x: px, y: py, z: pz },
     rotation: { x: qx, y: qy, z: qz, w: qw },
   };
-  const positions = new Float32Array(length);
-  const normals = new Float32Array(length);
-  const colors = new Float32Array(length);
-  let offset = 0;
+  const mesh: IntactMesh = {
+    positions: new Float32Array(3 * vertices),
+    normals: new Float32Array(3 * vertices),
+    colors: new Float32Array(3 * vertices),
+    pattern: new Float32Array(2 * vertices),
+    faceSize: new Float32Array(2 * vertices),
+    slab: new Float32Array(4 * vertices),
+    indices: Uint32Array.from({ length: vertices }, (_, i) => i),
+  };
+  let vertex = 0;
   for (const surface of surfaces) {
-    moveTriples(surface.positions, positions, offset, (v) => toWorldPoint(v, pose, v));
-    moveTriples(surface.normals, normals, offset, (v) => rotateVector(v, pose.rotation, v));
-    colors.set(surface.colors, offset);
-    offset += surface.positions.length;
+    const offset = 3 * vertex;
+    moveTriples(surface.positions, mesh.positions, offset, (v) => toWorldPoint(v, pose, v));
+    moveTriples(surface.normals, mesh.normals, offset, (v) => rotateVector(v, pose.rotation, v));
+    writeSlabData(slab, model, surface, mesh, vertex);
+    vertex += surface.positions.length / 3;
   }
-  const indices = Uint32Array.from({ length: length / 3 }, (_, i) => i);
-  return { positions, normals, colors, indices };
+  return mesh;
 }

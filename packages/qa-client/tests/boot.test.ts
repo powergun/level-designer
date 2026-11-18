@@ -217,6 +217,17 @@ test("a stalled step has its start line in a batch while the strip names it", as
   expect(page.view.frames).toHaveLength(0);
 });
 
+test("a view start that fails at either step logs the error's stack as a warning", async () => {
+  for (const step of ["glb", "renderer"] as const) {
+    const page = bootTestPage({ view: { kind: "fail", step, message: "Node builder threw" } });
+    await page.booted;
+    const lines = page.fake.lines().filter((line) => line.text.startsWith(`level view ${step}:`));
+    expect(lines.map((line) => line.level)).toEqual(["warn"]);
+    expect(lines[0]?.text).toContain("Error: Node builder threw");
+    expect(lines[0]?.text).toContain("scripted-view.ts");
+  }
+});
+
 test("a boot step that throws shows its failure and logs the stack", async () => {
   const fake = new ProtocolFake(levelFiles());
   const page = createTestPage({ html: pageHtml(), fetch: fake.fetch });

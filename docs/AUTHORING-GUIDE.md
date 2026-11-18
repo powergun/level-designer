@@ -2,8 +2,8 @@
 
 This guide is for the art team that dresses the hall in `levels/dark-factory.json`. It
 gives the hall in numbers, the placement rules in the words of the validator, the budgets,
-the accepted limits and the authoring loop. The kinds command prints every prop kind with
-its parameters, ranges and defaults; this guide repeats none of them.
+the finish table, the accepted limits and the authoring loop. The kinds command prints every
+prop kind with its parameters, ranges and defaults; this guide repeats none of them.
 
 ## Frame and units
 
@@ -210,8 +210,9 @@ Put the crane's `at` on x 0.1355 and give it a `span` of 29.37: `span` is the di
 between the runway beams' centre lines, and these lines then run along the middle of the
 corbel top strips, x -14.55 and 14.82. A runway rests on corbels when both its ends lie
 inside a pier's z range. Its `travel` then spans one bay, 17.46 to 22.80 m, two bays,
-37.59 to 42.93 m, or three bays, 57.72 to 60 m. Above a travel of 40 m each runway splits
-in two, 20 slabs instead of 16.
+37.59 to 42.93 m, or three bays, 57.72 to 60 m. A crane has 16 slabs. Above a span of
+20.3 m each girder web splits in two, 18 slabs, and above a travel of 40 m each runway
+splits too, 20 or 22 slabs.
 
 The base tubes on -X block two bays: the tube at z -65.18 to -62.94 stands in the bay
 between the piers at -77.48 and -57.35, and the tube at z 19.21 to 21.48 in the bay between
@@ -230,9 +231,9 @@ A worked example for the third bay, accepted by the validator: `at` [0.1355, -7.
 and 3.05.
 
 The bridge spans the hall between the runway webs. Its end trucks run 3 m along the
-runways, centred on the bridge's place, and its girders stand 0.55 to 1.2 m above
-`railHeight`: on the corbels, from y 14.21 to 14.86. The trolley tops out 1.7 m above
-`railHeight`, at y 15.36, under the trusses. Choose `bridgeAt` so that this 3 m stays clear
+runways, centred on the bridge's place. Its girder webs are 1.25 m high and stand 0.55 to
+1.85 m above `railHeight`: on the corbels, from y 14.21 to 15.51. The trolley tops out
+2.35 m above `railHeight`, at y 16.01, 0.27 m under the trusses' lowest members. Choose `bridgeAt` so that this 3 m stays clear
 of the z extents of the pipe columns, the tank tops, the tube at the ramp, the pipe at z
 -67.99 and the +X stub at z -14.56. The hook hangs `hookDrop` under the runways; over the
 upper deck, keep it above y 12.15.
@@ -321,138 +322,120 @@ limit passes at its typed value. The messages below are the validator's own.
   <k>: <step> failed". `proxies` builds the debris proxies of all slabs together.
 
 A blocked build prints its build errors instead of a report: `shape` and `id` for the
-description's form, `kind` and `param` for a prop's kind and parameters, `base` for a base
-name, `place` for an origin outside the interior, and `slab` for a slab beyond the caps.
+description's form, the finish table included, `kind` and `param` for a prop's kind and
+parameters, `finish` for a finish path the table lacks, `base` for a base name, `place` for
+an origin outside the interior, and `slab` for a slab beyond the caps.
 Each error starts with the path of the value to change, such as `props[3].params.length`.
 
 ## Budgets and caps
 
 - First-pass budget: 800 slabs in 200 props. The report prints both counts beside the
-  budget and never rejects for it; the art team holds itself to it.
+  budget and never rejects for it; the art team holds itself to it. The committed level
+  holds 616 slabs in 127 props.
 - Caps: 1,024 slabs, 300,000 triangles and eight point lights. Above 1,024 slabs the build
   is blocked; above 300,000 triangles the level is rejected. The lighting section admits at
-  most eight point lights.
+  most eight point lights, and the report prints their count beside that cap.
 - The description admits at most 512 props, 16 seals and eight glows.
 - The stage and the seals hold 113,853 triangles, so the props may add 186,147. The report
   prints the level's count beside the cap.
 - A slab's triangle count grows with its face: 12 for a 1 by 1 m slab, 20 for 2 by 1.2 m,
   44 for 4 by 2.4 m and 92 for 7 by 3.2 m. 800 crate slabs add 9,600 triangles; two bridge
-  cranes of span 29.37 and travel 30 add 3,056.
+  cranes of span 29.37 and travel 30 add 3,104.
 - Props add no body box. The hall uses 227 of sec-111's 512 with or without props.
-- The report prints the level's point lights beside the cap of eight.
+
+## Finishes
+
+The description's `finishes` is the finish table: each finish, such as `housing`, holds
+its `cut`, its `light` and its `roles`, and each role is one recipe of a `body`, `layers`
+and an optional `extends`. Every slab names a finish path, `finish/role`, which the kit
+chooses by the slab's kind and part, as "Finish paths" in the
+[prop-kit knowledge](../packages/prop-kit/docs/KNOWLEDGE.md) lists. "The finish table" in
+the [level-format knowledge](../packages/level-format/docs/KNOWLEDGE.md) gives every key,
+length, effect and cap. The art team's notes, the painter recipes and the painter briefs,
+hold the recipes and the value ladder.
+
+- A role's `body` holds its path's metalness and roughness, and its `lit` the emission:
+  every slab of a glowing prop names the glow, and only a lit body shines in it.
+- The committed table paints every finish with layers: `housing`, `corrugated`, `beam`,
+  `bed`, `casting`, `cast-concrete`, `timber`, `steel-stock`, `block` and the joints of
+  `luminaire/strip`. Six paths stay plain bodies: `housing/top`, `corrugated/roof`,
+  `beam/flange`, `beam/tie`, `cast-concrete/top` and `luminaire/band`. `steel-stock` and
+  `luminaire` keep metalness 0.55; every other finish stands at metalness 0. Both
+  `luminaire` paths are lit.
+- Every kind takes `wear` and `seed`; the kinds command prints their ranges and defaults.
+  A wearing layer follows `wear`, and `seed` varies a pattern between props.
+- Three parameters choose a role: a container's `door`, `+z` or `-z`, puts
+  `corrugated/door` on that end, a crate's `stencil` puts `timber/crate-stencil` on its
+  +X and -X sides, and a partition's `finish` names any path of the table. Without it a
+  partition takes its material's path; the level's barriers name `cast-concrete/barrier`
+  and its stacks with posts `steel-stock/stack-posts`.
+- Every face of a slab takes the slab's tint, the inside face included.
+
+A finish changes in the draft like a prop: edit a role, validate, fix the path the
+validator names, snapshot, and read the path's page.
+
+The snapshot command draws one page per finish path in use, `<finish>.<role>.png` in
+`.tmp/snapshots/finish/`. It empties that directory first, so it holds the pages of this
+level alone. A page shows its path on the path's largest outside face of the level:
+
+- the outside face between its two end edges, at 5 mm per pixel, or 20 mm when the face
+  is longer than 8 m;
+- the inside face and the top and bottom edges at the same scale;
+- the outside face again at 40 mm, what survives 20 m.
+
+Under each face stand a ruler in metres and the face's mean albedo as linear luminance,
+such as `outside 5mm 0.142`. A page shows albedo only, in the slab's tint, and draws a
+`"glow"` mark in the finish's `light`. The author holds each mean against the value
+ladder of the art team's notes; the [look and lighting](LOOK-AND-LIGHTING.md) document
+turns it into what a top, a side and an underside show. The QA app's next start shows the
+finish lit.
+
+### Hall finishes
+
+A base override in `base.materials` takes `finish`, a path of the table, and that role is
+a hall finish: its layers draw over the stage material's own look, on every surface of
+that material. A hall finish states no `body`, takes no `lit` effect and draws on `top`,
+`bottom` or `outside` only, also through `extends`. The validator reports a fault at the
+offending value, with the hall path in the message. Its coordinates are the level's:
+
+- on `top` and `bottom`, the plan point `[x, z]`;
+- on `outside`, the level's Z on a wall that faces along X and the level's X elsewhere,
+  then the level's Y.
+
+A layer has no height of its own. The class comes per pixel from the surface's own normal,
+so an `on: "top"` layer draws on every up-facing surface of its material inside its
+rectangle, also on the band of a pipe or a tank that faces up. A `clip` keeps a mark off a
+known part.
+
+The committed table holds the finish `hall`. `hall/front` paints `Material.001`,
+`hall/slab` paints `Material.003` and `hall/wall` paints `Material.002`. Both floors extend
+`hall/floor`, joints with tone steps between the bays. The front floor adds two aisle lines
+and a band at the ramp's foot, the slab a line on its edge, and the side walls draw a
+darker base. The art team's hall brief holds the recipes and their values.
+
+The snapshot command draws one page per hall finish that an override names, after the
+slab pages, with one tile per class its layers draw on, over a plain grey ground:
+
+- a wall or a ceiling as a window of 16 by 8 m from the interior's low corner, at 20 mm;
+- a floor whole at the plan sheet's 50 mm and orientation, split into two halves side by
+  side;
+- rulers in level coordinates under and beside each tile.
+
+A floor line 0.1 m wide shows as 2 px, and a joint only as a tone. Over the grey ground the
+mean tells the marks' share, not the surface's value; the QA app shows the marks on the
+stage.
 
 ## Look and lighting
 
-A sheet shows layout, scale and silhouette, never mood. No agent judges mood, shadow, haze
-or glow; the owner does, in the browser. The figures below come from the renderer's
-source and from measurements of the stage and of sec-111's models, not from a browser.
-
-### The stage's materials
-
-The base overrides in `base.materials` take the stage's material names. An override tints
-or retunes every surface that uses the name. Each material below gives its surfaces and
-`a`, the mean linear luminance of its base colour texture on those surfaces:
-
-- `Material`: the lamps of the ceiling fixtures, untextured at 0.8, the stage's only
-  emissive material.
-- `Material.001`: the front floor and the sloped upper panels, 0.21.
-- `Material.002`: the side walls with their piers and corbels, the door and window frames,
-  the deck columns and the back tower, 0.29.
-- `Material.003`: the raised slab with the ramp, the back wall, the partitions under the
-  decks, most pipes and tanks, and parts of the fixtures, 0.049.
-- `Material.004`: the low wall panels on +X and one on -X, 0.22.
-- `Material.005`: the ceiling, the three tall tubes and the -X pipe run, 0.054.
-- `Material.006`: the trusses, the three pipe columns and parts of the fixtures, 0.10.
-- `Material.007`: the three decks, 0.22.
-- `Material.008`, `Material.009` and `Material.010`: the crate stacks on the slab
-  islands, 0.17, 0.19 and 0.09.
-
-An override tints the texture but never replaces it. A surface returns diffuse light by
-its `a` times its tint times (1 - metalness). A tint therefore serves the pale materials:
-it lowers them toward the dark ones, so that the lights can rise for the dark ones. On a
-dark material it turns near black into black. A floor tint moves a floor about half as
-much as its number says: the other half is the environment's sheen, which the roughness
-0.55 of `Material.001` and `Material.003` sets, not the texture or the tint. The minions
-are about half metal: a regular's surface averages an albedo of 0.23 and a mini-boss's
-0.34.
-
-### How the hall is lit
-
-- The environment is the hall's light. It lights a surface by its albedo and its facing,
-  tops most and undersides least: a side gets 0.55 and an underside 0.22 of what a top
-  gets. It adds a mirror sheen that is half of what a floor shows, and casts no shadow.
-- The key stays vertical: the roof shadows a tilted key. A layer of panels in the truss
-  mesh, at y 17.08 and facing down, shadows it too. With the decks, the cranes and the
-  props above the floor, the key reaches about a tenth of it, as thin lines 0.5 to 1 m
-  wide along x -13.5, -4.3, 5.3 and 16 and three cross bands near z 8, -17 and -66.
-  Without the truss mesh it would reach half. Its lines are the only light of the hall
-  that casts a shadow.
-
-The glows and the points:
-
-- A glow makes a slab emissive, and an emissive slab lights nothing. A strip that must
-  light its surroundings needs a point light near it, above its top or a metre under it,
-  never level with its underside, where the point skims it.
-- A point casts no shadow. Its highlight in a glossy finish is far brighter than its
-  diffuse light, most of all where its light skims a face.
-- The distance a point needs from any surface grows with its candela: a dark glossy face
-  blooms by its highlight. At the back wall, the stage's darkest material, a point of 45
-  cd 2.27 m off the wall stays under the bloom threshold; one of 100 cd 1.57 m off it
-  makes a patch that blooms.
-- A point under a deck lights the deck far more than the slab. Under the front deck, 1.7 m
-  below the deck and 4.1 m above the slab, it lights the deck 26 times as much, 11 with
-  the deck's tint.
-- The lamps are bars 7.3 m long along z between each pair of fixture rows, the stage's
-  palest surface, so a point near a bar blooms it. `Material` keeps its emissive at 0.25.
-
-### The bloom threshold
-
-- The bloom takes every pixel whose luminance passes 0.75, in full from 1.10. Luminance is
-  0.21 R + 0.72 G + 0.07 B of the lit colour plus the emissive, taken before exposure and
-  before the haze. Distance does not save a patch: a far surface blooms like a near one.
-- A glow blooms when its colour's luminance times its strength passes 0.75. With their
-  colours, `strip` blooms by itself from strength 0.98, `gate` from 0.83, `line` from
-  1.14, `alert` from 1.30 and `eye` from 1.90.
-- Under the threshold, the halo, the haze glow and the lens dirt around a glow vanish
-  together. `haze.glow` only scales a halo that exists. `haze.density` also fades every
-  surface with distance: at 0.012, by 30 % at 30 m and 55 % at 67 m.
-- Reflected light counts too: a point's highlight on a glossy face can pass the threshold
-  where the glow does not.
-
-### The tuning handles
-
-- `lighting.environment.intensity` moves the whole hall: floors, walls, prop tops and
-  sides.
-- `lighting.key.intensity` moves only the key's lines and bands. At 0 they are gone.
-- Each glow's `strength` sets its tubes and nothing else.
-- `finishes.metal.roughness` trades the machines' highlights against glare. With the
-  committed points, at 0.6 a fifth of the standing places see a highlight of 0.75 or more;
-  at 0.65, about one in a hundred; from 0.7, none.
-- A point's candela and its height set its pool and its highlights; a shorter range keeps
-  it off far strips and props, which it would only skim.
-- The minions glint under any point by their own metal: a regular's joints are near
-  mirrors, and a mini-boss's panels pass the threshold under a point. No value of the
-  level ends these glints short of removing the points. A mini-boss's shoulder in a key
-  line passes the threshold from a key intensity of about 1.
-
-Reference levels: at environment intensity 7, away from the points, the front floor shows
-luminance 0.054 and the slab 0.041. A strip at strength 0.4 shows 0.31, 5.7 to 1 above the
-floor, and a pool shows 1.5 times the floor beside it.
+A sheet shows layout, scale and silhouette, never mood; the owner judges the mood in the
+browser. The [look and lighting](LOOK-AND-LIGHTING.md) document gives the stage's
+materials, how the hall is lit, the bloom threshold, the tuning handles and the reference
+levels.
 
 ## Accepted limits
 
-The owner accepts these limits of the first pass:
-
-- SMG rounds do nothing on a slab's thin edges, a shot-through prop never collapses,
-  settled debris does not rest on slabs, and a destroyed object keeps its shadow.
-- A damaged glowing slab loses its glow in the game, while a point light beside it stays.
-- A hollow prop wider than about 1 m can become a hiding spot once destroyed, because its
-  footprint stays a navigation obstacle.
-- An arm's links hinge on one edge and leave an open wedge at each joint, and a crane's
-  hook block hangs free, without a cable.
-- Only the sheets and the owner's QA show a prop that enters or floats off the base stage.
-- The first pass cannot express props standing on props, stock lower than 0.5 m, racks,
-  strips under 0.5 m, round columns and joints, glass, or single lit ceiling fixtures.
+The project knowledge lists the limits of the first pass that the owner accepts, among them
+what the first pass cannot express.
 
 `gap` has limits of its own. It does not judge a pair nearer than 0.7 m, so two props that
 touch at an acute angle leave a wedge it never sees. It stays strict where nothing fills a
@@ -473,16 +456,18 @@ just fmt                                                     # after the copy ov
 ```
 
 - Start the draft as a copy of `levels/dark-factory.json`.
-- Edit the draft -> validate -> read the findings -> snapshot -> read every sheet -> edit
-  again.
+- Edit the draft -> validate -> read the findings -> snapshot -> read every sheet and the
+  changed paths' pages -> edit again.
 - The sheets land in `.tmp/snapshots/`: `plan.png` (the floor plan below 5.9 m and the
   overhead plan below 16.2 m, with a 10 m grid, the spawns with their 6 m circles and each
   prop's number), `section.png` (two long elevations and six cross sections, with lines at
   each floor and at 2.17 m), `view.png` (eight perspective views: from the spawns at
-  eye height and two overviews from 12 m up) and `custom.png`.
+  eye height and two overviews from 12 m up) and `custom.png`; the finish pages in
+  `.tmp/snapshots/finish/`.
 - A point that starts with a minus sign needs the `=` form, as in `--eye=-5,1.7,-20`.
 - Exit status 0 means accepted or done, 2 a blocked build or a rejected level, 3 a usage or
   file error, and 1 a defect or a broken sibling install.
-- One validate takes about 4 s and one snapshot about 6 s, also with 800 crate slabs.
+- One validate takes about 4 s, also with 800 crate slabs. A snapshot of the committed
+  level, with 40 finish pages, takes about 34 s.
 - When the validator accepts the draft, copy it over the committed file and run the
   formatter; `just lint` checks the committed file's layout.

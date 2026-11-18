@@ -2,24 +2,33 @@
 
 ## Ownership
 
-The component owns the description shape, the level `.json` shape, the one slab admission
-and the reading of a slab as an oriented box. Its problems carry one of three rules:
-`shape`, `id` and `slab`. It judges no kind name, no kind parameter, no base material or
-mesh name and no placement: a prop's `kind` passes on as a string, its `params` as a map,
-and base names as map keys and strings.
+The component owns the description shape, the level `.json` shape, the finish table, the
+one slab admission and the reading of a slab as an oriented box. Its problems carry one of
+four rules: `shape`, `id`, `slab` and `finish`. It judges no kind name, no kind parameter,
+no base material or mesh name and no placement: a prop's `kind` passes on as a string, its
+`params` as a map, and base names as map keys and strings.
 
 ## Units
 
 - `shape`: the admission of untrusted JSON text. It parses the text and walks it with
-  checked reads. It also owns the id rule, the shared value reads and the length slack.
+  checked reads. It also owns the id rule, the finish path's form, the shared value reads
+  and the length slack.
 - `lighting`: the lighting section's one type, its one admission and its canonical key
   order, shared by the description and the level `.json`.
-- `slab`: the slab type, the shape of its record, its key order, the grid rounding, the
-  length formatter and the oriented box.
+- `slab`: the slab type with its four finish keys, the seed range, the shape of its
+  record, its key order, the grid rounding, the length formatter and the oriented box.
+- `length`: a length on a face, its reading with the bounds and the floor of its terms,
+  and its canonical text.
+- `layer`: one layer of a recipe: its types, the patterns of the eight kinds, its reading
+  with the common keys and the effects, and its canonical record.
+- `finish`: the finish table's types, its one admission with `extends` and the caps of a
+  recipe, its canonical text, a path's drawn recipe, a hall finish's limits and the seed
+  of an id. The description and the level `.json` share it.
 - `description`: the description type and its admission.
 - `level`: the level type, the slab admission, the decoder and the encoder.
 
-Dependencies point down: `shape` sits at the bottom, `lighting` and `slab` use it, and
+Dependencies point down: `shape` sits at the bottom, and `lighting`, `slab` and `length`
+use it. `layer` uses `length`, `finish` uses `layer` and `slab` for the cut's family, and
 `description` and `level` sit on top.
 
 ## Admission
@@ -33,9 +42,11 @@ reads its fields in its fixed key order, whatever order the text lists them in.
 
 - A path names a list item by its index in brackets, as in `props[3].at[0]`. A name in a
   map of free-text names, a base material or a glow, always shows quoted in brackets:
-  `glows["cyan"].strength`. A record key shows after a dot when it starts with a letter or
-  `_` and holds only letters, digits, `_` and `-`; any other record key shows in full,
-  quoted in brackets. The root is `$`, and its path is empty for `keyPath`.
+  `glows["cyan"].strength`. A finish and a role are ids, so their names show as record
+  keys: `finishes.housing.roles.machine.layers[2]`. A record key shows after a dot when it
+  starts with a letter or `_` and holds only letters, digits, `_` and `-`; any other record
+  key shows in full, quoted in brackets. The root is `$`, and its path is empty for
+  `keyPath`.
 - The component records no problem inside `params`. A kind parameter is a record key of
   its kind, so its path reads `props[3].params.length`.
 - A `shape` message reads `<path>: expected <requirement>, got <value>`. The value shows a
@@ -66,12 +77,12 @@ description leaves out the schema id.
 
 - `base` holds `scale`, a positive number; `materials`, a map from base material name to
   an override; and `doubleSided`, a list of base mesh names.
-- An override takes any of `tint`, `metalness`, `roughness` and `emissive`; an omitted key
-  keeps the source value.
+- An override takes any of `tint`, `metalness`, `roughness`, `emissive` and `finish`; an
+  omitted key keeps the source value. A `finish` is a finish path, and its role is the
+  material's hall finish, below.
 - A seal holds `id`, `min`, `max`, `color`, `metalness` and `roughness`. Its box passes
   when `max - min` is at least 0.05 m on every axis.
-- `finishes` holds `wood`, `brick`, `concrete` and `metal`, each with a `metalness` and a
-  `roughness`.
+- `finishes` is the finish table, below.
 - `glows` maps a free-text name to a `color` and a `strength` from 0 to 100, the type of
   an emissive override.
 - A prop holds `id`, `kind`, `at` (the plan position `[x, z]`), `yaw` in degrees and
@@ -86,6 +97,113 @@ Every `metalness` and `roughness` lies from 0 to 1. Surface colours, of seals an
 are `#rrggbb` text in either letter case; a tint, an emissive colour and a glow colour are
 linear RGB triples. `isSurfaceColor` is the one check of the surface colour form: the seal
 and slab reads use it, and so can any component that admits a surface colour.
+
+## The finish table
+
+The finish table maps a finish name to a finish: its `cut`, its `light` and its `roles`. A
+role maps to one recipe, and a finish path `finish/role` names one. Finish and role names
+obey the id rule; the table caps neither count.
+
+- `cut` holds `family`, one of the four slab materials, and `color`; `light` is a colour.
+  Both colours are `#rrggbb` text.
+- A recipe takes any of `body`, `layers` and `extends`, another role of the same finish.
+- A body takes any of `shade` from 0 to 4, `metalness`, `roughness` and `lit`, each from 0
+  to 1.
+
+### A layer
+
+A layer takes `kind`, its kind's keys, the common keys and at least one effect, all in one
+flat record. A layer of a missing or unknown kind reports its kind, and no key of a kind
+and no effect count.
+
+- The kinds: `bands` (`along`, `period`, `width`; `phase`, `offset`, `fit`, `ramp`),
+  `rectangle` (`from`, `to`), `dots` (`pitch`, `radius`; `phase`, `offset`, `fit`),
+  `noise` (`wavelength`; `threshold` with `softness`), `cells` (`width`, `height`, `gap`;
+  `shift`, `fit`, `share`), `face` (no key), `disc` (`at`, `radius`; `inner`, `diamond`)
+  and `border` (`width`; `inset`).
+- The common keys: `on`, one of `outside`, `inside`, `sides`, `top`, `bottom`, `end+`,
+  `end-`, `ends`, `edges` and `all`; `across`, `ends` or `out`; `up`, `top`; `clip`, two
+  corners `from` and `to`; `detail`, `medium` or `fine`; `wear`, a boolean; `amount`.
+- The effects: `shade` and `paint` from 0 to 4; `color`, `#rrggbb` text or `"glow"`;
+  `metalness`, `roughness` and `lit` from 0 to 1; and `jitter`, a record of `low` and
+  `high`, each from 0 to 4.
+
+#### The rules of the keys
+
+- A phase lies from 0 to 1, and so do `amount`, a threshold and a cell's `shift` and
+  `share`. A softness lies above 0 and at most 1.
+- A band's `fit` is `true` or absent, and a band along `diagonal` takes none. The `fit`
+  of a dot lattice and of cells names `across`, `up` or `both`. The format sets no limit
+  of a dot's radius against its pitch, nor of a disc's `inner` against its radius.
+- A border's `width` is one size for the ends, the top and the base, or a record of the
+  three, `ends`, `top` and `base`, each a size. The typed border always holds the three
+  widths, and the canonical text writes the record.
+- A border takes neither `across` nor `up`, each a problem at its key: under `ends` or
+  `out` its frame would draw a line down the face's centre, and under `top` its top and
+  base widths would swap.
+- A `jitter` on a kind other than `cells` is a problem at the `jitter`. It still counts as
+  the layer's effect, so it yields that one problem.
+
+### Lengths
+
+A length is plain metres, or text that adds a share of the face to metres: `"0.25w"`,
+`"1h-0.1"` or `"-0.5w+0.2"`. The typed length holds its metres and at most one share, a
+factor of the face's width or height, so every typed length has one canonical text. A
+point and a pair of sizes are `[across, up]`.
+
+- Every length bounds each term, the metres and a share's factor, at a magnitude of
+  1,000, so no length reaches a shader as a 32-bit infinity.
+- A position (`from`, `to`, `at`, a clip's corners, `offset`) takes any terms within the
+  bound.
+- A size (`period`, `width`, `height`, `radius`, `pitch`, `wavelength`) takes no negative
+  term and is above zero as stated. Each of its terms is 0 or at least one grid step,
+  0.0001, so no size reaches a shader as a 32-bit zero. A `ramp`, a `gap`, an `inner` and
+  an `inset` take the same floor and may also be 0.
+
+### Defaults and caps
+
+The admission fills the default of every key a stated record leaves out: `on` is
+`outside`, `wear` false and `amount` 1; a phase is one half and an offset and a ramp 0; a
+cell's `shift` and `share` are 0; a disc's `inner` is 0 and `diamond` false; an `inset`
+is 0; a stated body's keys take the default body's. A recipe's `body`, a layer's
+`across`, `up`, `clip` and `detail`, the `fit` of a dot lattice and of cells, and a
+noise's mask stay absent when unstated.
+
+A recipe draws at most 24 layers and at most two `noise` layers, the extended role's among
+them. Each cap is a problem at the role's `layers`. An `extends` that names no role of the
+finish, or a role that itself extends, is a problem at the `extends`.
+
+### The drawn recipe
+
+`recipeAt` is the one reading of a finish path. It returns what drawing the role needs:
+its body, its layers and its finish's `light`, the `#rrggbb` text as the table states it.
+An extending recipe draws the extended role's layers before its own and takes that role's
+body unless it states one. A recipe left without a body draws the default body: shade 1,
+metalness 0, roughness 0.6 and lit 0. A path the table lacks reads as no recipe.
+
+### A hall finish
+
+A role that a base override's `finish` names is a hall finish: a renderer draws the stage
+material as the base shade and the role's layers over it. The description judges each
+named path once, after the whole description holds its shape, as the decoder judges a
+slab's path:
+
+- A path the table lacks is a `finish` problem at the override's `finish`:
+  `base.materials["<name>"].finish: no finish "<finish>/<role>"`.
+- The drawn recipe, the extended role's layers among them, states no `body`, no `lit`
+  effect and no layer on a face other than `top`, `bottom` and `outside`. Each such value
+  is a `shape` problem at its own path in the table, so a fault gained through `extends`
+  stands at the extended role, and the message names the hall finish's path.
+
+A role that no override names keeps every key of a recipe. A role that both an override
+and a slab name is admitted, and the hall finish's limits hold for both.
+
+## The seed of an id
+
+A prop's or a box's default seed is `seedOfId` of its id, from 0 to `MAX_SEED`, 4,095.
+It takes the top 12 bits of the id's FNV-1a 32-bit hash, mixed by MurmurHash3's 32-bit
+finaliser, so ids that differ in one character spread like random seeds. A seed sets a
+look, so the function never changes.
 
 ## Lighting
 
@@ -103,15 +221,22 @@ vector with positive y.
 
 ## The level `.json`
 
-The root keys are `schema`, `props` and `lighting`, and the schema id is
-`level-designer-level/1`. A prop holds an id, unique among the props, and a list of at
-least one slab. A slab holds `size`, `material`, `color`, `position` and `rotation`, and the
-rotation is a unit quaternion `[x, y, z, w]`. The typed level leaves out the schema id,
-because the text alone carries it.
+The root keys are `schema`, `finishes`, `props` and `lighting`, and the schema id is
+`level-designer-level/1`. `finishes` is the description's finish table, read by the same
+admission and written with every default filled. A prop holds an id, unique among the
+props, and a list of at least one slab. The typed level leaves out the schema id, because
+the text alone carries it.
+
+A slab holds nine keys. `size`, `material`, `color`, `position` and `rotation` give its
+box, and the rotation is a unit quaternion `[x, y, z, w]`. Its four finish keys follow:
+`finish`, a finish path; `number`, an integer from 0 to 999,999; `seed`, an integer from 0
+to `MAX_SEED`; and `wear`, from 0 to 1.
 
 The decoder checks the shape and the ids first. Only a level that passes both reaches the
-slab admission, so its slab problems are exactly the ones `admitSlabs` returns for the
-same props.
+finish paths and the slab admission. A slab whose path the level's table lacks is a
+`finish` problem at its `finish`: `<path>: no finish "<finish>/<role>"`. A renderer joins
+a slab's mesh to its recipe by that path, so the decoder judges it once at the boundary.
+The slab problems are exactly the ones `admitSlabs` returns for the same props.
 
 The encoder only formats. It writes every record in its canonical key order, indents by
 two spaces and ends the text with a newline. Equal levels therefore give equal bytes,

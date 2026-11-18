@@ -1,4 +1,5 @@
 import type { ViewFailure } from "@level-designer/level-view";
+import { describe } from "../log/index.js";
 import { LEVEL_FILES } from "../protocol/index.js";
 import type { Drawing } from "../run/index.js";
 import type { PageCanvas, PageView, ViewStarter } from "../surroundings/index.js";
@@ -17,9 +18,9 @@ export function clearColorOf(search: string): "leak" | "game" {
 
 /**
  * Start the level view on the level files. A refusal names the WebGPU requirement; a GLB that
- * does not load names its file; any other start failure shows the renderer's error text. After
- * the start, a lost device or a GPU error raises the alarm and stops the drawing; once the page
- * runs, the status strip says so too, while a boot step still running keeps its name there.
+ * does not load names its file; another failure shows the renderer's error text; a failed start
+ * logs its stack. Later, a lost device or a GPU error raises the alarm and stops the drawing;
+ * once the page runs, the status strip says so too.
  */
 export async function startView(
   start: ViewStarter,
@@ -34,17 +35,20 @@ export async function startView(
   const outcome = await start({
     canvas,
     glb: files.glb,
+    finishes: files.level.finishes,
     lighting: files.level.lighting,
     interior: files.prepared.metrics.interior,
     clearColor,
     onFailure: (failure) => {
       drawing.stopped = true;
       const label = failureLabel(failure);
-      log.alarmed("drawing", `${label}: ${failure.message}; drawing stopped`);
+      log.alarmed("drawing", `drawing stopped: ${label}: ${failure.message}`);
       if (drawing.running) display.status(`drawing stopped: ${label}; see the banner`, "error");
     },
   });
   if (outcome.kind === "refused") return failed(outcome.error.message);
+  // The run log keeps the failure's stack; the page shows its message.
+  if (outcome.kind === "failed") log.warn(`level view ${outcome.step}: ${describe(outcome.error)}`);
   if (outcome.kind === "failed" && outcome.step === "glb") {
     return failed(`level file ${LEVEL_FILES.glb} failed: ${outcome.error.message}`);
   }

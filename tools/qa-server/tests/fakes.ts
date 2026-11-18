@@ -1,4 +1,4 @@
-import type { Level } from "@level-designer/level-format";
+import type { FinishTable, Level } from "@level-designer/level-format";
 import { encodeLevel } from "@level-designer/level-format";
 import type { BuildError, BuiltLevel, Report } from "@level-designer/level-pipeline";
 import type { Pipeline } from "@level-designer/qa-server";
@@ -20,6 +20,18 @@ const LIGHTING: Level["lighting"] = {
   exposure: 0.9,
 };
 
+/** The fixture finish table: one plain role, the path of the crate slab. */
+const FINISHES: FinishTable = new Map([
+  [
+    "timber",
+    {
+      cut: { family: "wood", color: "#604020" },
+      light: "#ffffff",
+      roles: new Map([["crate", { layers: [] }]]),
+    },
+  ],
+]);
+
 /** A level with one crate slab beside the player spawn. */
 function crateLevel(): Level {
   const [x, y, z] = PREPARED.spawns.player;
@@ -29,8 +41,12 @@ function crateLevel(): Level {
     color: "#604020",
     position: [x + 6, y + 0.5, z],
     rotation: [0, 0, 0, 1],
+    finish: "timber/crate",
+    number: 0,
+    seed: 0,
+    wear: 0.3,
   } as const;
-  return { props: [{ id: "crate", slabs: [slab] }], lighting: LIGHTING };
+  return { finishes: FINISHES, props: [{ id: "crate", slabs: [slab] }], lighting: LIGHTING };
 }
 
 /** The level GLB the fake build serves; the scripted view never parses it. */
@@ -39,7 +55,6 @@ export const FAKE_GLB: Uint8Array = new TextEncoder().encode("glTF bytes of the 
 /** The built level `qa-fixture` with hash `00c0ffee00aa`, on the committed prepared level. */
 export function fakeBuilt(): BuiltLevel {
   const level = crateLevel();
-  const finish = { metalness: 0.1, roughness: 0.8 } as const;
   return {
     description: {
       name: "qa-fixture",
@@ -47,7 +62,7 @@ export function fakeBuilt(): BuiltLevel {
       lighting: LIGHTING,
       glows: new Map(),
       seals: [],
-      finishes: { metal: finish, concrete: finish, brick: finish, wood: finish },
+      finishes: FINISHES,
       base: { doubleSided: [], materials: new Map(), scale: 3.89956 },
     },
     hash: "00c0ffee00aa",

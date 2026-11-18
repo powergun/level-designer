@@ -18,17 +18,24 @@ export interface Shell {
   readonly color: string;
 }
 
-/** The walls of a shell: its sides and its ends, each pair in slab order. */
-interface Walls {
-  readonly sides: readonly BoxRole[];
-  readonly ends: readonly BoxRole[];
+/** The finish paths of a shell's walls: the +X side, the -X side and, where it has them, both ends. */
+export interface WallFinishes {
+  readonly plusX: string;
+  readonly minusX: string;
+  readonly ends?: string;
+}
+
+/** The finish paths of a hollow box: its top and its walls. */
+export interface BoxFinishes extends WallFinishes {
+  readonly top: string;
 }
 
 /**
- * The walls of a shell from the floor to `wallHeight`: the +X and -X sides that run the full
- * length, set in by the eave, and the +Z and -Z ends that butt between the sides.
+ * The walls of a shell from the floor to `wallHeight`, in slab order: the +X and -X sides that
+ * run the full length, set in by the eave, then, where `finishes` names ends, the +Z and -Z ends
+ * that butt between the sides.
  */
-function walls(shell: Shell, wallHeight: number): Walls {
+function walls(shell: Shell, wallHeight: number, finishes: WallFinishes): BoxRole[] {
   const { width, length, panel, eave, material, color } = shell;
   const [halfW, halfL] = [width / 2, length / 2];
   const sideOuter = halfW - eave;
@@ -43,42 +50,43 @@ function walls(shell: Shell, wallHeight: number): Walls {
     [0, wallHeight],
     [halfL - panel, halfL],
   ];
-  return {
-    sides: [
-      { form: "box", box: side, facing: "+X", material, color },
-      { form: "box", box: mirrorX(side), facing: "-X", material, color },
-    ],
-    ends: [
-      { form: "box", box: end, facing: "+Z", material, color },
-      { form: "box", box: mirrorZ(end), facing: "-Z", material, color },
-    ],
-  };
+  const look = { form: "box", material, color } as const;
+  const sides: BoxRole[] = [
+    { ...look, box: side, facing: "+X", finish: finishes.plusX },
+    { ...look, box: mirrorX(side), facing: "-X", finish: finishes.minusX },
+  ];
+  const ends = finishes.ends;
+  if (ends === undefined) {
+    return sides;
+  }
+  return [
+    ...sides,
+    { ...look, box: end, facing: "+Z", finish: ends },
+    { ...look, box: mirrorZ(end), facing: "-Z", finish: ends },
+  ];
 }
 
 /**
  * The shared layout of conveyor, enclosure, container, crate and the hollow parts, in slab
  * order: a top that runs through over everything below it, the +X and -X sides under it, set in
- * by the eave, and, with `ends`, the +Z and -Z ends that butt between the sides.
+ * by the eave, and, where `finishes` names ends, the +Z and -Z ends that butt between the sides.
  */
-export function hollowBox(shell: Shell, ends: boolean): BoxRole[] {
+export function hollowBox(shell: Shell, finishes: BoxFinishes): BoxRole[] {
   const { width, length, height, panel, material, color } = shell;
   const top: Box = [
     [-width / 2, width / 2],
     [height - panel, height],
     [-length / 2, length / 2],
   ];
-  const shellWalls = walls(shell, height - panel);
   return [
-    { form: "box", box: top, facing: "up", material, color },
-    ...shellWalls.sides,
-    ...(ends ? shellWalls.ends : []),
+    { form: "box", box: top, facing: "up", material, color, finish: finishes.top },
+    ...walls(shell, height - panel, finishes),
   ];
 }
 
 /** The four walls of a shell over its full height with no top, as a mast's panels. */
-export function openBox(shell: Shell): BoxRole[] {
-  const shellWalls = walls(shell, shell.height);
-  return [...shellWalls.sides, ...shellWalls.ends];
+export function openBox(shell: Shell, finishes: Required<WallFinishes>): BoxRole[] {
+  return walls(shell, shell.height, finishes);
 }
 
 /**
@@ -86,17 +94,13 @@ export function openBox(shell: Shell): BoxRole[] {
  * height `span` and the full length, each in the eave with its face in the plane x = +width/2
  * or -width/2, level with the top's edge, and its back on its side's outer face.
  */
-export function glowPair(
-  shell: Shell,
-  span: readonly [number, number],
-  glowName: string,
-): BoxRole[] {
+export function glowPair(shell: Shell, span: readonly [number, number], finish: string): BoxRole[] {
   const halfW = shell.width / 2;
   const halfL = shell.length / 2;
   const box: Box = [[halfW - GLOW_DEPTH, halfW], span, [-halfL, halfL]];
-  const look = { material: "metal", color: shell.color, glow: glowName } as const;
+  const look = { form: "box", material: "metal", color: shell.color, finish } as const;
   return [
-    { form: "box", box, facing: "+X", ...look },
-    { form: "box", box: mirrorX(box), facing: "-X", ...look },
+    { ...look, box, facing: "+X" },
+    { ...look, box: mirrorX(box), facing: "-X" },
   ];
 }

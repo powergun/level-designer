@@ -1,8 +1,12 @@
+import type { BuiltLevel } from "@level-designer/level-pipeline";
 import { listKinds } from "@level-designer/prop-kit";
+import type { FinishSwatch } from "@level-designer/snapshot-render";
 import type { CustomView } from "../command-line/index.js";
 import { kindLines } from "../text/index.js";
 import type { OutputFile } from "./files.js";
-import { writeFiles } from "./files.js";
+import { clearDirectory, writeFiles } from "./files.js";
+import { finishSwatches } from "./finish-swatches.js";
+import { hallSwatches } from "./hall-swatches.js";
 import { judge, readAndBuild } from "./level.js";
 import type { ExitStatus, Pipeline, Streams } from "./pipeline.js";
 import { snapshotInput } from "./snapshot-input.js";
@@ -58,9 +62,25 @@ export async function build(
   );
 }
 
+/** The path segments of the finish pages' directory under the work directory. */
+const FINISH_PAGES = ["snapshots", "finish"] as const;
+
+/**
+ * The swatch of every finish page: the slab pages, then the hall pages. A path that both a
+ * slab and a base override name gets its hall page only, so each file is written once.
+ */
+function pageSwatches(built: BuiltLevel): readonly FinishSwatch[] {
+  const hall = hallSwatches(built);
+  const hallPaths = new Set(hall.map((swatch) => swatch.label));
+  const slabs = finishSwatches(built.level).filter((swatch) => !hallPaths.has(swatch.label));
+  return [...slabs, ...hall];
+}
+
 /**
  * `snapshot`: builds without judging and writes `snapshots/plan.png`, `section.png` and
- * `view.png` under the work directory, and `custom.png` for a custom view.
+ * `view.png` under the work directory, `custom.png` for a custom view, and one page per
+ * finish path in use, a slab's or a hall finish's, as `snapshots/finish/<finish>.<role>.png`,
+ * into a directory it first empties.
  */
 export async function snapshot(
   description: string,
@@ -74,6 +94,8 @@ export async function snapshot(
     if (built.status === 2) streams.err(BLOCKED);
     return built.status;
   }
+  const cleared = await clearDirectory(workdir, FINISH_PAGES, streams);
+  if (cleared !== 0) return cleared;
   const sheets = pipeline.renderSheets(built.value.glb, snapshotInput(built.value, custom));
   const files: OutputFile[] = [
     { path: ["snapshots", "plan.png"], data: sheets.plan },
@@ -82,6 +104,10 @@ export async function snapshot(
   ];
   if (sheets.custom !== undefined) {
     files.push({ path: ["snapshots", "custom.png"], data: sheets.custom });
+  }
+  for (const swatch of pageSwatches(built.value)) {
+    const name = `${swatch.label.replace("/", ".")}.png`;
+    files.push({ path: [...FINISH_PAGES, name], data: pipeline.renderFinishSheet(swatch) });
   }
   return writeFiles(workdir, files, streams);
 }

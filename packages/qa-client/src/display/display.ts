@@ -12,6 +12,18 @@ export interface DisplayRegions {
 }
 
 /**
+ * The longest banner line, characters: four alarms of it wrap to about eight lines in a window
+ * 1,280 px wide, within the banner's bound, and a console alarm with its run log path fits whole.
+ */
+const BANNER_LINE_MAX = 240;
+
+/** An alarm's banner line: its first line, cut to the banner's width; the run log has it all. */
+function headline(text: string): string {
+  const [first = ""] = text.split("\n", 1);
+  return first.length > BANNER_LINE_MAX ? `${first.slice(0, BANNER_LINE_MAX - 3)}...` : first;
+}
+
+/**
  * The page's visible text: the status strip, the alarm banner, the verdict banner, the build
  * error list and the heads-up display. Every status and verdict it shows is also a log line.
  */
@@ -35,13 +47,14 @@ export class Display {
   }
 
   /**
-   * Show an alarm in the one banner, newest first. It replaces the alarm of its own kind, so an
-   * alarm of another kind stays in view; a text already in view changes nothing and returns false.
+   * Show an alarm in the one banner, newest first, as one line. It replaces the alarm of its own
+   * kind, so the first line of every kind stays in view; a text already in view changes nothing
+   * and returns false.
    */
   alarm(kind: AlarmKind, text: string): boolean {
     if (this.alarms.some((alarm) => alarm.text === text)) return false;
     this.alarms = [{ kind, text }, ...this.alarms.filter((alarm) => alarm.kind !== kind)];
-    this.regions.banner.textContent = this.alarms.map((alarm) => alarm.text).join("\n");
+    this.regions.banner.textContent = this.alarms.map((alarm) => headline(alarm.text)).join("\n");
     this.regions.banner.hidden = false;
     return true;
   }

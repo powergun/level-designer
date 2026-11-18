@@ -3,6 +3,7 @@ import type { ParamValues } from "../admit/index.js";
 import { moveBox } from "../frame/index.js";
 import type { BoxRole, PitchedRole, PlanePoint, Role } from "../frame/index.js";
 import { PANEL } from "./dimensions.js";
+import { PATHS } from "./finishes.js";
 import { openBox } from "./hollow.js";
 import { defineKind } from "./kind.js";
 import type { Kind } from "./kind.js";
@@ -40,17 +41,21 @@ function base(p: Jib): BoxRole[] {
     facing: "up",
     material: "metal",
     color: p.color,
+    finish: PATHS.plinth,
   };
   const mastHeight = p.height + JIB_MAST_HEAD - JIB_PLINTH_HEIGHT;
-  const mast = openBox({
-    width: JIB_MAST_SIDE,
-    length: JIB_MAST_SIDE,
-    height: mastHeight,
-    panel: PANEL,
-    eave: 0,
-    material: "metal",
-    color: p.color,
-  }).map((role) => ({ ...role, box: moveBox(role.box, [0, JIB_PLINTH_HEIGHT, 0]) }));
+  const mast = openBox(
+    {
+      width: JIB_MAST_SIDE,
+      length: JIB_MAST_SIDE,
+      height: mastHeight,
+      panel: PANEL,
+      eave: 0,
+      material: "metal",
+      color: p.color,
+    },
+    { plusX: PATHS.mastFront, minusX: PATHS.mast, ends: PATHS.mast },
+  ).map((role) => ({ ...role, box: moveBox(role.box, [0, JIB_PLINTH_HEIGHT, 0]) }));
   return [plinth, ...mast];
 }
 
@@ -64,8 +69,14 @@ function boom(p: Jib): BoxRole[] {
       ...look,
       box: [[-PANEL / 2, PANEL / 2], [p.height + PANEL, p.height + PANEL + JIB_BOOM_WEB_HEIGHT], z],
       facing: "+X",
+      finish: PATHS.boom,
     },
-    { ...look, box: [[-halfF, halfF], [p.height, p.height + PANEL], z], facing: "down" },
+    {
+      ...look,
+      box: [[-halfF, halfF], [p.height, p.height + PANEL], z],
+      facing: "down",
+      finish: PATHS.flange,
+    },
   ];
 }
 
@@ -90,6 +101,7 @@ function tie(p: Jib): PitchedRole {
     pitch: (Math.atan2(dy, dz) * 180) / Math.PI,
     material: "metal",
     color: p.color,
+    finish: PATHS.tie,
   };
 }
 
@@ -106,6 +118,7 @@ function hoist(p: Jib): BoxRole {
     facing: "+X",
     material: "metal",
     color: p.color,
+    finish: PATHS.hoist,
   };
 }
 
@@ -114,9 +127,7 @@ function hoist(p: Jib): BoxRole {
  * `height` above the floor, a tie from the mast down to the boom and a hoist under the boom's
  * tip. 9 slabs.
  */
-export const JIB_CRANE: Kind = defineKind("jib-crane", JIB_PARAMS, (p): Role[] => [
-  ...base(p),
-  ...boom(p),
-  tie(p),
-  hoist(p),
-]);
+export const JIB_CRANE: Kind = defineKind("jib-crane", JIB_PARAMS, (p) => {
+  const roles: Role[] = [...base(p), ...boom(p), tie(p), hoist(p)];
+  return { roles };
+});

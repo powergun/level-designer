@@ -1,5 +1,7 @@
+import { readFinishTable, recipeAt } from "../finish/index.js";
+import type { FinishTable } from "../finish/index.js";
 import { readLighting } from "../lighting/index.js";
-import { admitText, IdClaims } from "../shape/index.js";
+import { admitText, IdClaims, itemPath, keyPath } from "../shape/index.js";
 import type { Admission, FormatProblem, ShapeNode } from "../shape/index.js";
 import { readSlab } from "../slab/index.js";
 import { admitSlabs } from "./admission.js";
@@ -15,12 +17,30 @@ function readProp(node: ShapeNode, ids: IdClaims): LevelProp {
   };
 }
 
-/** The level record; the slab admission runs once the shape and the ids hold. */
+/**
+ * The slabs whose finish path the level's table lacks, each a `finish` problem at the
+ * slab's `finish`: a renderer joins a slab's mesh to its recipe by that path.
+ */
+function missingFinishes(table: FinishTable, props: readonly LevelProp[]): FormatProblem[] {
+  return props.flatMap((prop, i) =>
+    prop.slabs.flatMap((slab, k) => {
+      if (recipeAt(table, slab.finish) !== undefined) {
+        return [];
+      }
+      const path = keyPath(itemPath(`${itemPath("props", i)}.slabs`, k), "finish");
+      const message = `${path}: no finish ${JSON.stringify(slab.finish)}`;
+      return [{ rule: "finish" as const, path, message }];
+    }),
+  );
+}
+
+/** The level record; the finish paths and the slab admission run once the shape holds. */
 function readLevel(root: ShapeNode, problems: FormatProblem[]): Level {
-  root.record(["schema", "props", "lighting"]);
+  root.record(["schema", "finishes", "props", "lighting"]);
   root.field("schema").oneOf([LEVEL_SCHEMA]);
   const ids = new IdClaims(problems);
   const level: Level = {
+    finishes: readFinishTable(root.field("finishes")),
     props: root
       .field("props")
       .list()
@@ -28,7 +48,7 @@ function readLevel(root: ShapeNode, problems: FormatProblem[]): Level {
     lighting: readLighting(root.field("lighting")),
   };
   if (problems.length === 0) {
-    problems.push(...admitSlabs(level.props));
+    problems.push(...missingFinishes(level.finishes, level.props), ...admitSlabs(level.props));
   }
   return level;
 }

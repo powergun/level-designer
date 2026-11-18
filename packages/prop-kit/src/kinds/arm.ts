@@ -15,6 +15,7 @@ import {
   ARM_WIDTHS,
 } from "./arm-dimensions.js";
 import { GLOW_DEPTH, PANEL } from "./dimensions.js";
+import { PATHS } from "./finishes.js";
 import { hollowBox } from "./hollow.js";
 import { defineKind } from "./kind.js";
 import type { Kind } from "./kind.js";
@@ -35,13 +36,14 @@ type Arm = ParamValues<typeof ARM_PARAMS>;
 /** The thickness span of the shoulder and the links: between the pedestal's side planes. */
 const LINK_X: Span = [-ARM_WIDTH / 2, ARM_WIDTH / 2];
 
-/** A metal link of the arm's colour, pitched `pitch` degrees, from `hinge`. */
+/** A metal link of the arm's colour with its finish path, pitched `pitch` degrees, from `hinge`. */
 function link(
   arm: Arm,
   hinge: PlanePoint,
   pitch: number,
   length: number,
   width: number,
+  finish: string,
 ): PitchedRole {
   return {
     form: "pitched",
@@ -52,6 +54,7 @@ function link(
     pitch,
     material: "metal",
     color: arm.color,
+    finish,
   };
 }
 
@@ -64,6 +67,7 @@ function shoulderBlock(arm: Arm): BoxRole {
     facing: "+X",
     material: "metal",
     color: arm.color,
+    finish: PATHS.shoulder,
   };
 }
 
@@ -81,18 +85,20 @@ function links(arm: Arm): readonly [PitchedRole, PitchedRole, PitchedRole] {
     arm.shoulder,
     upperLength,
     ARM_WIDTHS.upper,
+    PATHS.upperArm,
   );
   const bend = arm.shoulder + arm.elbow - 180;
   const elbow = pitchPoint(upper.hinge, arm.shoulder, upperLength, 0);
   const foreLength = ARM_SHARES.fore * arm.reach;
-  const fore = link(arm, elbow, bend, foreLength, ARM_WIDTHS.fore);
+  const fore = link(arm, elbow, bend, foreLength, ARM_WIDTHS.fore, PATHS.forearm);
   const wrist = pitchPoint(elbow, bend, foreLength, (ARM_WIDTHS.fore - ARM_WIDTHS.head) / 2);
-  const head = link(arm, wrist, bend, ARM_SHARES.head * arm.reach, ARM_WIDTHS.head);
+  const headLength = ARM_SHARES.head * arm.reach;
+  const head = link(arm, wrist, bend, headLength, ARM_WIDTHS.head, PATHS.head);
   return [upper, fore, head];
 }
 
 /** The glow accent on the head's +X face: metal, `GLOW_DEPTH` thick, centred on the head. */
-function accent(head: PitchedRole, glowName: string): PitchedRole {
+function accent(head: PitchedRole): PitchedRole {
   const along = (head.length * (1 - ARM_ACCENT_SHARE)) / 2;
   const across = (head.width - ARM_ACCENT_WIDTH) / 2;
   return {
@@ -101,7 +107,7 @@ function accent(head: PitchedRole, glowName: string): PitchedRole {
     hinge: pitchPoint(head.hinge, head.pitch, along, across),
     length: head.length * ARM_ACCENT_SHARE,
     width: ARM_ACCENT_WIDTH,
-    glow: glowName,
+    finish: PATHS.band,
   };
 }
 
@@ -110,7 +116,7 @@ function accent(head: PitchedRole, glowName: string): PitchedRole {
  * thick slabs that face local +X between the pedestal's side planes; a glow adds an accent on the
  * head. 9 or 10 slabs.
  */
-export const ROBOT_ARM: Kind = defineKind("robot-arm", ARM_PARAMS, (p): Role[] => {
+export const ROBOT_ARM: Kind = defineKind("robot-arm", ARM_PARAMS, (p) => {
   const pedestal = hollowBox(
     {
       width: ARM_WIDTH,
@@ -121,9 +127,14 @@ export const ROBOT_ARM: Kind = defineKind("robot-arm", ARM_PARAMS, (p): Role[] =
       material: "metal",
       color: p.baseColor ?? p.color,
     },
-    true,
+    {
+      top: PATHS.housingTop,
+      plusX: PATHS.pedestal,
+      minusX: PATHS.pedestal,
+      ends: PATHS.pedestal,
+    },
   );
   const [upper, fore, head] = links(p);
   const arm: Role[] = [...pedestal, shoulderBlock(p), upper, fore, head];
-  return p.glow === undefined ? arm : [...arm, accent(head, p.glow)];
+  return { roles: p.glow === undefined ? arm : [...arm, accent(head)], glow: p.glow };
 });

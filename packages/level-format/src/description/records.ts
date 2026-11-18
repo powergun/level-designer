@@ -1,7 +1,13 @@
-import { LENGTH_SLACK, readHexColor, readLinearRgb, readVec3 } from "../shape/index.js";
+import {
+  LENGTH_SLACK,
+  readFinishPath,
+  readHexColor,
+  readLinearRgb,
+  readVec3,
+} from "../shape/index.js";
 import type { IdClaims, ShapeNode } from "../shape/index.js";
 import { formatLength } from "../slab/index.js";
-import type { Finish, Glow, MaterialOverride, Prop, Seal } from "./description.js";
+import type { Glow, MaterialOverride, Prop, Seal } from "./description.js";
 
 /** The thinnest a seal may be along any axis, in metres. */
 const MIN_SEAL_THICKNESS = 0.05;
@@ -15,27 +21,20 @@ export function readGlow(node: ShapeNode): Glow {
   };
 }
 
-/** A metalness and a roughness, each from 0 to 1. */
-export function readFinish(node: ShapeNode): Finish {
-  node.record(["metalness", "roughness"]);
-  return {
-    metalness: node.field("metalness").numberIn(0, 1),
-    roughness: node.field("roughness").numberIn(0, 1),
-  };
-}
-
-/** A base material override; each key is optional. */
+/** A base material override; each key is optional, and a `finish` is a path's form. */
 export function readOverride(node: ShapeNode): MaterialOverride {
-  node.record([], ["tint", "metalness", "roughness", "emissive"]);
+  node.record([], ["tint", "metalness", "roughness", "emissive", "finish"]);
   const tint = node.optionalField("tint");
   const metalness = node.optionalField("metalness");
   const roughness = node.optionalField("roughness");
   const emissive = node.optionalField("emissive");
+  const finish = node.optionalField("finish");
   return {
     ...(tint === undefined ? {} : { tint: readLinearRgb(tint) }),
     ...(metalness === undefined ? {} : { metalness: metalness.numberIn(0, 1) }),
     ...(roughness === undefined ? {} : { roughness: roughness.numberIn(0, 1) }),
     ...(emissive === undefined ? {} : { emissive: readGlow(emissive) }),
+    ...(finish === undefined ? {} : { finish: readFinishPath(finish) }),
   };
 }
 

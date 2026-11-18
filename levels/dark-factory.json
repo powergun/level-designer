@@ -4,9 +4,19 @@
   "base": {
     "scale": 3.89956,
     "materials": {
-      "Material.001": { "tint": [0.36, 0.38, 0.41], "metalness": 0, "roughness": 0.55 },
-      "Material.002": { "tint": [0.57, 0.6, 0.65], "metalness": 0.05, "roughness": 0.78 },
-      "Material.003": { "metalness": 0, "roughness": 0.55 },
+      "Material.001": {
+        "tint": [0.36, 0.38, 0.41],
+        "metalness": 0,
+        "roughness": 0.55,
+        "finish": "hall/front"
+      },
+      "Material.002": {
+        "tint": [0.57, 0.6, 0.65],
+        "metalness": 0.05,
+        "roughness": 0.78,
+        "finish": "hall/wall"
+      },
+      "Material.003": { "metalness": 0, "roughness": 0.55, "finish": "hall/slab" },
       "Material.004": { "metalness": 0.3, "roughness": 0.6 },
       "Material.006": { "metalness": 0.3, "roughness": 0.42 },
       "Material.007": { "tint": [0.4, 0.43, 0.47], "roughness": 1 },
@@ -134,10 +144,1118 @@
     }
   ],
   "finishes": {
-    "wood": { "metalness": 0, "roughness": 0.75 },
-    "brick": { "metalness": 0, "roughness": 0.85 },
-    "concrete": { "metalness": 0, "roughness": 0.82 },
-    "metal": { "metalness": 0.55, "roughness": 0.7 }
+    "bed": {
+      "cut": { "family": "metal", "color": "#9a9da0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "deck": {
+          "body": { "shade": 0.45, "roughness": 0.5 },
+          "layers": [
+            { "kind": "bands", "along": "up", "period": 0.1, "width": 0.02, "color": "#5a5f66" },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.1,
+              "width": 0.015,
+              "phase": 0,
+              "shade": 0.2
+            },
+            { "kind": "bands", "along": "up", "period": 0.4, "width": 0.04, "lit": 1 },
+            { "kind": "bands", "along": "up", "period": 2, "width": 0.15, "paint": 0.7, "lit": 0 },
+            {
+              "kind": "rectangle",
+              "from": [0, 0],
+              "to": [0.08, "1h"],
+              "across": "ends",
+              "color": "#5a5f66",
+              "lit": 0
+            },
+            { "kind": "face", "on": "edges", "color": "#5a5f66" }
+          ]
+        }
+      }
+    },
+    "housing": {
+      "cut": { "family": "metal", "color": "#9a9da0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "machine": {
+          "body": { "roughness": 0.7 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.04,
+              "width": 0.02,
+              "phase": 0,
+              "clip": { "from": ["-0.5w", 0.3], "to": ["0.5w", 0.54] },
+              "shade": 0.6
+            },
+            {
+              "kind": "dots",
+              "pitch": [1.25, 0.1],
+              "radius": 0.02,
+              "fit": "across",
+              "phase": [0.5, 0],
+              "offset": [0.4, 1.6],
+              "clip": { "from": ["-0.5w", 1.57], "to": ["0.5w", 1.83] },
+              "color": "glow",
+              "lit": 1
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1.25,
+              "width": 0.66,
+              "fit": true,
+              "clip": { "from": ["-0.5w", 1.42], "to": ["0.5w", 1.98] },
+              "shade": 1.15
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1.25,
+              "width": 0.6,
+              "fit": true,
+              "clip": { "from": ["-0.5w", 1.45], "to": ["0.5w", 1.95] },
+              "color": "#0b0e10",
+              "roughness": 0.15,
+              "lit": 0
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1.25,
+              "width": 0.03,
+              "fit": true,
+              "phase": 0.125,
+              "clip": { "from": ["-0.5w", 0.96], "to": ["0.5w", 1.14] },
+              "detail": "medium",
+              "color": "#9a9da0",
+              "metalness": 1,
+              "roughness": 0.7
+            },
+            { "kind": "rectangle", "from": ["-0.5w", 1.15], "to": ["0.5w", 1.35], "shade": 0.5 },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.12], "shade": 0.6 },
+            {
+              "kind": "rectangle",
+              "up": "top",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.06],
+              "shade": 1.1,
+              "roughness": 0.8
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1.25,
+              "width": 0.015,
+              "fit": true,
+              "phase": 0,
+              "detail": "medium",
+              "shade": 0.5
+            },
+            {
+              "kind": "noise",
+              "wavelength": [0.6, 0.6],
+              "wear": true,
+              "shade": 0.8,
+              "roughness": 0.9
+            }
+          ]
+        },
+        "machine-plate": {
+          "extends": "machine",
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w+0.2", 0.8],
+              "to": ["-0.5w+0.54", 0.94],
+              "color": "#b8bcbf"
+            }
+          ]
+        },
+        "cabinet": {
+          "body": { "roughness": 0.7 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "up",
+              "up": "top",
+              "period": 0.04,
+              "width": 0.02,
+              "phase": 0,
+              "clip": { "from": ["-0.5w", 0.1], "to": ["0.5w", 0.3] },
+              "shade": 0.6
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.75,
+              "width": 0.3,
+              "fit": true,
+              "clip": { "from": ["-0.5w", 1.45], "to": ["0.5w", 1.65] },
+              "color": "glow",
+              "lit": 1
+            },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.04,
+              "width": 0.015,
+              "phase": 0.25,
+              "clip": { "from": ["-0.5w", 1.45], "to": ["0.5w", 1.65] },
+              "lit": 0
+            },
+            {
+              "kind": "dots",
+              "pitch": [0.75, 0.07],
+              "radius": 0.02,
+              "fit": "across",
+              "phase": [0.5, 0],
+              "offset": [0.25, 1.48],
+              "clip": { "from": ["-0.5w", 1.45], "to": ["0.5w", 1.65] },
+              "color": "glow",
+              "lit": 1
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.75,
+              "width": 0.03,
+              "fit": true,
+              "phase": 0.125,
+              "clip": { "from": ["-0.5w", 0.96], "to": ["0.5w", 1.14] },
+              "detail": "medium",
+              "color": "#9a9da0",
+              "metalness": 1,
+              "roughness": 0.7
+            },
+            { "kind": "rectangle", "from": ["-0.5w", 1.15], "to": ["0.5w", 1.35], "shade": 0.5 },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.12], "shade": 0.6 },
+            {
+              "kind": "rectangle",
+              "up": "top",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.06],
+              "shade": 1.1,
+              "roughness": 0.8
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.75,
+              "width": 0.015,
+              "fit": true,
+              "phase": 0,
+              "detail": "medium",
+              "shade": 0.5
+            }
+          ]
+        },
+        "skirt": {
+          "body": { "roughness": 0.7 },
+          "layers": [
+            { "kind": "rectangle", "from": ["-0.5w", 0.1], "to": ["0.5w", "1h-0.1"], "shade": 0.5 },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.06], "shade": 0.3 },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1.25,
+              "width": 0.02,
+              "fit": true,
+              "phase": 0,
+              "color": "#9a9da0",
+              "metalness": 1,
+              "roughness": 0.7
+            }
+          ]
+        },
+        "pedestal": {
+          "body": { "roughness": 0.7 },
+          "layers": [
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.12], "shade": 0.6 },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0.12],
+              "to": ["0.5w", 0.2],
+              "color": "#9c7618"
+            },
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "clip": { "from": ["-0.5w", 0.12], "to": ["0.5w", 0.2] },
+              "color": "#101010"
+            }
+          ]
+        },
+        "hoist": {
+          "body": { "roughness": 0.7 },
+          "layers": [
+            {
+              "kind": "rectangle",
+              "on": "all",
+              "from": ["-0.5w-1", -1],
+              "to": ["0.5w+1", "1h+1"],
+              "color": "#2f5f9e"
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.6,
+              "width": 0.015,
+              "fit": true,
+              "phase": 0,
+              "detail": "medium",
+              "shade": 0.5
+            },
+            {
+              "kind": "rectangle",
+              "on": "sides",
+              "from": ["-0.3w", "0.3h"],
+              "to": ["0.3w", "0.7h"],
+              "color": "#b8bcbf"
+            }
+          ]
+        },
+        "top": { "body": { "shade": 1.1, "roughness": 0.8 } }
+      }
+    },
+    "cast-concrete": {
+      "cut": { "family": "concrete", "color": "#a3a6a6" },
+      "light": "#7ccbd6",
+      "roles": {
+        "wall": {
+          "body": { "roughness": 0.85 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.7,
+              "width": 0.02,
+              "on": "sides",
+              "detail": "medium",
+              "shade": 0.8
+            },
+            {
+              "kind": "dots",
+              "fit": "both",
+              "pitch": [0.6, 0.6],
+              "radius": 0.015,
+              "on": "sides",
+              "detail": "medium",
+              "shade": 0.5
+            },
+            { "kind": "border", "width": 0.02, "on": "sides", "shade": 1.15 }
+          ]
+        },
+        "panel": {
+          "extends": "wall",
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": [0.69, 0.5],
+              "to": [0.81, 0.58],
+              "on": "sides",
+              "across": "out",
+              "up": "top",
+              "shade": 0.25
+            }
+          ]
+        },
+        "barrier": {
+          "body": { "roughness": 0.85 },
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.15],
+              "on": "sides",
+              "shade": 0.8
+            },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.2],
+              "on": "sides",
+              "up": "top",
+              "color": "#9c7618",
+              "roughness": 0.6
+            },
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "on": "sides",
+              "up": "top",
+              "clip": { "from": ["-0.5w", 0], "to": ["0.5w", 0.2] },
+              "color": "#101010"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.03,
+              "at": [0.3, 0.3],
+              "on": "sides",
+              "across": "ends",
+              "up": "top",
+              "color": "#b8bcbf"
+            },
+            { "kind": "face", "on": "edges", "color": "#9c7618" },
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "on": "edges",
+              "color": "#101010"
+            }
+          ]
+        },
+        "top": { "body": { "shade": 1.1, "roughness": 0.9 } }
+      }
+    },
+    "casting": {
+      "cut": { "family": "metal", "color": "#a9adb0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "forearm": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            { "kind": "border", "width": 0.03, "on": "sides", "shade": 1.6 },
+            {
+              "kind": "disc",
+              "radius": "0.46w",
+              "at": [0, "0.5w"],
+              "inner": "0.29w",
+              "on": "sides",
+              "color": "#5a5f66"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.02,
+              "at": [0, "0.5w"],
+              "on": "sides",
+              "color": "glow",
+              "lit": 1
+            },
+            {
+              "kind": "disc",
+              "radius": "0.36w",
+              "at": [0, "0.5w"],
+              "inner": "0.25w",
+              "on": "sides",
+              "up": "top",
+              "color": "#3f4348"
+            },
+            {
+              "kind": "rectangle",
+              "from": [0.04, 0],
+              "to": [0.1, "1h"],
+              "on": "end+",
+              "across": "out",
+              "color": "#2e3034",
+              "roughness": 0.7
+            },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.3,
+              "width": 0.04,
+              "on": "end+",
+              "color": "#5a5f66"
+            }
+          ]
+        },
+        "upper-arm": {
+          "extends": "forearm",
+          "layers": [
+            {
+              "kind": "disc",
+              "radius": 0.05,
+              "at": [0, "0.45h"],
+              "diamond": true,
+              "color": "#9c7618"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.025,
+              "at": [0, "0.45h"],
+              "diamond": true,
+              "color": "#101010"
+            }
+          ]
+        },
+        "head": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            { "kind": "border", "width": 0.03, "on": "sides", "shade": 1.6 },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.06],
+              "on": "sides",
+              "up": "top",
+              "color": "#5a5f66"
+            }
+          ]
+        },
+        "shoulder": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            { "kind": "border", "width": 0.03, "on": "sides", "shade": 1.6 },
+            {
+              "kind": "disc",
+              "radius": "0.45h",
+              "at": [0, "0.5h"],
+              "inner": "0.28h",
+              "on": "sides",
+              "color": "#5a5f66"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.02,
+              "at": [0, "0.5h"],
+              "on": "sides",
+              "color": "glow",
+              "lit": 1
+            }
+          ]
+        }
+      }
+    },
+    "corrugated": {
+      "cut": { "family": "metal", "color": "#9a9da0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "end": {
+          "body": { "roughness": 0.6 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.28,
+              "width": 0.07,
+              "ramp": 0.07,
+              "shade": 0.72,
+              "roughness": 0.7
+            },
+            {
+              "kind": "noise",
+              "wavelength": [0.07, 0.9],
+              "threshold": 0.85,
+              "softness": 0.1,
+              "clip": { "from": ["-0.5w+0.12", 0.16], "to": ["0.5w-0.12", "1h-0.12"] },
+              "wear": true,
+              "color": "#8a4a22",
+              "roughness": 0.9
+            },
+            { "kind": "rectangle", "from": ["-0.5w", 0.2], "to": ["0.5w", 0.6], "shade": 1.15 },
+            {
+              "kind": "border",
+              "width": { "ends": 0.12, "top": 0.12, "base": 0.16 },
+              "paint": 0.9
+            },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.3], "shade": 0.8 },
+            {
+              "kind": "rectangle",
+              "from": [0, 0],
+              "to": [0.17, 0.12],
+              "across": "ends",
+              "shade": 0.6
+            },
+            {
+              "kind": "rectangle",
+              "from": [0, 0],
+              "to": [0.17, 0.12],
+              "across": "ends",
+              "up": "top",
+              "shade": 0.6
+            },
+            { "kind": "face", "on": "inside", "color": "#3a2f2b" }
+          ]
+        },
+        "side": {
+          "extends": "end",
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": [0.85, 0.03],
+              "to": [1.21, 0.13],
+              "across": "out",
+              "shade": 0.25
+            }
+          ]
+        },
+        "door": {
+          "body": { "roughness": 0.6 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.42,
+              "width": 0.02,
+              "phase": 0,
+              "detail": "medium",
+              "shade": 0.75
+            },
+            { "kind": "rectangle", "from": [-0.01, 0], "to": [0.01, "1h"], "shade": 0.4 },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.585,
+              "width": 0.035,
+              "color": "#868a8e"
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.585,
+              "width": 0.28,
+              "clip": { "from": ["-0.5w", 1.03], "to": ["0.5w", 1.07] },
+              "color": "#9a9da0",
+              "metalness": 1,
+              "roughness": 0.7
+            },
+            {
+              "kind": "rectangle",
+              "from": [-0.7, 0.68],
+              "to": [-0.5, 0.82],
+              "amount": 0.6,
+              "color": "#b8bcbf"
+            },
+            { "kind": "border", "width": { "ends": 0.1, "top": 0.12, "base": 0.16 }, "paint": 0.9 },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.3], "shade": 0.8 },
+            {
+              "kind": "rectangle",
+              "from": [0, 0],
+              "to": [0.17, 0.12],
+              "across": "ends",
+              "shade": 0.6
+            },
+            {
+              "kind": "rectangle",
+              "from": [0, 0],
+              "to": [0.17, 0.12],
+              "across": "ends",
+              "up": "top",
+              "shade": 0.6
+            },
+            {
+              "kind": "dots",
+              "phase": [0.5, 0],
+              "offset": [0, 0.3],
+              "pitch": [2.22, 0.65],
+              "radius": 0.05,
+              "detail": "medium",
+              "shade": 0.6
+            },
+            { "kind": "face", "on": "inside", "color": "#3a2f2b" }
+          ]
+        },
+        "roof": { "body": { "shade": 1.1, "roughness": 0.8 } }
+      }
+    },
+    "timber": {
+      "cut": { "family": "wood", "color": "#d2b07a" },
+      "light": "#7ccbd6",
+      "roles": {
+        "boards": {
+          "body": { "roughness": 0.8 },
+          "layers": [
+            {
+              "kind": "cells",
+              "width": "1w",
+              "height": 0.12,
+              "gap": 0.012,
+              "fit": "both",
+              "shade": 0.25,
+              "jitter": { "low": 0.8, "high": 1.2 }
+            }
+          ]
+        },
+        "crate": {
+          "extends": "boards",
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 8,
+              "width": 0.13,
+              "phase": 0,
+              "offset": "0.354h",
+              "paint": 1.1
+            },
+            { "kind": "border", "width": 0.09, "paint": 1.1 }
+          ]
+        },
+        "crate-stencil": {
+          "extends": "boards",
+          "layers": [{ "kind": "border", "width": 0.09, "paint": 1.1 }]
+        },
+        "lid": {
+          "body": { "shade": 1.15, "roughness": 0.85 },
+          "layers": [
+            {
+              "kind": "cells",
+              "width": 0.12,
+              "height": "1h",
+              "gap": 0.012,
+              "fit": "across",
+              "shade": 0.25,
+              "jitter": { "low": 0.8, "high": 1.2 }
+            }
+          ]
+        },
+        "stack": {
+          "body": { "roughness": 0.8 },
+          "layers": [
+            {
+              "kind": "cells",
+              "width": "1w",
+              "height": 0.042,
+              "gap": 0.008,
+              "fit": "across",
+              "on": "sides",
+              "shade": 0.3,
+              "jitter": { "low": 0.85, "high": 1.15 }
+            },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.2,
+              "width": 0.02,
+              "phase": 0,
+              "on": "sides",
+              "shade": 0.3
+            },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.08],
+              "on": "sides",
+              "shade": 0.3
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1,
+              "width": 0.1,
+              "phase": 0,
+              "on": "sides",
+              "clip": { "from": ["-0.5w", 0], "to": ["0.5w", 0.08] },
+              "paint": 0.9
+            },
+            {
+              "kind": "rectangle",
+              "from": [0.985, 0],
+              "to": [1.015, "1h"],
+              "on": "sides",
+              "across": "out",
+              "color": "#3d3e42",
+              "metalness": 1,
+              "roughness": 0.7
+            },
+            {
+              "kind": "cells",
+              "width": 0.144,
+              "height": 0.044,
+              "gap": 0.006,
+              "shift": 0.5,
+              "on": "ends",
+              "shade": 0.4,
+              "jitter": { "low": 0.9, "high": 1.3 }
+            },
+            { "kind": "face", "on": "top", "shade": 1.1, "roughness": 0.85 }
+          ]
+        }
+      }
+    },
+    "steel-stock": {
+      "cut": { "family": "metal", "color": "#9a9da0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "stack": {
+          "body": { "metalness": 0.55, "roughness": 0.7 },
+          "layers": [
+            {
+              "kind": "cells",
+              "width": "1w",
+              "height": 0.044,
+              "gap": 0.006,
+              "share": 0.33,
+              "fit": "across",
+              "on": "sides",
+              "color": "#7a4a3e",
+              "metalness": 0,
+              "roughness": 0.8
+            },
+            {
+              "kind": "cells",
+              "width": "1w",
+              "height": 0.044,
+              "gap": 0.006,
+              "fit": "across",
+              "on": "sides",
+              "shade": 0.3,
+              "jitter": { "low": 0.8, "high": 1.2 }
+            },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.08],
+              "on": "sides",
+              "shade": 0.3
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1,
+              "width": 0.1,
+              "phase": 0,
+              "on": "sides",
+              "clip": { "from": ["-0.5w", 0], "to": ["0.5w", 0.08] },
+              "color": "#a8743f",
+              "metalness": 0,
+              "roughness": 0.8
+            },
+            {
+              "kind": "rectangle",
+              "from": [0.985, 0],
+              "to": [1.015, "1h"],
+              "on": "sides",
+              "across": "out",
+              "amount": 0.5,
+              "color": "#9a9da0",
+              "metalness": 1,
+              "roughness": 0.7
+            },
+            { "kind": "face", "on": "ends", "color": "#7a4a3e", "metalness": 0, "roughness": 0.8 },
+            {
+              "kind": "cells",
+              "width": "1w",
+              "height": 0.044,
+              "gap": 0.006,
+              "fit": "across",
+              "on": "ends",
+              "shade": 0.3,
+              "jitter": { "low": 0.8, "high": 1.2 }
+            }
+          ]
+        },
+        "stack-posts": {
+          "extends": "stack",
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": [0.05, 0],
+              "to": [0.13, "1h"],
+              "on": "sides",
+              "across": "ends",
+              "color": "#9c7618",
+              "metalness": 0,
+              "roughness": 0.6
+            }
+          ]
+        }
+      }
+    },
+    "block": {
+      "cut": { "family": "brick", "color": "#8f8f8a" },
+      "light": "#7ccbd6",
+      "roles": {
+        "wall": {
+          "body": { "roughness": 0.85 },
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 1],
+              "on": "all",
+              "color": "#4f5a55"
+            },
+            {
+              "kind": "cells",
+              "width": 0.388,
+              "height": 0.188,
+              "gap": 0.012,
+              "shift": 0.5,
+              "on": "all",
+              "shade": 0.6,
+              "jitter": { "low": 0.94, "high": 1.06 }
+            },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.06],
+              "on": "all",
+              "up": "top",
+              "shade": 1.1
+            },
+            { "kind": "face", "on": "top", "paint": 1 }
+          ]
+        }
+      }
+    },
+    "beam": {
+      "cut": { "family": "metal", "color": "#9a9da0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "girder": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 1.5,
+              "width": 0.03,
+              "fit": true,
+              "phase": 0,
+              "detail": "medium",
+              "shade": 0.85
+            },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.02], "shade": 0.8 },
+            {
+              "kind": "rectangle",
+              "from": [-0.21, "0.25h"],
+              "to": [1.39, "0.75h"],
+              "color": "#b8bcbf"
+            },
+            { "kind": "disc", "radius": "0.35h", "at": [-0.95, "0.5h"], "color": "#b8bcbf" }
+          ]
+        },
+        "runway": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "across": "ends",
+              "clip": { "from": [0, 0], "to": [0.4, "1h"] },
+              "color": "#101010"
+            },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0.03],
+              "to": ["0.5w", 0.07],
+              "up": "top",
+              "color": "#9a2a1c"
+            }
+          ]
+        },
+        "flange": { "body": { "roughness": 0.5 } },
+        "truck": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "on": "all",
+              "color": "#101010"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.14,
+              "at": [0.45, "0.5h"],
+              "across": "ends",
+              "color": "#101010"
+            },
+            {
+              "kind": "rectangle",
+              "from": [0, 0],
+              "to": [0.08, "1h"],
+              "across": "ends",
+              "color": "#101010"
+            }
+          ]
+        },
+        "hook": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "on": "all",
+              "color": "#101010"
+            }
+          ]
+        },
+        "plinth": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "on": "edges",
+              "color": "#101010"
+            }
+          ]
+        },
+        "mast": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.04], "shade": 0.6 },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 1.4],
+              "to": ["0.5w", 1.6],
+              "on": "all",
+              "up": "top",
+              "color": "#101010"
+            }
+          ]
+        },
+        "mast-front": {
+          "extends": "mast",
+          "layers": [
+            { "kind": "rectangle", "from": [-0.11, 0.5], "to": [0.11, 0.82], "color": "#2a2d30" },
+            { "kind": "disc", "radius": 0.015, "at": [-0.05, 0.72], "color": "glow" },
+            { "kind": "disc", "radius": 0.015, "at": [0.05, 0.72], "color": "#9a2a1c" },
+            {
+              "kind": "disc",
+              "radius": 0.06,
+              "at": [0, 1.01],
+              "diamond": true,
+              "color": "#9c7618"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.03,
+              "at": [0, 1.01],
+              "diamond": true,
+              "color": "#101010"
+            },
+            { "kind": "rectangle", "from": [-0.05, 1.12], "to": [0.05, 1.26], "color": "#b8bcbf" }
+          ]
+        },
+        "boom": {
+          "body": { "roughness": 0.5 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.2,
+              "width": 0.1,
+              "on": "sides",
+              "across": "ends",
+              "clip": { "from": [0, 0], "to": [0.25, "1h"] },
+              "color": "#101010"
+            }
+          ]
+        },
+        "tie": { "body": { "roughness": 0.5 } }
+      }
+    },
+    "luminaire": {
+      "cut": { "family": "metal", "color": "#b8bcbf" },
+      "light": "#7ccbd6",
+      "roles": {
+        "strip": {
+          "body": { "metalness": 0.55, "roughness": 0.7, "lit": 1 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 1.2,
+              "width": 0.04,
+              "fit": true,
+              "phase": 0,
+              "on": "sides",
+              "lit": 0
+            },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 1.2,
+              "width": 0.04,
+              "fit": true,
+              "phase": 0,
+              "on": "ends",
+              "lit": 0
+            }
+          ]
+        },
+        "band": { "body": { "metalness": 0.55, "roughness": 0.7, "lit": 1 } }
+      }
+    },
+    "hall": {
+      "cut": { "family": "concrete", "color": "#7d7b76" },
+      "light": "#7ccbd6",
+      "roles": {
+        "floor": {
+          "layers": [
+            {
+              "kind": "cells",
+              "width": 6.64,
+              "height": 6.455,
+              "gap": 0.025,
+              "fit": "across",
+              "on": "top",
+              "shade": 0.55,
+              "jitter": { "low": 0.9, "high": 1.1 }
+            }
+          ]
+        },
+        "front": {
+          "extends": "floor",
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": [-2.65, -27.94],
+              "to": [-2.55, 26.8],
+              "on": "top",
+              "color": "#9c7618"
+            },
+            {
+              "kind": "rectangle",
+              "from": [2.55, -27.94],
+              "to": [2.65, 26.8],
+              "on": "top",
+              "color": "#9c7618"
+            },
+            {
+              "kind": "rectangle",
+              "from": [-12.6, -28.14],
+              "to": [12, -27.94],
+              "on": "top",
+              "color": "#9c7618"
+            }
+          ]
+        },
+        "slab": {
+          "extends": "floor",
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": [-13.3, -29.5],
+              "to": [5.2, -29.4],
+              "on": "top",
+              "color": "#9c7618"
+            },
+            {
+              "kind": "rectangle",
+              "from": [12.5, -29.5],
+              "to": [15, -29.4],
+              "on": "top",
+              "color": "#9c7618"
+            }
+          ]
+        },
+        "wall": {
+          "layers": [{ "kind": "rectangle", "from": [-90, 0], "to": [31, 1.4], "shade": 0.55 }]
+        }
+      }
+    }
   },
   "glows": {
     "line": { "color": [0.1, 0.8, 0.9], "strength": 0.45 },
@@ -152,70 +1270,70 @@
       "kind": "container",
       "at": [-2.5, -60.8],
       "yaw": 90,
-      "params": { "length": 6.06, "color": "#5a3327" }
+      "params": { "length": 6.06, "color": "#6d3f31", "door": "+z" }
     },
     {
       "id": "yard-box-east",
       "kind": "container",
       "at": [6.5, -58.5],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#27405a" }
+      "params": { "length": 6.06, "color": "#2c4764", "door": "+z" }
     },
     {
       "id": "yard-box-south",
       "kind": "container",
       "at": [3.5, -51.2],
       "yaw": 90,
-      "params": { "length": 6.06, "color": "#3c4a33" }
+      "params": { "length": 6.06, "color": "#3c4a33", "door": "-z" }
     },
     {
       "id": "yard-box-west",
       "kind": "container",
       "at": [-4.5, -53.5],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#4a4e52" }
+      "params": { "length": 6.06, "color": "#4a4e52", "door": "-z" }
     },
     {
       "id": "yard-crate-1",
       "kind": "crate",
       "at": [1, -54.92],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "yard-crate-2",
       "kind": "crate",
       "at": [-0.5, -55.22],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#5c4a30" }
+      "params": { "size": 1.2, "color": "#8b5f33" }
     },
     {
       "id": "yard-crate-3",
       "kind": "crate",
       "at": [0.7, -56.42],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#6b5637" }
+      "params": { "size": 1.2, "color": "#a06e3c" }
     },
     {
       "id": "yard-box-wall",
       "kind": "container",
       "at": [14.8, -52.87],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#6a5a2a" }
+      "params": { "length": 6.06, "color": "#6a5a2a", "door": "+z" }
     },
     {
       "id": "yard-crate-4",
       "kind": "crate",
       "at": [-15.1, -61.22],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "yard-crate-5",
       "kind": "crate",
       "at": [-15.4, -59.72],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#5c4a30" }
+      "params": { "size": 1.2, "color": "#8b5f33" }
     },
     {
       "id": "yard-stack-1",
@@ -240,7 +1358,8 @@
         "height": 1.2,
         "thickness": 0.6,
         "material": "metal",
-        "color": "#474c52"
+        "color": "#474c52",
+        "finish": "steel-stock/stack-posts"
       }
     },
     {
@@ -248,14 +1367,14 @@
       "kind": "crate",
       "at": [-14.9, -54.52],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "yard-crate-7",
       "kind": "crate",
       "at": [-14.9, -52.72],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#5c4a30" }
+      "params": { "size": 1.8, "color": "#8b5f33" }
     },
     {
       "id": "yard-stack-3",
@@ -267,7 +1386,7 @@
         "height": 1,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -275,28 +1394,28 @@
       "kind": "container",
       "at": [-6.2, -74],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#27405a" }
+      "params": { "length": 6.06, "color": "#2c4764", "door": "+z" }
     },
     {
       "id": "lane-crate-1",
       "kind": "crate",
       "at": [-14.9, -73.4],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "lane-crate-2",
       "kind": "crate",
       "at": [-14.9, -71.6],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#5c4a30" }
+      "params": { "size": 1.8, "color": "#8b5f33" }
     },
     {
       "id": "lane-crate-3",
       "kind": "crate",
       "at": [-15.2, -70.1],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#6b5637" }
+      "params": { "size": 1.2, "color": "#a06e3c" }
     },
     {
       "id": "lane-barrier",
@@ -308,7 +1427,8 @@
         "height": 1.4,
         "thickness": 0.4,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80",
+        "finish": "cast-concrete/barrier"
       }
     },
     {
@@ -316,42 +1436,42 @@
       "kind": "container",
       "at": [-9.6, -35.51],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#27405a" }
+      "params": { "length": 6.06, "color": "#2c4764", "door": "+z" }
     },
     {
       "id": "fall-box-north",
       "kind": "container",
       "at": [-9.6, -41.57],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#5a3327" }
+      "params": { "length": 6.06, "color": "#6d3f31", "door": "-z" }
     },
     {
       "id": "fall-crate-1",
       "kind": "crate",
       "at": [-11.72, -36],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "fall-crate-2",
       "kind": "crate",
       "at": [-15, -43.05],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#5c4a30" }
+      "params": { "size": 1.8, "color": "#8b5f33" }
     },
     {
       "id": "fall-crate-3",
       "kind": "crate",
       "at": [-15, -41.25],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "fall-crate-4",
       "kind": "crate",
       "at": [-15.3, -39.75],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#5c4a30" }
+      "params": { "size": 1.2, "color": "#8b5f33" }
     },
     {
       "id": "fall-stack-1",
@@ -376,7 +1496,8 @@
         "height": 1.2,
         "thickness": 0.6,
         "material": "metal",
-        "color": "#474c52"
+        "color": "#474c52",
+        "finish": "steel-stock/stack-posts"
       }
     },
     {
@@ -389,7 +1510,7 @@
         "height": 1,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -402,7 +1523,7 @@
         "height": 1.2,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -410,14 +1531,14 @@
       "kind": "crate",
       "at": [-7.78, -35.9],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#6b5637" }
+      "params": { "size": 1.2, "color": "#a06e3c" }
     },
     {
       "id": "fall-crate-6",
       "kind": "crate",
       "at": [-7.78, -34.7],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#5c4a30" }
+      "params": { "size": 1.2, "color": "#8b5f33" }
     },
     {
       "id": "fall-fence-south",
@@ -429,7 +1550,7 @@
         "height": 1.3,
         "thickness": 0.4,
         "material": "brick",
-        "color": "#6e4636"
+        "color": "#7d7f7c"
       }
     },
     {
@@ -442,7 +1563,7 @@
         "height": 1.3,
         "thickness": 0.4,
         "material": "brick",
-        "color": "#6e4636"
+        "color": "#7d7f7c"
       }
     },
     {
@@ -450,35 +1571,35 @@
       "kind": "container",
       "at": [14.78, -4.17],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#3c4a33" }
+      "params": { "length": 6.06, "color": "#3c4a33", "door": "-z" }
     },
     {
       "id": "east-crate-1",
       "kind": "crate",
       "at": [12.96, -6.5],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#6b5637" }
+      "params": { "size": 1.2, "color": "#a06e3c" }
     },
     {
       "id": "east-crate-2",
       "kind": "crate",
       "at": [12.66, -5],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#5c4a30" }
+      "params": { "size": 1.8, "color": "#8b5f33" }
     },
     {
       "id": "east-crate-3",
       "kind": "crate",
       "at": [12.96, -3.5],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#6b5637" }
+      "params": { "size": 1.2, "color": "#a06e3c" }
     },
     {
       "id": "east-box-long",
       "kind": "container",
       "at": [14.78, 11.1],
       "yaw": 0,
-      "params": { "length": 12.2, "color": "#5a3327" }
+      "params": { "length": 12.2, "color": "#6d3f31", "door": "+z" }
     },
     {
       "id": "east-panel-1",
@@ -490,7 +1611,7 @@
         "height": 2.8,
         "thickness": 0.2,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80"
       }
     },
     {
@@ -503,7 +1624,7 @@
         "height": 2.8,
         "thickness": 0.2,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80"
       }
     },
     {
@@ -516,7 +1637,7 @@
         "height": 2.8,
         "thickness": 0.2,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80"
       }
     },
     {
@@ -529,7 +1650,7 @@
         "height": 2.8,
         "thickness": 0.2,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80"
       }
     },
     {
@@ -542,7 +1663,7 @@
         "height": 2.8,
         "thickness": 0.2,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80"
       }
     },
     {
@@ -568,7 +1689,8 @@
         "height": 1,
         "thickness": 0.6,
         "material": "metal",
-        "color": "#474c52"
+        "color": "#474c52",
+        "finish": "steel-stock/stack-posts"
       }
     },
     {
@@ -576,42 +1698,42 @@
       "kind": "crate",
       "at": [-11.4, -6.1],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "west-crate-2",
       "kind": "crate",
       "at": [-11.7, -4.6],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#5c4a30" }
+      "params": { "size": 1.2, "color": "#8b5f33" }
     },
     {
       "id": "west-crate-3",
       "kind": "crate",
       "at": [-11.7, -3.4],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#6b5637" }
+      "params": { "size": 1.2, "color": "#a06e3c" }
     },
     {
       "id": "west-crate-4",
       "kind": "crate",
       "at": [-11.8, 5.3],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#5c4a30" }
+      "params": { "size": 1.8, "color": "#8b5f33" }
     },
     {
       "id": "west-crate-5",
       "kind": "crate",
       "at": [-12.1, 6.8],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#6b5637" }
+      "params": { "size": 1.2, "color": "#a06e3c" }
     },
     {
       "id": "west-box",
       "kind": "container",
       "at": [-11.2, 13],
       "yaw": 0,
-      "params": { "length": 6.06, "color": "#27405a" }
+      "params": { "length": 6.06, "color": "#2c4764", "door": "-z" }
     },
     {
       "id": "west-stack-1",
@@ -623,7 +1745,7 @@
         "height": 1.2,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -636,7 +1758,7 @@
         "height": 1,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -649,7 +1771,8 @@
         "height": 1.2,
         "thickness": 0.4,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80",
+        "finish": "cast-concrete/barrier"
       }
     },
     {
@@ -662,7 +1785,8 @@
         "height": 1.2,
         "thickness": 0.4,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80",
+        "finish": "cast-concrete/barrier"
       }
     },
     {
@@ -675,7 +1799,8 @@
         "height": 1.3,
         "thickness": 0.4,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80",
+        "finish": "cast-concrete/barrier"
       }
     },
     {
@@ -688,7 +1813,8 @@
         "height": 1.3,
         "thickness": 0.4,
         "material": "concrete",
-        "color": "#62656a"
+        "color": "#777c80",
+        "finish": "cast-concrete/barrier"
       }
     },
     {
@@ -696,21 +1822,21 @@
       "kind": "crate",
       "at": [-11.7, -24],
       "yaw": 0,
-      "params": { "size": 1.8, "color": "#6b5637" }
+      "params": { "size": 1.8, "color": "#a06e3c" }
     },
     {
       "id": "apron-crate-2",
       "kind": "crate",
       "at": [-12, -22.5],
       "yaw": 0,
-      "params": { "size": 1.2, "color": "#5c4a30" }
+      "params": { "size": 1.2, "color": "#8b5f33" }
     },
     {
       "id": "dock-box",
       "kind": "container",
       "at": [0, 28.6],
       "yaw": 90,
-      "params": { "length": 6.06, "color": "#4a4e52" }
+      "params": { "length": 6.06, "color": "#4a4e52", "door": "-z" }
     },
     {
       "id": "line-w-enc-1",
@@ -722,7 +1848,7 @@
         "length": 4.5,
         "height": 2.8,
         "material": "metal",
-        "color": "#3b4248",
+        "color": "#73767a",
         "glow": "line"
       }
     },
@@ -743,7 +1869,7 @@
         "shoulder": 85,
         "elbow": 60,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -757,7 +1883,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -771,7 +1897,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -785,7 +1911,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -799,7 +1925,7 @@
         "length": 4,
         "height": 3.2,
         "material": "metal",
-        "color": "#3b4248",
+        "color": "#73767a",
         "glow": "line"
       }
     },
@@ -820,7 +1946,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -834,7 +1960,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -855,7 +1981,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -869,7 +1995,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -883,7 +2009,7 @@
         "shoulder": 85,
         "elbow": 60,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -904,7 +2030,7 @@
         "shoulder": 85,
         "elbow": 60,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -918,7 +2044,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -932,7 +2058,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -946,7 +2072,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -960,7 +2086,7 @@
         "length": 4.5,
         "height": 3,
         "material": "metal",
-        "color": "#3b4248",
+        "color": "#73767a",
         "glow": "line"
       }
     },
@@ -981,7 +2107,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -995,7 +2121,7 @@
         "shoulder": 80,
         "elbow": 70,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -1009,7 +2135,7 @@
         "length": 4.5,
         "height": 2.6,
         "material": "metal",
-        "color": "#3b4248",
+        "color": "#73767a",
         "glow": "line"
       }
     },
@@ -1023,7 +2149,7 @@
         "length": 2,
         "height": 2.1,
         "material": "metal",
-        "color": "#262b30",
+        "color": "#73767a",
         "glow": "line"
       }
     },
@@ -1044,7 +2170,7 @@
         "shoulder": 85,
         "elbow": 60,
         "color": "#1b1e22",
-        "baseColor": "#343a40",
+        "baseColor": "#73767a",
         "glow": "eye"
       }
     },
@@ -1058,7 +2184,7 @@
         "length": 8,
         "height": 2.2,
         "material": "metal",
-        "color": "#262b30",
+        "color": "#73767a",
         "glow": "line"
       }
     },
@@ -1074,8 +2200,8 @@
         "bridgeAt": 0.2905,
         "trolleyAt": 0.5346,
         "hookDrop": 2.5,
-        "color": "#c79a1a",
-        "runwayColor": "#27384a"
+        "color": "#d39b12",
+        "runwayColor": "#1f4f8f"
       }
     },
     {
@@ -1090,8 +2216,8 @@
         "bridgeAt": 1,
         "trolleyAt": 0.3911,
         "hookDrop": 1.2,
-        "color": "#c79a1a",
-        "runwayColor": "#27384a"
+        "color": "#d39b12",
+        "runwayColor": "#1f4f8f"
       }
     },
     {
@@ -1106,8 +2232,8 @@
         "bridgeAt": 0.6544,
         "trolleyAt": 0.6423,
         "hookDrop": 2.5,
-        "color": "#c79a1a",
-        "runwayColor": "#27384a"
+        "color": "#d39b12",
+        "runwayColor": "#1f4f8f"
       }
     },
     {
@@ -1122,8 +2248,8 @@
         "bridgeAt": 0.9518,
         "trolleyAt": 0.4987,
         "hookDrop": 2.5,
-        "color": "#c79a1a",
-        "runwayColor": "#27384a"
+        "color": "#d39b12",
+        "runwayColor": "#1f4f8f"
       }
     },
     {
@@ -1131,42 +2257,42 @@
       "kind": "jib-crane",
       "at": [14.15, 2.6],
       "yaw": -90,
-      "params": { "height": 6.5, "boom": 7, "color": "#c79a1a" }
+      "params": { "height": 6.5, "boom": 7, "color": "#d39b12" }
     },
     {
       "id": "jib-west",
       "kind": "jib-crane",
       "at": [-13.85, 2.2],
       "yaw": 90,
-      "params": { "height": 5.5, "boom": 6, "color": "#c79a1a" }
+      "params": { "height": 5.5, "boom": 6, "color": "#d39b12" }
     },
     {
       "id": "jib-line-w",
       "kind": "jib-crane",
       "at": [-6.45, 6],
       "yaw": 90,
-      "params": { "height": 4, "boom": 3.5, "color": "#c79a1a" }
+      "params": { "height": 4, "boom": 3.5, "color": "#d39b12" }
     },
     {
       "id": "jib-line-e",
       "kind": "jib-crane",
       "at": [6.45, -2.25],
       "yaw": -90,
-      "params": { "height": 4, "boom": 3.5, "color": "#c79a1a" }
+      "params": { "height": 4, "boom": 3.5, "color": "#d39b12" }
     },
     {
       "id": "jib-yard",
       "kind": "jib-crane",
       "at": [-4.5, -49.9],
       "yaw": -90,
-      "params": { "height": 5, "boom": 6, "color": "#c79a1a" }
+      "params": { "height": 5, "boom": 6, "color": "#d39b12" }
     },
     {
       "id": "jib-fall",
       "kind": "jib-crane",
       "at": [-7.93, -37.5],
       "yaw": 90,
-      "params": { "height": 3.8, "boom": 4.5, "color": "#c79a1a" }
+      "params": { "height": 3.8, "boom": 4.5, "color": "#d39b12" }
     },
     {
       "id": "strip-lip-1",
@@ -1318,7 +2444,7 @@
         "height": 1.2,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -1331,7 +2457,7 @@
         "height": 1,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -1359,14 +2485,14 @@
       "kind": "crate",
       "at": [15.6, -43.2],
       "yaw": 0,
-      "params": { "size": 1, "color": "#6b5637" }
+      "params": { "size": 1, "color": "#a06e3c" }
     },
     {
       "id": "east-wall-crate-2",
       "kind": "crate",
       "at": [15.6, -42.2],
       "yaw": 0,
-      "params": { "size": 1, "color": "#5c4a30" }
+      "params": { "size": 1, "color": "#8b5f33" }
     },
     {
       "id": "east-wall-stack-2",
@@ -1378,7 +2504,7 @@
         "height": 1,
         "thickness": 0.6,
         "material": "wood",
-        "color": "#6a5637"
+        "color": "#a06e3c"
       }
     },
     {
@@ -1391,7 +2517,7 @@
         "length": 1.5,
         "height": 2.1,
         "material": "metal",
-        "color": "#262b30",
+        "color": "#73767a",
         "glow": "line"
       }
     }

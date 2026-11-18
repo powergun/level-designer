@@ -60,19 +60,29 @@ spelled as the base stage's GLB spells them.
 ## The level scene
 
 `assembleLevelScene` takes the static scene bytes, the props with their slab meshes, and
-the finishes and glows. It keeps every record of the static scene and appends:
+the looks: one body per finish path in use and the glows. It keeps every record of the
+static scene and appends:
 
 - one object node per prop, in input order, after the seals; it is named by the prop id
   and carries `extras.role` `destructible` and `extras.prop`, the prop id;
 - one mesh node per slab, in slab order, named `<id>/<index>` from 0, each with a mesh of
   one primitive; a slab keeps its own node because sec-111 hides one slab at that slab's
   first damage;
-- per slab primitive: `POSITION` with its bounds, `NORMAL` and `COLOR_0`, all FLOAT VEC3,
-  and UNSIGNED_INT indices, with no texture coordinate.
+- per slab primitive, six FLOAT attributes and UNSIGNED_INT indices.
 
-The slab meshes arrive intact, in level coordinates, with linear vertex colours; the
-assembly stores them unchanged. No new node carries a transform, so every reader sees new
-geometry where it stands. Each appended accessor has its own buffer view, aligned to four
+The six attributes of a slab primitive:
+
+- `POSITION` with its bounds and `NORMAL`, VEC3: the mesher's vertices;
+- `COLOR_0`, VEC3: the slab's linear colour on every vertex;
+- `TEXCOORD_0`, VEC2: the pattern coordinates `x` and `y` in metres;
+- `TEXCOORD_1`, VEC2: the face's width and height in metres;
+- `_SLAB`, VEC4: the slab's number, seed and wear, and the face's class: 0 outside, 1
+  inside, 2 top, 3 bottom, 4 the high end, 5 the low end.
+
+The slab meshes arrive intact, in level coordinates, with their colours and pattern data
+per vertex; the assembly stores them unchanged. `slab-model` computes them by the slab's
+frame rule. A renderer reads the face's size and the four constants as flat values. No new
+node carries a transform, so every reader sees new geometry where it stands. Each appended accessor has its own buffer view, aligned to four
 bytes. Typed arrays are written in host byte order, which is little-endian on every
 supported host.
 
@@ -83,25 +93,40 @@ Each takes its override, if any, and becomes single-sided:
 
 - `tint` multiplies the base colour factor, white when absent, and keeps its alpha;
 - `metalness` and `roughness` replace the metallic and roughness factors;
-- `emissive` replaces the emissive factor and sets the emissive strength extension.
+- `emissive` replaces the emissive factor and sets the emissive strength extension;
+- `finish`, a hall finish's path, joins the material's `extras` as `finish`, the key a
+  slab's material uses, so a renderer joins the stage material to its recipe. A material
+  without a finish gains no `extras`.
 
 A base mesh in the double-sided list points to a double-sided twin of its material. A
-twin copies the overridden material, keeps its name and differs only in sidedness. One
-twin exists per base material that a double-sided mesh uses.
+twin copies the overridden material, its `extras` included, keeps its name and differs
+only in sidedness. One twin exists per base material that a double-sided mesh uses.
 
 Appended materials follow in this order:
 
 - the twins, in base mesh order of first need;
 - one per seal, named `seal/<id>`, its colour decoded from `#rrggbb` sRGB to linear;
-- one per finish used by a slab without a glow, named `finish/<material>`, in order of
+- one per finish path used by a slab without a glow, named `finish/<path>`, in order of
   first use;
-- one per pair of finish and glow, named `finish/<material>/glow/<glow>`, in order of
+- one per pair of finish path and glow, named `finish/<path>/glow/<glow>`, in order of
   first use.
 
-A slab material has a white base colour, so the slab's vertex colours show unchanged; a
-glow adds its colour as the emissive factor and its strength through
-`KHR_materials_emissive_strength`. The file lists that extension as used whenever a
-material carries it.
+Every slab of a path and glow shares that one material, across props. Its `extras` carry
+`finish`, the path, and with a glow `glow`, the glow's name, and `glowStrength`, its
+strength as the description states it: a painter joins a mesh to its recipe by them and
+emits the glow's colour at that strength times its emission. The name is a label for
+people. The unscaled strength sits beside the glow's colour, which the emissive factor
+already holds, so a painter reads the whole glow from the material and joins no other file. The material is the flat fallback
+that the snapshot sheets and a viewer without painters draw:
+
+- a white base colour, so the slab's vertex colours show unchanged;
+- the body's metalness and roughness;
+- with a glow, the glow's colour as the emissive factor, at the glow's strength times the
+  body's `lit` through `KHR_materials_emissive_strength`, also at a strength of 0. A lit
+  body therefore emits at the glow's strength, and an unlit one shows its colour.
+
+A material without a glow has no emission, whatever its body's `lit`. The file lists the extension as used
+whenever a material carries it, and holds no image beyond the base stage's.
 
 ## Inspection
 
@@ -138,10 +163,11 @@ primitive without a material takes glTF's default white.
 
 - The component owns the GLB contract above and the `base` build error.
 - The assembly inputs match the level description's shapes: the base look and the glows
-  are maps, the finishes a record by slab material, and the seal colour the description's
-  `#rrggbb` text.
-- A slab names a finish and a glow that the prop expansion has admitted; a missing one is
-  a programming error and throws.
+  are maps, and the seal colour is the description's `#rrggbb` text. The bodies are a map
+  by finish path, each the drawn body of its recipe, which `level-pipeline` resolves.
+- A slab names a finish path and a glow that the build has admitted; a missing body or
+  glow is a programming error and throws. A base override's finish path is admitted by
+  `level-format` too; the assembly writes it and judges nothing.
 - The written files stay inside the glTF subset that sec-111's level preparation admits:
   one buffer, no required extension, matrices only, indexed triangle lists, every accessor
   dense on a buffer view of buffer 0 and inside it, and every index below its vertex
@@ -149,21 +175,52 @@ primitive without a material takes glTF's default white.
 
 ## What the tests prove
 
-- The static scene test, on the real base stage through sec111-gateway's stage entry: the
-  container, the reader subset, the verbatim base, the `stage` root, the seal objects, the
-  seal boxes with outward unit normals, the primitives, the materials and twins, the
-  inspection counts and the `base` errors.
-- The level scene test, on the static scene of the real base stage: the container, the
-  reader subset, the verbatim static scene, the object roots and mesh node names, the slab
-  attributes, the slab materials, with a finish that appears only with a glow, and the
-  inspection count.
-- The reader subset check reads the index values from the BIN chunk on its own. It proves
-  that every accessor ends inside its buffer view, every buffer view inside the buffer,
-  every attribute has the `POSITION` count, and every index lies below it.
-- The inspection test, on a hand-built file: a primitive without a material is reported by
-  its mesh name, a file with two buffers is refused, world triangles compose the stage
-  scale over the base matrices, a seal's triangles sit on its box wound outward, slab and
-  glow colours reach their triangles, and an emissive material at strength 0 keeps its
-  base colour.
-
 No test of this component runs sec-111's level preparation.
+
+### The static scene test
+
+It runs on the real base stage through sec111-gateway's stage entry and proves the
+container, the reader subset, the verbatim base, the `stage` root, the seal objects, the
+seal boxes with outward unit normals, the primitives, the materials and twins, a finish
+path in the `extras` of a stage material and its twin and in no other base material, the
+inspection counts and the `base` errors.
+
+### The level scene test
+
+It runs on the static scene of the real base stage. It proves the file's form:
+
+- the container, the reader subset, and the verbatim static scene with its images;
+- the object roots and the mesh node names;
+- the six slab attributes, their stored values at the ends of their ranges, the bounds of
+  `POSITION` and the UNSIGNED_INT indices;
+- the inspection count.
+
+It proves the materials:
+
+- the shared materials, with a path that appears only with a glow;
+- the fallback with its `extras` and its emission at a `lit` of 0, one half and 1;
+- the throw on a missing body or glow.
+
+### The reader subset check
+
+It reads the index values from the BIN chunk on its own. It proves that every accessor ends
+inside its buffer view, every buffer view inside the buffer, every attribute has the
+`POSITION` count, and every index lies below it.
+
+### The appended views check
+
+The static scene test and the level scene test each run it on the accessors that their
+assembly appends: the seals' over the base stage, the slabs' over the static scene. It
+proves that each appended accessor has a buffer view of its own, starting on four bytes.
+
+### The inspection test
+
+It runs on hand-built files and proves:
+
+- a primitive without a material is reported by its mesh name;
+- a file with two buffers is refused;
+- world triangles compose the stage scale over the base matrices;
+- a seal's triangles sit on its box, wound outward;
+- a slab's colour and a lit glow's colour reach their triangles, and an unlit glowing slab
+  shows its colour;
+- an emissive material at strength 0 keeps its base colour.

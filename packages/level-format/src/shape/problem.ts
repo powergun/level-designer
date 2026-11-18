@@ -1,5 +1,5 @@
 /** The build error rules this component owns. */
-type FormatRule = "shape" | "id" | "slab";
+type FormatRule = "shape" | "id" | "slab" | "finish";
 
 /**
  * One reason a text or a level is refused: its rule, the path of the offending value and the

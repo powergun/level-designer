@@ -29,7 +29,7 @@ export function lightOf(frame: Frame): Vec3 {
 }
 
 /** The sRGB byte of a linear value, clamped to 0..1. */
-function srgbByte(linear: number): number {
+export function srgbByte(linear: number): number {
   const step = Math.round(Math.min(1, Math.max(0, linear)) * STEPS);
   return SRGB[step] ?? 0;
 }

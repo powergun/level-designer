@@ -199,7 +199,8 @@ lint:
     @{{MISE}} bun build --target browser --root . --outdir .tmp/runtime \
         packages/sec111-gateway/src/index.ts packages/render-gateway/src/index.ts \
         packages/level-format/src/index.ts packages/level-glb/src/index.ts \
-        packages/prop-kit/src/index.ts packages/level-view/src/index.ts \
+        packages/prop-kit/src/index.ts packages/finish-paint/src/index.ts \
+        packages/level-view/src/index.ts \
         packages/qa-client/src/index.ts packages/qa-client/page/watch.ts \
         packages/qa-client/page/program.ts
     @{{MISE}} bun x --no-install oxlint --no-error-on-unmatched-pattern -c .oxlintrc.runtime.json

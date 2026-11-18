@@ -5,15 +5,19 @@ rendering-poc pipeline, with the game's look and the level's lighting. Its one c
 `@level-designer/qa-client`, the QA page.
 
 The facade offers one start, `startLevelView`. It takes the canvas, the level GLB's bytes,
-the lighting section, the prepared static level's interior box, the clear colour choice
-(`game` or `leak`) and a failure callback. It resolves to one of three outcomes and never
+the level's finish table, the lighting section, the prepared static level's interior box,
+the clear colour choice (`game` or `leak`) and a failure callback. A slab's or a box's
+material that names a finish path with layers or a body shade draws with a painter built
+from that table. A stage material that names a hall finish with layers draws through the
+stage wrap: its own look, with the finish's layers over it on the hall's frame. Any other
+material keeps the GLB's own. The start resolves to one of three outcomes and never
 rejects:
 
 - `started`: the view, and the scene-pass quality the library chose for the GPU;
 - `refused`: no WebGPU, or a renderer that fell back to WebGL; the error names the
   requirement;
-- `failed`: the GLB did not parse (step `glb`), or a later renderer step threw (step
-  `renderer`).
+- `failed`: the GLB did not parse, or names a finish path that the table lacks (step
+  `glb`), or a later renderer step threw (step `renderer`).
 
 The facade also exports `WEBGPU_REQUIREMENT`, the one requirement sentence. A refusal's
 message is that sentence followed by its detail in brackets, and the page's own WebGPU

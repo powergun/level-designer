@@ -198,6 +198,17 @@ its design:
 - Agents use no headless browser, in the foreground or in the background.
 - At adoption, sec-111 may take a copy of the generic painter files.
 
+Decided on 2026-11-18, when the build of the look development started:
+
+- A static object is floor litter or an overhead object on a wall or the ceiling. Its
+  only purpose is to fill gaps for realism.
+- A static object has no collision and takes no part in any simulation. It never blocks
+  the player.
+- Floor litter is thin and small. No static object blocks or interferes with the
+  player's vision.
+- The look development is additive and must not be overcomplicated. The level is proved
+  for layout: it stays, and nothing the owner has passed is thrown away or redone.
+
 ## What to read
 
 The design in `docs/researches/2026-11-16-level-designer-foundation/` is the technical

@@ -4,6 +4,7 @@ import {
   ROUTES,
   type SessionFacts,
 } from "../protocol/index.js";
+import { type PageLog, UNLOGGED } from "../log/index.js";
 import { getJson, type Transport, unanswered } from "../transport/index.js";
 import { done, failed, type StepOutcome, type StepReport } from "./steps.js";
 
@@ -13,16 +14,19 @@ export type BuiltSession = SessionFacts & { readonly build: { readonly kind: "bu
 /** The step's name. */
 const STEP = "session facts";
 
-/** What a failed session step adds: without a run, no page line reaches the run log. */
-const UNLOGGED = "the page's lines are not in the run log";
+/** A failure before the join: the page knows no run, so it also says no line reaches the log. */
+function unjoined(log: PageLog, message: string): StepOutcome<BuiltSession> {
+  log.noRun();
+  return failed(`${message}; ${UNLOGGED}`);
+}
 
 /** The message of an answer that is not session facts: a refusal's, or the shape's miss. */
 function notSessionFacts(status: number, body: unknown): string {
   const refused = readRefusalAnswer(body);
-  if (refused.ok) return `${STEP} failed: HTTP ${status}: ${refused.value.message}; ${UNLOGGED}`;
+  if (refused.ok) return `${STEP} failed: HTTP ${status}: ${refused.value.message}`;
   const read = readSessionAnswer(body);
   const miss = read.ok ? "" : read.miss.message;
-  return `${STEP} failed: the server's answer is not session facts: ${miss}; ${UNLOGGED}`;
+  return `${STEP} failed: the server's answer is not session facts: ${miss}`;
 }
 
 /**
@@ -33,13 +37,15 @@ export async function readSession(
   transport: Transport,
   report: StepReport,
 ): Promise<StepOutcome<BuiltSession>> {
-  const reply = await getJson(transport, ROUTES.session);
-  if (reply.kind !== "answered") return failed(`${STEP} failed: ${unanswered(reply)}; ${UNLOGGED}`);
-  const read = readSessionAnswer(reply.body);
-  if (reply.status !== 200 || !read.ok) return failed(notSessionFacts(reply.status, reply.body));
-  const { logFailure, ...facts } = read.value;
   const { display, log } = report;
-  log.joinRun(facts.run);
+  const reply = await getJson(transport, ROUTES.session);
+  if (reply.kind !== "answered") return unjoined(log, `${STEP} failed: ${unanswered(reply)}`);
+  const read = readSessionAnswer(reply.body);
+  if (reply.status !== 200 || !read.ok) {
+    return unjoined(log, notSessionFacts(reply.status, reply.body));
+  }
+  const { logFailure, ...facts } = read.value;
+  log.joinRun(facts.run, facts.runLog);
   log.noteLogFailure(logFailure);
   log.info(`session: run ${facts.run}, run log ${facts.runLog}, marks ${facts.marksFile}`);
   const { build } = facts;

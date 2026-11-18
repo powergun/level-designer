@@ -61,8 +61,6 @@ const rejections: readonly [string, unknown, string][] = [
     "props[0].params",
   ],
   ["a kind that is no string", changed(validDescription(), "props[0].kind", 7), "props[0].kind"],
-  ["a fifth finish", changed(validDescription(), "finishes.glass", {}), "finishes.glass"],
-  ["a missing finish", changed(validDescription(), "finishes.metal"), "finishes.metal"],
   [
     "an unknown override key",
     changed(validDescription(), 'base.materials["Mat.001"]', { shine: 1 }),
@@ -85,7 +83,6 @@ describe("parseDescription", () => {
     expect(description?.props[0]?.params.get("glow")).toBe("cyan");
     expect(description?.glows.get("cyan")?.strength).toBe(6);
     expect(description?.base.materials.get("Lamp")?.emissive?.strength).toBe(2);
-    expect(description?.finishes.metal.metalness).toBe(0.7);
   });
 
   for (const [name, document, path] of rejections) {
@@ -168,8 +165,6 @@ describe("description caps and ranges", () => {
     ...closedRange('base.materials["Lamp"].emissive.strength', 0, 100),
     ...closedRange("seals[0].metalness", 0, 1),
     ...closedRange("seals[0].roughness", 0, 1),
-    ...closedRange("finishes.wood.metalness", 0, 1),
-    ...closedRange("finishes.metal.roughness", 0, 1),
     ...closedRange('glows["cyan"].color[2]', 0, 1),
     ...closedRange('glows["cyan"].strength', 0, 100),
   ];

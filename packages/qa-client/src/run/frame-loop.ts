@@ -50,7 +50,7 @@ export function startFrameLoop(state: RunState): void {
       state.display.hud(hudText(state, pose));
     } catch (thrown) {
       state.drawing.stopped = true;
-      state.log.alarmed("drawing", `a frame failed; drawing stopped: ${describe(thrown)}`);
+      state.log.alarmed("drawing", `drawing stopped: a frame failed: ${describe(thrown)}`);
       state.display.status("drawing stopped: a frame failed; see the banner", "error");
       return;
     }

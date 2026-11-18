@@ -1,4 +1,5 @@
 import { expect, spyOn, test } from "bun:test";
+import type { Description } from "@level-designer/level-format";
 import {
   buildLevel,
   COMMITTED_DESCRIPTION,
@@ -16,8 +17,66 @@ const preparations = spyOn(stage, "prepareLevel");
 /** One preparation costs about 3 s. */
 const PREPARATION_TIMEOUT = 30_000;
 
+/** The finish of every lamp: its paths' bodies are lit, so a lamp emits at its glow's strength. */
+const LAMP_FINISH = "luminaire/";
+
+/** One material of the written file, as far as the lamp check reads it. */
+interface WrittenMaterial {
+  readonly finish: unknown;
+  readonly glow: unknown;
+  readonly emissiveFactor: unknown;
+  readonly emissiveStrength: unknown;
+}
+
+/** The value at `key` of a parsed JSON value, or `undefined`. */
+function field(value: unknown, key: string): unknown {
+  return Reflect.get(Object(value), key);
+}
+
+/** The materials of a GLB, read from its JSON chunk after the 12-byte header and chunk head. */
+function materialsOf(glb: Uint8Array): readonly WrittenMaterial[] {
+  const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
+  const length = view.getUint32(12, true);
+  const document: unknown = JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + length)));
+  const materials: unknown = field(document, "materials");
+  const list: readonly unknown[] = Array.isArray(materials) ? materials : [];
+  return list.map((material) => ({
+    finish: field(field(material, "extras"), "finish"),
+    glow: field(field(material, "extras"), "glow"),
+    emissiveFactor: field(material, "emissiveFactor"),
+    emissiveStrength: field(
+      field(field(material, "extensions"), "KHR_materials_emissive_strength"),
+      "emissiveStrength",
+    ),
+  }));
+}
+
+/** The glow names the description's props state. */
+function glowsInUse(description: Description): ReadonlySet<string> {
+  const names = description.props.map((prop) => prop.params.get("glow"));
+  return new Set(names.filter((name): name is string => typeof name === "string"));
+}
+
+/** Asserts every lamp material names a glow and emits its colour at its strength; returns the glows met. */
+function expectLitLamps(glb: Uint8Array, description: Description): ReadonlySet<string> {
+  const lamps = materialsOf(glb).filter(
+    (m) => typeof m.finish === "string" && m.finish.startsWith(LAMP_FINISH),
+  );
+  expect(lamps.length).toBeGreaterThan(0);
+  const met = new Set<string>();
+  for (const lamp of lamps) {
+    const name = typeof lamp.glow === "string" ? lamp.glow : "";
+    const glow = description.glows.get(name);
+    expect(glow).toBeDefined();
+    expect(lamp.emissiveFactor).toEqual([...(glow?.color ?? [])]);
+    expect(lamp.emissiveStrength).toBe(glow?.strength);
+    met.add(name);
+  }
+  return met;
+}
+
 test(
-  "the committed description builds and is accepted",
+  "the committed description builds and is accepted, and every lamp emits at its glow's strength",
   async () => {
     const before = preparations.mock.calls.length;
     const read = await readInputs(COMMITTED_DESCRIPTION);
@@ -31,6 +90,8 @@ test(
     const { count, limit } = report.summary.bodyBoxes;
     expect(count).toBeLessThan(limit);
     expect(preparations.mock.calls.length - before).toBe(1);
+    const { description, glb } = outcome.built;
+    expect(expectLitLamps(glb, description)).toEqual(glowsInUse(description));
   },
   PREPARATION_TIMEOUT,
 );

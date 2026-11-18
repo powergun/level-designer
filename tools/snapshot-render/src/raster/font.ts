@@ -14,6 +14,36 @@ const GLYPHS: Readonly<Record<string, readonly string[]>> = {
   "8": ["###", "#.#", "###", "#.#", "###"],
   "9": ["###", "#.#", "###", "..#", "###"],
   "-": ["...", "...", "###", "...", "..."],
+  "+": ["...", ".#.", "###", ".#.", "..."],
+  ".": ["...", "...", "...", "...", ".#."],
+  "/": ["..#", "..#", ".#.", "#..", "#.."],
+  " ": ["...", "...", "...", "...", "..."],
+  a: [".#.", "#.#", "###", "#.#", "#.#"],
+  b: ["##.", "#.#", "##.", "#.#", "##."],
+  c: [".##", "#..", "#..", "#..", ".##"],
+  d: ["##.", "#.#", "#.#", "#.#", "##."],
+  e: ["###", "#..", "##.", "#..", "###"],
+  f: ["###", "#..", "##.", "#..", "#.."],
+  g: [".##", "#..", "#.#", "#.#", ".##"],
+  h: ["#.#", "#.#", "###", "#.#", "#.#"],
+  i: ["###", ".#.", ".#.", ".#.", "###"],
+  j: ["..#", "..#", "..#", "#.#", ".#."],
+  k: ["#.#", "#.#", "##.", "#.#", "#.#"],
+  l: ["#..", "#..", "#..", "#..", "###"],
+  m: ["#.#", "###", "###", "#.#", "#.#"],
+  n: ["##.", "#.#", "#.#", "#.#", "#.#"],
+  o: [".#.", "#.#", "#.#", "#.#", ".#."],
+  p: ["##.", "#.#", "##.", "#..", "#.."],
+  q: [".#.", "#.#", "#.#", "##.", ".##"],
+  r: ["##.", "#.#", "##.", "#.#", "#.#"],
+  s: [".##", "#..", ".#.", "..#", "##."],
+  t: ["###", ".#.", ".#.", ".#.", ".#."],
+  u: ["#.#", "#.#", "#.#", "#.#", "###"],
+  v: ["#.#", "#.#", "#.#", "#.#", ".#."],
+  w: ["#.#", "#.#", "###", "###", "#.#"],
+  x: ["#.#", "#.#", ".#.", "#.#", "#.#"],
+  y: ["#.#", "#.#", ".#.", ".#.", ".#."],
+  z: ["###", "..#", ".#.", "#..", "###"],
 };
 /** The pixels per glyph cell. */
 const CELL = 2;
@@ -27,7 +57,7 @@ const INK: Rgb8 = [0, 0, 0];
 const PLATE: Rgb8 = [255, 255, 255];
 
 /** The pixel size of a label's plate. */
-function plateSize(text: string): Pixel {
+export function labelSize(text: string): Pixel {
   return [text.length * ADVANCE - CELL + 2 * PAD, 5 * CELL + 2 * PAD];
 }
 
@@ -43,11 +73,11 @@ function drawGlyph(raster: Raster, glyph: readonly string[], corner: Pixel): voi
 }
 
 /**
- * Paint a label of digits and minus signs, black on a white plate, with the plate's top left
- * corner at `corner`.
+ * Paint a label of digits, lowercase letters, spaces and the signs `-+./`, black on a white
+ * plate, with the plate's top left corner at `corner`.
  */
 export function drawLabel(raster: Raster, text: string, corner: Pixel): void {
-  fillRect(raster, corner, plateSize(text), PLATE);
+  fillRect(raster, corner, labelSize(text), PLATE);
   for (let index = 0; index < text.length; index++) {
     const glyph = GLYPHS[text[index] ?? ""];
     if (glyph === undefined) throw new Error(`the label font has no glyph for "${text[index]}"`);
@@ -57,6 +87,6 @@ export function drawLabel(raster: Raster, text: string, corner: Pixel): void {
 
 /** Paint a label centred on a pixel. */
 export function drawCentredLabel(raster: Raster, text: string, centre: Pixel): void {
-  const [width, height] = plateSize(text);
+  const [width, height] = labelSize(text);
   drawLabel(raster, text, [Math.round(centre[0] - width / 2), Math.round(centre[1] - height / 2)]);
 }

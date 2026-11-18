@@ -1,10 +1,11 @@
 import { readLighting } from "../lighting/index.js";
-import { admitText, IdClaims, readId } from "../shape/index.js";
+import { admitText, entryPath, IdClaims, keyPath, readId } from "../shape/index.js";
 import type { Admission, FormatProblem, ShapeNode } from "../shape/index.js";
-import { SLAB_MATERIALS } from "../slab/index.js";
+import { hallProblems, readFinishTable, recipeAt } from "../finish/index.js";
+import type { FinishTable } from "../finish/index.js";
 import type { BaseStage, Description } from "./description.js";
 import { DESCRIPTION_SCHEMA } from "./description.js";
-import { readFinish, readGlow, readOverride, readProp, readSeal } from "./records.js";
+import { readGlow, readOverride, readProp, readSeal } from "./records.js";
 
 /** The description caps. */
 const MAX_SEALS = 16;
@@ -24,18 +25,33 @@ function readBase(node: ShapeNode): BaseStage {
   };
 }
 
-/** The finishes record: one finish for each of the four materials. */
-function readFinishes(node: ShapeNode): Description["finishes"] {
-  node.record(SLAB_MATERIALS);
-  return {
-    wood: readFinish(node.field("wood")),
-    brick: readFinish(node.field("brick")),
-    concrete: readFinish(node.field("concrete")),
-    metal: readFinish(node.field("metal")),
-  };
+/**
+ * The problems of the hall finishes that the base overrides name: a path the table lacks is
+ * a `finish` problem at the override's `finish`, and a named role is judged once for what a
+ * hall finish leaves out.
+ */
+function hallFinishProblems(base: BaseStage, finishes: FinishTable): FormatProblem[] {
+  const judged = new Set<string>();
+  return [...base.materials].flatMap(([name, override]) => {
+    const path = override.finish;
+    if (path === undefined || judged.has(path)) {
+      return [];
+    }
+    judged.add(path);
+    if (recipeAt(finishes, path) === undefined) {
+      const at = keyPath(entryPath("base.materials", name), "finish");
+      return [
+        { rule: "finish" as const, path: at, message: `${at}: no finish ${JSON.stringify(path)}` },
+      ];
+    }
+    return hallProblems(finishes, path);
+  });
 }
 
-/** The description record, read in key order so problems follow the document. */
+/**
+ * The description record, read in key order so problems follow the document; the hall
+ * finishes are judged once the shape holds.
+ */
 function readDescription(root: ShapeNode, problems: FormatProblem[]): Description {
   root.record(["schema", "name", "base", "seals", "finishes", "glows", "props", "lighting"]);
   root.field("schema").oneOf([DESCRIPTION_SCHEMA]);
@@ -44,12 +60,15 @@ function readDescription(root: ShapeNode, problems: FormatProblem[]): Descriptio
   const base = readBase(root.field("base"));
   const seals = root.field("seals").list(MAX_SEALS);
   const sealValues = seals.map((node) => readSeal(node, ids));
-  const finishes = readFinishes(root.field("finishes"));
+  const finishes = readFinishTable(root.field("finishes"));
   const glows = root.field("glows").entries(MAX_GLOWS);
   const glowValues = new Map(glows.map(([glow, node]) => [glow, readGlow(node)]));
   const props = root.field("props").list(MAX_PROPS);
   const propValues = props.map((node) => readProp(node, ids));
   const lighting = readLighting(root.field("lighting"));
+  if (problems.length === 0) {
+    problems.push(...hallFinishProblems(base, finishes));
+  }
   return {
     name,
     base,

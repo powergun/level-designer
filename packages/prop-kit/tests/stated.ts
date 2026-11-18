@@ -44,16 +44,27 @@ const FACING_AXES: Readonly<Record<Facing, Axes>> = {
 };
 
 /**
- * One slab as the kind tables state it in the prop frame: its facing, or the axes of a pitched
- * slab; its size and base centre; its glow; and its colour where it differs from the prop's.
+ * One slab as the kind tables state it in the prop frame: its finish path; its facing, or the
+ * axes of a pitched slab; its size and base centre; and its colour where it differs from the
+ * prop's.
  */
 export interface Stated {
+  readonly finish: string;
   readonly facing: Facing | Axes;
   readonly size: Vec3;
   readonly base: Vec3;
-  readonly glow?: string;
   readonly color?: string;
 }
+
+/** What every slab of a stated prop shares: its kind's material, the prop's colour and its glow. */
+export interface Look {
+  readonly material: SlabMaterial;
+  readonly color: string;
+  readonly glow: string | undefined;
+}
+
+/** The finish paths of glow slabs, which are metal on every kind. */
+const LAMP = "luminaire/";
 
 /** Asserts that two vectors agree to 1e-9. */
 export function expectVector(actual: Vec3, expected: Vec3): void {
@@ -65,11 +76,14 @@ export function expectAxes(slab: Slab, axes: Axes): void {
   slabBox(slab).axes.forEach((axis, i) => expectVector(axis, axes[i] ?? [0, 0, 0]));
 }
 
-/** Asserts that the prop at the origin expands to exactly the stated slabs, in order. */
+/**
+ * Asserts that the prop at the origin expands to exactly the stated slabs, in order, and that
+ * every slab carries the prop's glow.
+ */
 export function expectStated(
   slabs: readonly PropSlab[],
   stated: readonly Stated[],
-  look: { readonly material: SlabMaterial; readonly color: string },
+  look: Look,
 ): void {
   expect(slabs.length).toBe(stated.length);
   stated.forEach((want, k) => {
@@ -82,7 +96,8 @@ export function expectStated(
     expectVector(got.slab.position, want.base);
     expectAxes(got.slab, typeof want.facing === "string" ? FACING_AXES[want.facing] : want.facing);
     expect(got.slab.color).toBe(want.color ?? look.color);
-    expect(got.slab.material).toBe(want.glow === undefined ? look.material : "metal");
-    expect(got.glow).toBe(want.glow);
+    expect(got.slab.finish).toBe(want.finish);
+    expect(got.slab.material).toBe(want.finish.startsWith(LAMP) ? "metal" : look.material);
+    expect(got.glow).toBe(look.glow);
   });
 }

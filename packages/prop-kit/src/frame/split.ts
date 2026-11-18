@@ -3,7 +3,7 @@ import type { Slab, Vec3 } from "@level-designer/level-format";
 import { FACINGS, runAxis } from "./facing.js";
 import type { Axis } from "./facing.js";
 import { pitchedSlab } from "./pitch.js";
-import type { Box, BoxRole, Role, Span } from "./role.js";
+import type { Box, BoxRole, Role, SlabPaint, Span } from "./role.js";
 
 /**
  * The most runs a role is tried with before the kit reports a kind table that no run count
@@ -22,10 +22,11 @@ function middle([min, max]: Span): number {
 }
 
 /**
- * The slab that fills `box` with the role's facing, material and colour, in the prop frame:
- * its position is the base centre, the middle of the box with its height axis at the minimum.
+ * The slab that fills `box` with the role's facing, material, colour and finish path and the
+ * prop's paint, in the prop frame: its position is the base centre, the middle of the box with
+ * its height axis at the minimum.
  */
-function frameSlab(box: Box, role: BoxRole): Slab {
+function frameSlab(box: Box, role: BoxRole, paint: SlabPaint): Slab {
   const facing = FACINGS[role.facing];
   const size: Vec3 = [
     extent(box[facing.width]),
@@ -40,6 +41,8 @@ function frameSlab(box: Box, role: BoxRole): Slab {
     color: role.color,
     position,
     rotation: facing.quaternion,
+    finish: role.finish,
+    ...paint,
   };
 }
 
@@ -62,15 +65,15 @@ function admitsRounded(slab: Slab): boolean {
 /**
  * The role's slabs in the prop frame. A box role splits along its run axis into the fewest equal
  * runs that the slab admission accepts once rounded, listed in ascending order along the axis; a
- * pitched role stays one slab.
+ * pitched role stays one slab. Every slab carries the role's finish path and the prop's paint.
  */
-export function splitRole(role: Role): Slab[] {
+export function splitRole(role: Role, paint: SlabPaint): Slab[] {
   if (role.form === "pitched") {
-    return [pitchedSlab(role)];
+    return [pitchedSlab(role, paint)];
   }
   const axis = runAxis(FACINGS[role.facing]);
   for (let n = 1; n <= MAX_RUNS; n += 1) {
-    const slabs = runBoxes(role.box, axis, n).map((box) => frameSlab(box, role));
+    const slabs = runBoxes(role.box, axis, n).map((box) => frameSlab(box, role, paint));
     if (slabs.every(admitsRounded)) {
       return slabs;
     }

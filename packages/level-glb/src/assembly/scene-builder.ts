@@ -8,11 +8,25 @@ import type {
 import { EMISSIVE_STRENGTH, writeGlb } from "../container/index.js";
 import { GeometryWriter } from "./geometry-writer.js";
 
-/** The geometry of one appended primitive: xyz positions and normals, optional colours, indices. */
+/** The application-specific attribute of a slab's number, seed, wear and face class. */
+const SLAB_CONSTANTS = "_SLAB";
+
+/** The pattern data of a painted primitive per vertex: coordinates, face size, four constants. */
+interface PaintVertices {
+  readonly pattern: Float32Array;
+  readonly faceSize: Float32Array;
+  readonly slab: Float32Array;
+}
+
+/**
+ * The geometry of one appended primitive: xyz positions and normals, optional colours,
+ * optional pattern data and the indices.
+ */
 export interface PrimitiveGeometry {
   readonly positions: Float32Array;
   readonly normals: Float32Array;
   readonly colors?: Float32Array;
+  readonly paint?: PaintVertices;
   readonly indices: Uint32Array;
 }
 
@@ -51,14 +65,23 @@ export class SceneBuilder {
     return this.materials.length - 1;
   }
 
-  /** Append an indexed triangle primitive's accessors and return the primitive. */
+  /**
+   * Append an indexed triangle primitive's accessors and return the primitive. Pattern data
+   * becomes `TEXCOORD_0`, `TEXCOORD_1` and `_SLAB`.
+   */
   primitive(geometry: PrimitiveGeometry, material: number): GltfPrimitive {
     const attributes: Record<string, number> = {
-      POSITION: this.geometry.vec3(geometry.positions, true),
-      NORMAL: this.geometry.vec3(geometry.normals, false),
+      POSITION: this.geometry.positions(geometry.positions),
+      NORMAL: this.geometry.floats(geometry.normals, "VEC3"),
     };
     if (geometry.colors !== undefined)
-      attributes.COLOR_0 = this.geometry.vec3(geometry.colors, false);
+      attributes.COLOR_0 = this.geometry.floats(geometry.colors, "VEC3");
+    const { paint } = geometry;
+    if (paint !== undefined) {
+      attributes.TEXCOORD_0 = this.geometry.floats(paint.pattern, "VEC2");
+      attributes.TEXCOORD_1 = this.geometry.floats(paint.faceSize, "VEC2");
+      attributes[SLAB_CONSTANTS] = this.geometry.floats(paint.slab, "VEC4");
+    }
     return { attributes, indices: this.geometry.indices(geometry.indices), material, mode: 4 };
   }
 

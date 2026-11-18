@@ -1,32 +1,36 @@
 # prop-kit knowledge
 
 `@level-designer/prop-kit` expands a prop of the level description into slabs. It owns the
-prop kinds: each kind's parameter table, every secondary dimension and the generator of the
-kind's slabs. It also owns the `kind` and `param` build errors.
+prop kinds: each kind's parameter table, every secondary dimension, the generator of the
+kind's slabs and the finish path of each slab. It also owns the `kind`, `param` and `finish`
+build errors for a prop.
 
 ## Surface
 
 - `expandProp` takes one admitted prop, its path in the description (`props[i]`), the
-  floor height under its `at` and the glow names of the description's `glows`. It returns
-  the prop's slabs in the level frame and in slab order, or its problems. The caller
-  expands each prop once.
-- Each expanded slab carries the five keys of a level `.json` slab and, beside them, the glow
-  name of a glowing slab. The slabs are unrounded; the caller rounds each slab once with
+  floor height under its `at` and a context: the glow names of the description's `glows`
+  and its finish table. It returns the prop's slabs in the level frame and in slab order, or
+  its problems. The caller expands each prop once.
+- Each expanded slab carries the nine keys of a level `.json` slab: the five of its body and
+  its four finish keys. Beside the slab stands the glow name of a prop that has a glow, on
+  every slab of that prop. The slabs are unrounded; the caller rounds each slab once with
   `roundSlab` of `@level-designer/level-format` before any admission.
 - `listKinds` returns every kind with its parameters in table order: each parameter's name,
   its type, its range or its choices, its default and, for a colour or a glow, whether it is
-  required. It is a listing of every kind for authors.
+  required. A partition's `finish` lists its defaults by material. It is a listing of every
+  kind for authors.
 
 ## Units
 
 - `admit`: the admission of a prop's kind and parameters, the parameter specs, and the
-  `kind` and `param` problems.
+  `kind`, `param` and `finish` problems.
 - `frame`: slab roles in the prop frame, the six facings and the pitched facing, the split of
   a role into runs and the placement of a slab on its site.
-- `kinds`: the kind tables, their named dimensions, the shared hollow box layout and the
-  bridge crane's `hookDrop` limit.
+- `kinds`: the kind tables, their named dimensions, the finish paths the kit names, the
+  shared hollow box layout and the bridge crane's `hookDrop` limit.
 
-The root unit holds the expansion and the kind listing. Dependencies point down: `kinds` uses
+The root unit holds the expansion, with the `finish` check and each slab's seed, and the
+kind listing. Dependencies point down: `kinds` uses
 `admit` and `frame`, and the root uses all three.
 
 ## Admission
@@ -41,8 +45,10 @@ kind's typed parameter value with every default filled in. The generators trust 
   `props[3].params.length`. A key outside the plain form shows quoted in brackets, as in
   `props[3].params["odd key"]`.
 - The message reads `<path>: <kind> takes <range or type>, got <value>`. A number names its
-  range (`length 1 to 12`), the colour its form (`color as #rrggbb text`), a material its
-  choices (`material metal or concrete`) and a glow the names `glows` holds.
+  range (`length 1 to 12`), the colour its form (`color as #rrggbb text`), a material or a
+  choice its choices (`material metal or concrete`, `door +z, -z or none`), a switch its form
+  (`stencil as true or false`), a finish path its form (`finish as finish/role text`), a glow
+  the names `glows` holds and the seed its form (`seed as a whole number 0 to 4095`).
 - A missing required parameter shows `got nothing`. A value of the wrong type fails its range
   or form. An unknown parameter names the parameters the kind takes.
 - Problems come in reading order: unknown keys first, in map order, then every parameter in
@@ -52,6 +58,17 @@ Typed ranges compare exactly, with no slack: a parameter typed at its limit pars
 limit's own number and passes. A glow passes when `glows` names it. Every kind requires
 `color`; an optional colour, `baseColor` or `runwayColor`, admits as nothing when it is
 omitted, and the kind then paints those slabs in `color`.
+
+Three parameters choose a role, each after its kind's other parameters: a container's `door`,
+`+z`, `-z` or `none`, by default `none`; a crate's `stencil`, true or false, by default true;
+and a partition's `finish`, any text. A partition's `finish` admits only its form: whether the
+table holds it is the `finish` check of "Finish paths". Omitted, it admits as nothing, and the
+partition takes the path of its material.
+
+Every kind takes two parameters after its own, `wear` and `seed`, so the listing ends each
+kind with them. `wear` is a number from 0 to 1, by default 0.3. `seed` is a whole number from
+0 to `MAX_SEED`, 4,095, the lattice hash's range; omitted, it admits as nothing and the
+expansion takes `seedOfId` of the prop's id, both from `@level-designer/level-format`.
 
 The bridge crane has the kit's one limit across parameters: its hook keeps its underside
 `LEAST_HANG` above the floor, so `hookDrop` may not pass `railHeight` less 2.5 m. That limit
@@ -114,11 +131,11 @@ rotation is unit by construction; a pitch of 90 equals the upright `+X` facing.
 
 ## The outward rule
 
-destruction lib's mesher tints a slab's -Z face 20% toward a light grey, so every slab turns
-its +Z face to where a player sees and shoots it:
+A slab's +Z face is its outside face, the one a finish paints with its `outside` marks, so
+every slab turns it to where a player sees and shoots it:
 
 - a side panel of a hollow kind faces away from the prop's vertical centre axis;
-- a deck, a roof and a lid face up, with the tinted face inside the prop;
+- a deck, a roof and a lid face up, with the inside face inside the prop;
 - a hanging slab faces down, toward the floor it is seen from;
 - a glow slab faces away from the panel it is mounted on;
 - a side of a hollow part, the arm's pedestal, the jib's mast or the trolley, faces away from
@@ -128,8 +145,8 @@ its +Z face to where a player sees and shoots it:
   the other girder, the hook block faces local +Z, and the arm's links and the jib's web, tie
   and hoist face local +X;
 - a partition has no inside: its +Z face looks along local +Z, and the author turns it to the
-  main lane with `yaw`. Adding 180 degrees swaps its faces, and the back face reads clearly
-  lighter on a dark colour.
+  main lane with `yaw`. Adding 180 degrees swaps its faces, and the main lane then sees the
+  inside face.
 
 ## The joint rule
 
@@ -158,9 +175,10 @@ caps or the grid.
 - The run axis is a slab's horizontal axis in its face: the prop's Z for a top and for a +X or
   -X side, the prop's X for a +Z or -Z end and for a partition.
 - Run k of n spans from `start + k * run / n` to `start + (k + 1) * run / n`.
-- Only an enclosure's and a container's roof and long sides, a partition and a bridge crane's
-  four runway roles can split, and never into more than two runs. A runway splits above a
-  travel of 40 m; at 60 m it has two runs of 30 m.
+- Only an enclosure's and a container's roof and long sides, a partition, a bridge crane's
+  four runway roles and its two girder webs can split, and never into more than two runs. A
+  runway splits above a travel of 40 m; at 60 m it has two runs of 30 m. A girder web, 1.25 m
+  high between the trucks, splits above a span of 20.3 m, where its face passes 25 m2.
 - A pitched role never splits. The longest is the jib's tie at a boom of 8 m, about 5.5 by
   0.1 m, far inside the caps.
 
@@ -176,8 +194,55 @@ Each role carries its colour. Every slab takes the prop's `color`, except the ar
 which takes `baseColor`, and the bridge crane's runway beams, which take `runwayColor`; each
 falls back to `color`. A slab's material is its kind's fixed material or its
 `material` parameter. A glow slab is always metal, also on a concrete enclosure, and carries
-the glow name of the prop's `glow` parameter. A glow only adds slabs: the other slabs are the
-same with and without it, so the outline never depends on `glow`.
+the path of a luminaire. A prop with a glow puts its glow name on every slab, so a lit mark
+of any recipe shines in it; only the luminaire recipes light a whole slab. A glow only adds
+slabs: the other slabs are the same with and without it, so the outline never depends on
+`glow`.
+
+## Finish paths
+
+Every role names its finish path, `finish/role`; every run of a split role carries it. The
+names are the kit's, and the description's finish table defines them:
+
+- `conveyor`: the deck `bed/deck`, both skirts `housing/skirt`.
+- `enclosure`, metal: the roof `housing/top`. Up to `CABINET_WIDTH`, 1.2 m, all four walls
+  are `housing/cabinet`, a cabinet beside a housing. Wider, the +X side is
+  `housing/machine-plate` and the -X side and both ends `housing/machine`. Concrete: the
+  roof `cast-concrete/top` and all four walls `cast-concrete/wall`, at any width.
+- `robot-arm`: the pedestal's top `housing/top` and its four walls `housing/pedestal`;
+  `casting/shoulder`, `casting/upper-arm`, `casting/forearm` and `casting/head`.
+- `container`: the roof `corrugated/roof`, both sides `corrugated/side`, both ends
+  `corrugated/end`, except the end that `door` names, the +Z end for `+z` and the -Z end for
+  `-z`, which is `corrugated/door`.
+- `crate`: the lid `timber/lid`, the +X and -X sides `timber/crate-stencil`, or `timber/crate`
+  when `stencil` is false, the +Z and -Z sides `timber/crate`.
+- `partition`: its `finish`, or by its material: concrete `cast-concrete/panel`, metal
+  `steel-stock/stack`, wood `timber/stack`, brick `block/wall`.
+- `bridge-crane`: the runway webs `beam/runway`, every flange `beam/flange`, the trucks
+  `beam/truck`, the girder webs `beam/girder`, the trolley's top `housing/top` and its four
+  walls `housing/hoist`, the hook `beam/hook`.
+- `jib-crane`: the plinth `beam/plinth`; the mast's +X panel `beam/mast-front` and its other
+  three `beam/mast`; the boom's web `beam/boom` and flange `beam/flange`; the tie `beam/tie`;
+  the hoist `housing/hoist`.
+- Glow slabs: a light strip `luminaire/strip`, every other glow slab `luminaire/band`.
+
+Once the parameters pass, the expansion looks up every path it names with `recipeAt` of
+`@level-designer/level-format`. A path the table lacks is a `finish` problem at the prop's
+kind, once per path in slab order, a partition's stated `finish` among them, and the prop
+yields no slab:
+`props[i].kind: <kind> needs the finish "<finish>/<role>"`.
+
+## Slab paint
+
+Every slab carries the prop's paint beside its path:
+
+- `number` is 0.
+- `wear` is the prop's `wear`.
+- `seed` comes from the prop's seed s and the slab's index k in slab order:
+  (s + 2531 k) mod 4096. The stride is odd, so the 4,096 indices map one to one onto the
+  seeds and one prop's slabs never share a seed. It is about 0.618 of 4,096, so neighbouring
+  slabs lie far apart. Slab 0 carries the prop's seed itself, and equal prop seeds give equal
+  slab seeds whatever the id.
 
 ## Named dimensions
 
@@ -228,10 +293,11 @@ The bridge crane's dimensions:
   reference.
 - `END_TRUCK_WIDTH` 0.3 m, `END_TRUCK_HEIGHT` 0.4 m and `END_TRUCK_LENGTH` 3 m: a truck as wide
   as the flange it rides over, long enough to carry both girders and the trolley.
-- `GIRDER_WEB_HEIGHT` 0.6 m and `GIRDER_SPACING` 1.5 m between the webs' centres: a deeper
-  double-girder bridge, as on the reference.
+- `GIRDER_WEB_HEIGHT` 1.25 m and `GIRDER_SPACING` 1.5 m between the webs' centres: the deep
+  double-girder bridge of the art direction, as on the crane references.
 - `TROLLEY_WIDTH` 1.2 m and `TROLLEY_HEIGHT` 0.5 m: a hoist housing that reads as a box. Its
-  length spans the girder webs' outer faces, 1.55 m. The crane rises 1.7 m above `railHeight`.
+  length spans the girder webs' outer faces, 1.55 m. The crane rises 2.35 m above
+  `railHeight`, inside the format's 2.4 m.
 - `HOOK_BLOCK`, 0.4 by 0.5 by 0.3 m: a block a player recognises under the trolley.
 
 The jib crane's dimensions, with the flange of `BEAM_FLANGE_WIDTH`:
@@ -310,8 +376,9 @@ more, so the forearm never points back.
 ### container
 
 A closed metal box `CONTAINER_WIDTH` wide and `CONTAINER_HEIGHT` high: four sides under a flat,
-flush roof with no eave, door or corner post. It reads by its proportions: the 20 foot box at
-the default length and the 40 foot box at 12.2 m.
+flush roof with no eave or corner post. It reads by its proportions: the 20 foot box at the
+default length and the 40 foot box at 12.2 m. Its door is a role, not a slab: `door` names the
+end that its finish paints as the door.
 
 - Slabs: the roof, the +X and -X sides, then the +Z and -Z ends, with T = `PANEL` and E = 0.
 - The long sides split above a length of 9.8425 m and the roof above 10.2459 m, so a
@@ -343,7 +410,7 @@ undersides.
 - `bridgeAt` places the trucks along the runway from the -Z end, so at 0 and 1 they end flush
   with it. `trolleyAt` places the trolley between the trucks from the -X end.
 - The hook block's top is at most `railHeight`, so it touches nothing.
-- 16 slabs, 20 above a travel of 40 m.
+- 16 slabs, two more above a span of 20.3 m and four more above a travel of 40 m: 16 to 22.
 
 ### jib-crane
 
@@ -392,6 +459,8 @@ The kit's tests run through the facade. One shared check expands a prop on a sit
 slabs as the pipeline does and checks the slab count, the slab admission, a separating-axis
 overlap of at most 1 mm, unit rotations, tops at 0.55 m or higher and the lowest point.
 
+The geometry tests:
+
 - The corner tests run it for every kind at every corner of its parameter ranges and at each
   split threshold, at the origin and on an off-grid site at an odd yaw, with the outward rule
   or each slab's stated side.
@@ -399,10 +468,24 @@ overlap of at most 1 mm, unit rotations, tops at 0.55 m or higher and the lowest
   on a seeded, edge-biased sample of reach, shoulder and elbow at random sites. Each pose also
   keeps its links above the floor and between the pedestal's side planes.
 - The crane tests check the hook and the hoist at 2.5 m or higher, the 2.4 m rise, the hook at
-  its limit and the runway's split.
-- The layout test compares each kind's slabs with stated sizes, base centres, axes and colours,
-  pins the pitch's sign and the tie's two contact edges, and places a stated conveyor.
-- The parameter test covers every problem form, the `hookDrop` limit and the kind listing.
+  its limit, the runway's split and the girder web's split.
+- The layout test compares each kind's slabs with stated finish paths, sizes, base centres,
+  axes, colours and glows, pins the pitch's sign and the tie's two contact edges, and places a
+  stated conveyor.
+
+The finish data and parameter tests:
+
+- The finish test states each slab's path in slab order, split runs included, at every
+  corner and split threshold on both sites. It also checks the cabinet's width at its limit
+  and one step beyond, each `door` at every split, both `stencil` values, a partition's stated
+  `finish`, the glow on every slab and the `finish` problem.
+- The paint test checks distinct slab seeds at the seed's corners and on a seeded,
+  edge-biased sample, their stability for a prop's seed, the id's hash as the default, and
+  every slab's number and wear.
+- The parameter test covers every problem form, the `hookDrop` limit, `wear` and `seed` at
+  their limits and one step beyond, every value of `door` and `stencil` and the values beside
+  them, a partition's `finish` of another type than text, and the kind listing.
+- The test description's finish table holds every path the kit names, one plain recipe each.
 
 Its dependency document is the
 [level-format knowledge](../../level-format/docs/KNOWLEDGE.md).

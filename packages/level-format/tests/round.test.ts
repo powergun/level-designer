@@ -7,6 +7,7 @@ import {
   roundSlab,
 } from "@level-designer/level-format";
 import type { Slab, Vec3 } from "@level-designer/level-format";
+import { SLAB_FINISH } from "./finishes.ts";
 import { expectRoundTrip, gridLevel, gridSlab } from "./fixtures.ts";
 
 /** A slab off the grid: lengths past 0.1 mm and a rotation past nine decimals. */
@@ -14,6 +15,7 @@ function messySlab(): Slab {
   return {
     size: [2.000049, 1.23456789, 0.300051],
     material: "wood",
+    ...SLAB_FINISH,
     color: "#8a6a40",
     position: [-4.01254, 0.32415, 12.49996],
     rotation: [0, 0.6000000016, 0, 0.7999999988],

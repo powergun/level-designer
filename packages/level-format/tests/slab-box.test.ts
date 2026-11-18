@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { slabBox } from "@level-designer/level-format";
 import type { Slab, Vec3 } from "@level-designer/level-format";
+import { SLAB_FINISH } from "./finishes.ts";
 
 /** The sine and cosine of 45 degrees, the components of a 90 degree turn. */
 const HALF_TURN = Math.SQRT1_2;
@@ -20,6 +21,7 @@ test("a slab yawed 90 degrees and lifted 3 m has its hand-computed corners", () 
   const slab: Slab = {
     size: [2, 1, 0.5],
     material: "brick",
+    ...SLAB_FINISH,
     color: "#804020",
     position: [1, 3, -2],
     rotation: [0, HALF_TURN, 0, HALF_TURN],
@@ -52,6 +54,7 @@ test("a slab tipped 90 degrees about +X lies with its height along +Z", () => {
   const slab: Slab = {
     size: [1, 2, 0.4],
     material: "concrete",
+    ...SLAB_FINISH,
     color: "#808080",
     position: [0, 1, 0],
     rotation: [HALF_TURN, 0, 0, HALF_TURN],
@@ -73,6 +76,7 @@ test("a slab turned 120 degrees about (1, 1, 1) and lifted 20 m has its hand-com
   const slab: Slab = {
     size: [2, 4, 6],
     material: "metal",
+    ...SLAB_FINISH,
     color: "#404040",
     position: [10, 20, 30],
     rotation: [0.5, 0.5, 0.5, 0.5],

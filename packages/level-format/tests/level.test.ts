@@ -1,13 +1,23 @@
 import { describe, expect, test } from "bun:test";
-import { admitSlabs, decodeLevel, encodeLevel } from "@level-designer/level-format";
-import type { Level, Slab, Vec3 } from "@level-designer/level-format";
+import {
+  admitSlabs,
+  decodeLevel,
+  encodeLevel,
+  parseDescription,
+} from "@level-designer/level-format";
+import type { FinishTable, Layer, Level, Recipe, Slab, Vec3 } from "@level-designer/level-format";
+import { finishesDocument, finishTable } from "./finishes.ts";
+import type { LimitCase } from "./fixtures.ts";
 import {
   changed,
+  closedRange,
+  expectLimit,
   expectRoundTrip,
   gridLevel,
   gridSlab,
   problemsOf,
   rulePaths,
+  validDescription,
   validPoint,
 } from "./fixtures.ts";
 
@@ -23,8 +33,37 @@ function rotation(scale: number): number[] {
 
 /** The slab with its keys inserted in reverse canonical order. */
 function reversedSlab(slab: Slab): Slab {
-  const { size, material, color, position, rotation: turn } = slab;
-  return { rotation: turn, position, color, material, size };
+  const { size, material, color, position, rotation: turn, finish, number, seed, wear } = slab;
+  return { wear, seed, number, finish, rotation: turn, position, color, material, size };
+}
+
+/** The layer with its common keys and effects inserted in reverse canonical order. */
+function reversedLayer(layer: Layer): Layer {
+  const { pattern, on, across, up, clip, detail, wear, amount, effects } = layer;
+  const { shade, paint, color, metalness, roughness, lit, jitter } = effects;
+  const turned = jitter === undefined ? undefined : { high: jitter.high, low: jitter.low };
+  const reversedEffects = { jitter: turned, lit, roughness, metalness, color, paint, shade };
+  return { effects: reversedEffects, amount, wear, detail, clip, up, across, on, pattern };
+}
+
+/** The recipe with its keys, its body's and its layers' inserted in reverse order. */
+function reversedRecipe(recipe: Recipe): Recipe {
+  const { body, layers } = recipe;
+  const turned =
+    body === undefined
+      ? undefined
+      : { lit: body.lit, roughness: body.roughness, metalness: body.metalness, shade: body.shade };
+  return { extends: recipe.extends, layers: layers.map(reversedLayer), body: turned };
+}
+
+/** The table with every finish's, recipe's and layer's keys inserted in reverse order. */
+function reorderedTable(table: FinishTable): FinishTable {
+  const finishes = [...table].map(([name, { cut, light, roles }]) => {
+    const turned = [...roles].map(([role, recipe]) => [role, reversedRecipe(recipe)] as const);
+    const finish = { roles: new Map(turned), light, cut: { color: cut.color, family: cut.family } };
+    return [name, finish] as const;
+  });
+  return new Map(finishes);
 }
 
 /** The level with its keys inserted in another order than the canonical one. */
@@ -38,7 +77,7 @@ function reorderedLevel(level: Level): Level {
     environment,
   };
   const props = level.props.map((prop) => ({ slabs: prop.slabs.map(reversedSlab), id: prop.id }));
-  return { lighting, props };
+  return { lighting, props, finishes: reorderedTable(level.finishes) };
 }
 
 /** A level whose second prop holds one slab of `size`. */
@@ -81,10 +120,35 @@ const rejections: readonly [string, unknown, string, string][] = [
   ],
   [
     "an unknown slab key",
-    changed(base, "props[0].slabs[0].seed", 7),
+    changed(base, "props[0].slabs[0].glow", "cyan"),
     "shape",
-    "props[0].slabs[0].seed",
+    "props[0].slabs[0].glow",
   ],
+  [
+    "a missing finish key",
+    changed(base, "props[0].slabs[0].wear"),
+    "shape",
+    "props[0].slabs[0].wear",
+  ],
+  [
+    "a finish path without a role",
+    changed(base, "props[0].slabs[0].finish", "housing"),
+    "shape",
+    "props[0].slabs[0].finish",
+  ],
+  [
+    "a finish path the level's table lacks",
+    changed(base, "props[1].slabs[0].finish", "housing/roof"),
+    "finish",
+    "props[1].slabs[0].finish",
+  ],
+  [
+    "a broken finish table",
+    changed(base, "finishes.housing.light", "white"),
+    "shape",
+    "finishes.housing.light",
+  ],
+  ["a missing finish table", changed(base, "finishes"), "shape", "finishes"],
   [
     "a missing position",
     changed(base, "props[0].slabs[0].position"),
@@ -101,6 +165,17 @@ const rejections: readonly [string, unknown, string, string][] = [
   ],
 ];
 
+/** The limits of a slab's number, seed and wear. */
+const finishKeys: readonly LimitCase[] = [
+  ["props[0].slabs[0].number", 999_999, 1_000_000],
+  ["props[0].slabs[0].number", 0, -1],
+  ["props[0].slabs[0].number", 12, 12.5],
+  ["props[0].slabs[0].seed", 4095, 4096],
+  ["props[0].slabs[0].seed", 0, -1],
+  ["props[0].slabs[0].seed", 7, 7.5],
+  ...closedRange("props[0].slabs[0].wear", 0, 1),
+];
+
 describe("decodeLevel and encodeLevel", () => {
   test("decoding an encoded rounded level returns the same level", () => {
     expectRoundTrip(gridLevel([gridSlab(), gridSlab([1.2345, 2.5, 0.0213])], [gridSlab()]));
@@ -108,7 +183,8 @@ describe("decodeLevel and encodeLevel", () => {
 
   test("a level without a key light round-trips without one", () => {
     const { key: _key, ...lighting } = gridLevel([], []).lighting;
-    const level: Level = { props: [{ id: "crate-a", slabs: [gridSlab()] }], lighting };
+    const props = [{ id: "crate-a", slabs: [gridSlab()] }];
+    const level: Level = { finishes: finishTable(), props, lighting };
     const decoded = decodeLevel(encodeLevel(level));
     expect(decoded.ok && "key" in decoded.value.lighting).toBe(false);
     expect(decoded.ok ? decoded.value : undefined).toEqual(level);
@@ -117,7 +193,7 @@ describe("decodeLevel and encodeLevel", () => {
   test("equal levels give equal bytes whatever their key insertion order", () => {
     const level = gridLevel([gridSlab()], [gridSlab()]);
     const reordered = reorderedLevel(level);
-    expect(Object.keys(reordered)).toEqual(["lighting", "props"]);
+    expect(Object.keys(reordered)).toEqual(["lighting", "props", "finishes"]);
     expect(encodeLevel(reordered)).toBe(encodeLevel(level));
     expect(encodeLevel(level).endsWith("}\n")).toBe(true);
     expect(encodeLevel(level).startsWith('{\n  "schema": "level-designer-level/1",\n')).toBe(true);
@@ -142,6 +218,30 @@ describe("decodeLevel and encodeLevel", () => {
     expect(rulePaths(decodeLevel(JSON.stringify(beyond)))).toEqual([
       ["shape", "props[0].slabs[0].rotation"],
     ]);
+  });
+});
+
+describe("a slab's finish keys and the level's table", () => {
+  for (const probe of finishKeys) {
+    test(`a slab's ${probe[0].split(".").at(-1)} passes at ${String(probe[1])} and fails at ${String(probe[2])}`, () => {
+      expectLimit(decodeLevel, base, probe);
+    });
+  }
+
+  test("states a missing finish path with the slab's path and the path it names", () => {
+    const document = changed(base, "props[1].slabs[0].finish", "housing/roof");
+    expect(problemsOf(decodeLevel(JSON.stringify(document))).map((p) => p.message)).toEqual([
+      'props[1].slabs[0].finish: no finish "housing/roof"',
+    ]);
+  });
+
+  test("the level's table is the description's, read by the one table admission", () => {
+    const decoded = decodeLevel(JSON.stringify(changed(base, "finishes", finishesDocument())));
+    const described = parseDescription(JSON.stringify(validDescription()));
+    expect(decoded.ok && described.ok).toBe(true);
+    expect(decoded.ok ? decoded.value.finishes : undefined).toEqual(
+      described.ok ? described.value.finishes : undefined,
+    );
   });
 });
 

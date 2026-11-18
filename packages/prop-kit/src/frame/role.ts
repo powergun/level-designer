@@ -1,5 +1,11 @@
-import type { SlabMaterial } from "@level-designer/level-format";
+import type { SlabFinish, SlabMaterial } from "@level-designer/level-format";
 import type { FacingName } from "./facing.js";
+
+/**
+ * What every slab of one prop carries alike: its number, its seed and its wear. The expansion
+ * then gives each slab its own seed by its index.
+ */
+export type SlabPaint = Omit<SlabFinish, "finish">;
 
 /** A closed interval `[min, max]` along one prop axis, in metres. */
 export type Span = readonly [number, number];
@@ -10,11 +16,11 @@ export type Box = readonly [Span, Span, Span];
 /** A point of the prop's YZ plane as `[z, y]`, the plane a pitched slab turns in. */
 export type PlanePoint = readonly [number, number];
 
-/** What every role carries besides its geometry: material, colour and, for a glow slab, the glow name. */
+/** What every role carries besides its geometry: material, colour and finish path. */
 interface Look {
   readonly material: SlabMaterial;
   readonly color: string;
-  readonly glow?: string;
+  readonly finish: string;
 }
 
 /** A role that fills an axis-aligned box of the prop frame, its +Z face looking to `facing`. */

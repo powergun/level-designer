@@ -4,7 +4,7 @@ import { admitSlabs, roundSlab } from "@level-designer/level-format";
 import { judgeLevel } from "@level-designer/level-rules";
 import { expandProp } from "@level-designer/prop-kit";
 import type { TestProp } from "./room.js";
-import { BOX_ROOM, factsOf, room } from "./room.js";
+import { BOX_ROOM, factsOf, KIT_CONTEXT, room, SLAB_FINISH } from "./room.js";
 
 /** The four slab materials. */
 const MATERIALS: readonly SlabMaterial[] = ["wood", "brick", "concrete", "metal"];
@@ -66,6 +66,7 @@ function sampleSlab(next: () => number, material: SlabMaterial, edge: boolean): 
     color: "#3b4046",
     position,
     rotation: rotation(next),
+    ...SLAB_FINISH,
   });
 }
 
@@ -89,12 +90,22 @@ function capCorners(): Slab[] {
   const turn: Quaternion = [0.27059805, 0.653281482, 0.27059805, 0.653281482];
   return sizes.flatMap((size) =>
     MATERIALS.map((material) =>
-      roundSlab({ size, material, color: "#3b4046", position: [1, 9, 1], rotation: turn }),
+      roundSlab({
+        size,
+        material,
+        color: "#3b4046",
+        position: [1, 9, 1],
+        rotation: turn,
+        ...SLAB_FINISH,
+      }),
     ),
   );
 }
 
-/** The glow slabs `prop-kit` expands for its longest conveyor, enclosure and light strip. */
+/**
+ * The glow slabs `prop-kit` expands for its longest conveyor, enclosure and light strip: the
+ * slabs of a `luminaire/` finish path.
+ */
 function glowSlabs(): Slab[] {
   const kinds = [
     ["conveyor", { length: 12, width: 1.6, height: 1.2 }],
@@ -111,11 +122,12 @@ function glowSlabs(): Slab[] {
       yaw: 37.3,
       params: new Map(Object.entries(all)),
     };
-    const expansion = expandProp(prop, "props[0]", 0.3241, new Set(["cyan"]));
+    const expansion = expandProp(prop, "props[0]", 0.3241, KIT_CONTEXT);
     if (!expansion.ok) {
       throw new Error(`expected ${kind} to expand`);
     }
-    return expansion.slabs.filter((s) => s.glow !== undefined).map((s) => roundSlab(s.slab));
+    const lit = expansion.slabs.filter((s) => s.slab.finish.startsWith("luminaire/"));
+    return lit.map((s) => roundSlab(s.slab));
   });
 }
 
@@ -162,6 +174,7 @@ test("the proof names the first failing step of a slab destruction lib refuses",
     color: "#3b4046",
     position: [0, 0, 0],
     rotation: [0, 0, 0, 1],
+    ...SLAB_FINISH,
   });
   const judgement = await judgeLevel(factsOf(room(BOX_ROOM), { props: propsOf([refused]) }));
   const proof = judgement.findings.filter((f) => f.rule === "destructible" || f.rule === "proxies");

@@ -1,8 +1,8 @@
 # level-pipeline
 
 `@level-designer/level-pipeline` owns the one build sequence of the level designer. It
-reads the description file and the base stage, builds a level or returns the build
-errors that block it, and validates a built level into a report. The command-line tool,
+reads the description file and the base stage, builds a level with its finish data or
+returns the build errors that block it, and validates a built level into a report. The command-line tool,
 the QA server and the tests all build through it, so they cannot disagree about what a
 description builds.
 

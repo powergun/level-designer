@@ -4,7 +4,7 @@
 
 The level designer dresses the factory stage of the sec-111 game and writes the
 result as a level pair: a `.glb` file for meshes, materials and textures, and a
-`.json` file for the in-house gameplay and lighting data. sec-111 consumes the
+`.json` file for the in-house gameplay, lighting and finish data. sec-111 consumes the
 level pair; it never imports the designer's code.
 
 ## Workspace
@@ -50,16 +50,22 @@ The library components in `packages/` carry the level's data and judgement:
 
 - [level-format](../packages/level-format/docs/KNOWLEDGE.md): the level
   description and the level `.json`. It admits a description, encodes and
-  decodes the level `.json`, rounds a slab to the format's grid and reads a
-  slab as an oriented box.
+  decodes the level `.json`, admits the finish table, rounds a slab to the
+  format's grid and reads a slab as an oriented box.
+- [finish-paint](../packages/finish-paint/docs/KNOWLEDGE.md): the finishes'
+  arithmetic interface, layer kinds, painter, slab and hall frame rules and
+  swatch, browser-safe. Its layer kinds and painter run on the number back end under Bun
+  and on level-view's node back end.
 - [level-glb](../packages/level-glb/docs/KNOWLEDGE.md): the GLB contract. It
-  assembles the static scene and the level scene, inspects a GLB and returns
-  world triangles. Its tests read the base stage through sec111-gateway's stage
-  entry, a test-only dependency.
+  assembles the static scene and the level scene, with one material per finish
+  path and glow, inspects a GLB and returns world triangles. Its tests read the
+  base stage through sec111-gateway's stage entry, a test-only dependency.
 - [slab-model](../packages/slab-model/docs/KNOWLEDGE.md): the only place where a
-  slab becomes a destruction lib model. It runs under Bun only.
+  slab becomes a destruction lib model. It gives every vertex the slab's colour
+  and its pattern data, and runs under Bun only.
 - [prop-kit](../packages/prop-kit/docs/KNOWLEDGE.md): the prop kinds. It expands a
-  prop into slabs by its kind's parameter table and places them.
+  prop into slabs by its kind's parameter table, names each slab's finish path and
+  places them.
 - [level-rules](../packages/level-rules/docs/KNOWLEDGE.md): the validator's
   checks. It judges a built level from its facts by every rule the build does not
   own, the destructibility proof included. Like slab-model, it reaches destruction
@@ -68,10 +74,13 @@ The library components in `packages/` carry the level's data and judgement:
 The QA app lets the human walk and fly through the level in a browser:
 
 - [level-view](../packages/level-view/docs/KNOWLEDGE.md): draws a level pair
-  through the rendering-poc pipeline with the game's look and the level's
-  lighting. It starts on WebGPU only and takes no input.
+  through the rendering-poc pipeline with the game's look, the level's lighting
+  and one painter per finish path in use: a twin for a slab or a box, a stage
+  wrap for a stage material whose hall finish holds a layer. It starts on WebGPU
+  only and takes no input.
 - [qa-client](../packages/qa-client/docs/KNOWLEDGE.md): the QA page: boot, walk,
-  fly, marks, heads-up display and the page side of the run log. It owns the
+  fly, marks, heads-up display, the console-error banner and the page side of the
+  run log. It owns the
   protocol it shares with qa-server and imports no destruction lib.
 - [qa-server](../tools/qa-server/docs/KNOWLEDGE.md): the loopback server, in
   `tools/`. It builds the committed description once through level-pipeline,
@@ -80,11 +89,12 @@ The QA app lets the human walk and fly through the level in a browser:
 The other tools in `tools/` run under Bun:
 
 - [snapshot-render](../tools/snapshot-render/docs/KNOWLEDGE.md): the CPU renderer
-  of a level GLB into PNG sheets.
+  of a level GLB into PNG sheets, and of a finish path's swatch, a slab's or a hall
+  finish's, into its page of the finish sheet.
 - [level-pipeline](../tools/level-pipeline/docs/KNOWLEDGE.md): the one build
-  sequence. It reads the description and the base stage, builds a level or returns
-  its build errors, and validates a built level into a report. It is the only test
-  home that prepares a level.
+  sequence. It reads the description and the base stage, builds a level with its
+  finish data or returns its build errors, and validates a built level into a
+  report. It is the only test home that prepares a level.
 - [level-cli](../tools/level-cli/docs/KNOWLEDGE.md): the command-line tool. It
   owns the argument parsing, the file writes under the work directory, the printed
   text and the exit statuses.
@@ -140,8 +150,8 @@ removing it when the gate ends, pass or fail, releases it.
 - the type check of everything, tests included, with Bun types;
 - the browser-safe package sources: their type check, a browser bundle of
   the entries that do not reach destruction lib (sec111-gateway, render-gateway,
-  level-format, level-glb, prop-kit, level-view, and qa-client's facade and two
-  page scripts), then oxlint with the browser-safe rules;
+  level-format, level-glb, prop-kit, finish-paint, level-view, and qa-client's
+  facade and two page scripts), then oxlint with the browser-safe rules;
 - the type check of the tool sources and the Bun-side gateway entries, with
   isolated declarations;
 - the check that `packages/` and `tools/` never name `.tmp/`;
@@ -190,7 +200,10 @@ server or a browser, and the tests start their own servers on temporary ports.
 
 The art team dresses the hall by editing the level description and running the four tool
 recipes. The [authoring guide](AUTHORING-GUIDE.md) gives the hall in numbers, the placement
-rules in the validator's words, the budgets, the accepted limits and the authoring loop.
+rules in the validator's words, the budgets, the finish table, the accepted limits of the
+clearance rules and the authoring loop. The [look and lighting](LOOK-AND-LIGHTING.md)
+document gives the stage's materials, how the hall is lit, the bloom threshold, the tuning
+handles and the reference levels.
 
 ## File locations
 
@@ -200,7 +213,9 @@ rules in the validator's words, the budgets, the accepted limits and the authori
   source of truth. Git ignores the author's draft beside it,
   `levels/dark-factory.draft.json`.
 - `.tmp/` is the git-ignored scratch directory for generated output and logs. The
-  level pair lands in `.tmp/level/` and the sheets in `.tmp/snapshots/`. The QA
+  level pair lands in `.tmp/level/`, the sheets in `.tmp/snapshots/` and one page per
+  finish path in use and per hall finish in `.tmp/snapshots/finish/`, which
+  `snapshot` empties first. The QA
   app writes one run log per run to `.tmp/qa/logs/qa-<local start time>.log` and
   appends every mark to `.tmp/qa/marks.log`.
 - `packages/destruction-gateway/generated/` holds the git-ignored destruction
@@ -226,16 +241,18 @@ The owner accepts these limits of the first pass in the level and the game:
 
 The owner accepts these limits of the QA app and the snapshots:
 
-- The QA app shows the GLB look of an intact slab. The game shows the same until
-  the slab's first damage, then its own wall finish.
+- The QA app paints an intact slab by its finish. Until it adopts the finishes,
+  the game shows the GLB's flat fallback, and after a slab's first damage its own
+  wall finish.
 - The QA app blocks with one box per slab; the game splits the same box per chunk.
 - A switch from fly to walk drops the capsule from the camera onto whatever lies
   below, so the human can stand on tops the player cannot reach in the game.
 - The switch is refused within about 0.65 m of the closed end of a narrow
   corridor; the page stays in fly and says why.
-- The QA page logs only `console.error` and `console.warn` calls. The browser's own
-  console messages, such as WebGPU validation warnings and failed resource loads,
-  never reach the run log.
+- The QA page logs only `console.error` and `console.warn` calls, and a console
+  error raises one line of the alarm banner, beside the other alarm kinds, that says
+  programs may have failed and props may be missing, and names the run log. The browser's own console messages, such as
+  WebGPU validation warnings and failed resource loads, reach neither.
 - Snapshots show no mood, and the QA frame rate overstates the game's.
 
 The first pass cannot express props standing on props, stock lower than 0.5 m,

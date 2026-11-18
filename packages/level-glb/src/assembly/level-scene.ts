@@ -3,14 +3,14 @@ import type { PropMeshes, SlabLooks, SlabMesh } from "./inputs.js";
 import { slabMaterial } from "./materials.js";
 import { SceneBuilder } from "./scene-builder.js";
 
-/** The key of a slab's material: its finish, or its finish and glow. */
+/** The key of a slab's material: its finish path, or its finish path and glow. */
 function lookKey(slab: SlabMesh): string {
   return slab.glow === undefined ? slab.finish : `${slab.finish}\n${slab.glow}`;
 }
 
 /**
- * Append the slab materials in use: one per finish used without a glow, then one per pair of
- * finish and glow, each in order of first use. Returns the lookup of a slab's material index.
+ * Append the slab materials in use: one per finish path used without a glow, then one per
+ * pair of path and glow, each in order of first use. Returns the lookup of a slab's material.
  */
 function addSlabMaterials(
   builder: SceneBuilder,
@@ -34,7 +34,7 @@ function addSlabMaterials(
 
 /**
  * Assemble the level scene from the static scene's GLB: one `destructible` object per prop,
- * in the given order, with one mesh node per slab in slab order.
+ * in the given order, with one mesh node per slab in slab order and its pattern data.
  */
 export function assembleLevelScene(
   staticScene: Uint8Array,
@@ -50,7 +50,9 @@ export function assembleLevelScene(
     looks,
   );
   for (const prop of props) {
-    const primitives = prop.slabs.map((slab) => builder.primitive(slab, materialOf(slab)));
+    const primitives = prop.slabs.map((slab) =>
+      builder.primitive({ ...slab, paint: slab }, materialOf(slab)),
+    );
     builder.addObject(prop.id, { role: "destructible", prop: prop.id }, primitives);
   }
   return builder.write();

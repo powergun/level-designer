@@ -10,6 +10,12 @@ const ARRAY_BUFFER = 34962;
 /** The index buffer target. */
 const ELEMENT_ARRAY_BUFFER = 34963;
 
+/** Components per element of each FLOAT vertex attribute type the assembly writes. */
+const FLOAT_WIDTHS = { VEC2: 2, VEC3: 3, VEC4: 4 } as const;
+
+/** A FLOAT vertex attribute type the assembly writes. */
+type FloatType = keyof typeof FLOAT_WIDTHS;
+
 /** Component-wise minimum and maximum of xyz triples, as glTF requires on `POSITION`. */
 function bounds(values: Float32Array): Pick<GltfAccessor, "min" | "max"> {
   const min = [Infinity, Infinity, Infinity];
@@ -51,14 +57,27 @@ export class GeometryWriter {
     return this.bufferViews.length - 1;
   }
 
-  /** Append xyz triples as a FLOAT VEC3 accessor; `withBounds` adds its min and max. */
-  vec3(values: Float32Array, withBounds: boolean): number {
+  /** Append a vertex attribute as a FLOAT accessor of `type` with an optional extent. */
+  private attribute(
+    values: Float32Array,
+    type: FloatType,
+    extent: Pick<GltfAccessor, "min" | "max">,
+  ): number {
     const bytes = new Uint8Array(values.buffer, values.byteOffset, values.byteLength);
     const bufferView = this.append(bytes, { byteLength: bytes.byteLength, target: ARRAY_BUFFER });
-    const extent = withBounds ? bounds(values) : {};
-    const count = values.length / 3;
-    this.accessors.push({ bufferView, componentType: FLOAT, count, type: "VEC3", ...extent });
+    const count = values.length / FLOAT_WIDTHS[type];
+    this.accessors.push({ bufferView, componentType: FLOAT, count, type, ...extent });
     return this.accessors.length - 1;
+  }
+
+  /** Append a vertex attribute as a FLOAT accessor of `type`; returns its accessor index. */
+  floats(values: Float32Array, type: FloatType): number {
+    return this.attribute(values, type, {});
+  }
+
+  /** Append xyz positions as a FLOAT VEC3 accessor with its min and max, as glTF requires. */
+  positions(values: Float32Array): number {
+    return this.attribute(values, "VEC3", bounds(values));
   }
 
   /** Append triangle indices as an UNSIGNED_INT SCALAR accessor. */

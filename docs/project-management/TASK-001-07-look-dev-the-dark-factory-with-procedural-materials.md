@@ -113,6 +113,20 @@ Rules from the owner's annotations of the design, written on 2026-11-18:
   performance.
 - Use no headless browser, in the foreground or in the background.
 
+Rules from the owner's rulings on static objects, given on 2026-11-18:
+
+- A static object is floor litter or an overhead object on a wall or the ceiling. It
+  only fills gaps for realism.
+- A static object has no collision and takes no part in any simulation, so it never
+  blocks the player.
+- Floor litter is thin and small. No static object blocks or interferes with the
+  player's vision.
+
+Rule from the owner's direction of 2026-11-18, given during the build of milestone 1:
+
+- The task is additive. The level is proved for layout: keep it and add to it. Do not
+  throw away or redo what the owner has passed, and do not overcomplicate.
+
 ## Status update
 
 (2026-11-17 19:46:54)
@@ -159,3 +173,105 @@ destructible ones, and non-destructible objects get the same look development. N
 development has started. The lead wrote a handoff note for the next team lead.
 Remaining: fold the annotations into the design, then the build of milestones 1 to 4
 with the owner's test after each, the reviews and the owner's QA.
+
+(2026-11-18 10:25:00)
+A new team lead took over; the handoff note is consumed and removed from the repository
+root. The owner's annotations are folded into the design, which now holds four documents
+and seven milestones, each ending in the owner's test on both machines: the first finish
+on the housings; the finish sheet with the containers and the cranes; the hall's
+surfaces; the other prop finishes; the level; the seals and the static objects; the
+legends and the hand-off. One adversarial review found no blocker, and the architect
+fixed its findings. The owner ruled on static objects; the rules above and the decisions
+of TASK-001 hold the ruling. No source is built yet. Remaining: milestones 1 to 7 with
+the owner's test after each, the reviews and the owner's QA.
+
+(2026-11-18 12:12:00)
+Milestone 1, the first finish, is built, reviewed and accepted, and waits for the owner's
+test. It adds the painter in `finish-paint`, the finish table in the description and the
+level pair, the kit's finish paths, the pattern data in the `.glb`, painted materials in
+the QA view, and the housing finish on the machines, cabinets, conveyor skirts, arm
+pedestals and crane hoists. Each subtask passed its own review and a fresh acceptance
+review, and the root gates pass. The level keeps its 127 props, 608 slabs and its lights;
+its finish table and 23 colours changed. The owner directed during the build that the
+task is additive and must not be overcomplicated; the rule above and the decisions of
+TASK-001 hold it. Nobody has seen the housing finish: it is computed, and the owner's
+GPUs are the first to compile the painters. Status stays WIP. Remaining: the owner's
+test of milestone 1, then milestones 2 to 7 with the owner's test after each, and the
+owner's QA.
+
+(2026-11-18 14:07:03)
+The owner's QA of milestone 1 passed, and the owner approved in writing marking the
+milestone done and successful: the owner likes the new details, sees no performance
+degradation, and the QA app holds 144 frames a second, the cap of the monitor's refresh
+rate. The owner asked for none of the optional changes of the art review. The lead wrote
+a handoff note for the next team lead. Status stays WIP. Remaining: milestones 2 to 7
+with the owner's test after each, and the owner's QA of the look.
+
+(2026-11-18 15:53:49)
+A new team lead took over; the handoff note is consumed and removed from the repository
+root. Milestone 2, the finish sheet with the containers and the cranes, is built, reviewed
+and accepted, and waits for the owner's test. It adds four layer kinds and the effect
+`jitter` to the format and the painter, the role parameters of a container, a crate and a
+partition to the kit, girder webs of 1.25 m on the bridge cranes, the finish pages of the
+snapshot command, and the `corrugated` and `beam` finishes with one door end on each
+container. Each subtask passed its own review, a fresh acceptance review found no blocker,
+and the root gates pass. The level keeps its 127 props in place and its lights. It now
+holds 616 slabs, because a girder web of that depth splits in two above a span of 20.3 m.
+The lead departed from the build plan in three places: one finish page per finish path in
+place of one sheet, no chevrons on the split girders, and no change to the housings the
+owner passed. The owner directed that the team's art review stays short, because the owner
+does the real art review in the human test. Nobody has seen the new finishes under the
+level's lights: the recipes are computed, and the owner's GPUs are the first to compile
+the new kinds. Status stays WIP. Remaining: the owner's test of milestone 2, then
+milestones 3 to 7 with the owner's test after each, and the owner's QA of the look.
+
+(2026-11-18 16:01:06)
+The owner's QA of milestone 2 passed, and the owner approved in writing marking the
+milestone done: the art is directionally aligned, and the owner sees no performance issue.
+The owner repeated two directions for the milestones ahead: the team's art review stays
+light and quick, and the acceptance review adds no overcomplication. Status stays WIP.
+Remaining: milestones 3 to 7 with the owner's test after each, and the owner's QA of the
+look.
+
+(2026-11-18 16:40:24)
+Milestone 3, the hall's surfaces, is built, reviewed and accepted, and waits for the
+owner's test. It adds a finish on a base override, with the limits of a hall finish, to
+the format; the finish path on a stage material to the `.glb`; the hall's frame rule to
+the painter; the stage wrap to the QA view; the hall pages to the snapshot command; and
+the finish `hall` to the level: joints on both floors, two aisle lines and a band at the
+ramp's foot on the front floor, an edge line on the raised slab and a darker base on the
+side walls. Each engineering subtask passed its own review. The art work got one light
+pass on rules only and the acceptance review one short pass, as the owner directed, and
+neither found a blocker. The root gates pass. The level keeps its 127 props, its 616 slabs
+and its lights. Nobody has seen the hall finishes on the stage's textures or a wrapped
+program on a GPU, and the floors cover a third or more of every frame, so the owner's test
+is the frame rate's hardest so far. Status stays WIP. Remaining: the owner's test of
+milestone 3, then milestones 4 to 7 with the owner's test after each, and the owner's QA
+of the look.
+
+(2026-11-18 17:24:42)
+The owner's QA of milestone 3 passed, and the owner approved in writing marking the
+milestone done: the art is directionally aligned, and the owner sees no performance drop
+with the floors and the walls painted. Status stays WIP. Remaining: milestones 4 to 7 with
+the owner's test after each, and the owner's QA of the look.
+
+(2026-11-18 18:11:32)
+Milestone 4, the other prop finishes, is typed, reviewed and accepted, and waits for the
+owner's test. The art team typed the seven finishes `cast-concrete`, `bed`, `casting`,
+`timber`, `steel-stock`, `luminaire` and `block` into the level, with their lit parts and
+without legends: the two brick fences are painted block, five partitions are barriers and
+three steel stacks carry posts. No component changed. The level keeps its 127 props in
+place, its 616 slabs and its lights; the crates, the timber stacks, the concrete and the
+fences rise in value onto the ladder's mid step. The lead ruled that the beds' rails stay
+paint, where the brief asked for bare metal. The art work got one light pass on rules only
+and the acceptance review one short pass, and the root gates pass. Nobody has seen the
+seven finishes or their lit marks under the level's lights, and the view compiles 17 more
+programs at its start. Status stays WIP. Remaining: the owner's test of milestone 4, then
+milestones 5 to 7 with the owner's test after each, and the owner's QA of the look.
+
+(2026-11-18 18:29:00)
+The owner's QA of milestone 4 passed, and the owner approved in writing marking the
+milestone done: the art is aligned, and the owner sees no performance drop with every prop
+painted. The owner asked for a handoff note for the next team lead. Status stays WIP.
+Remaining: milestones 5 to 7 with the owner's test after each, and the owner's QA of the
+look. Milestone 5 adds a prop only where the owner asks for it.

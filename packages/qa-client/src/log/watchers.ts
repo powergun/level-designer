@@ -6,13 +6,16 @@ function consoleText(data: readonly unknown[]): string {
   return data.map(describe).join(" ");
 }
 
-/** Copy every `console.error` and `console.warn` into the log; the console still prints them. */
+/**
+ * Copy every `console.error` and `console.warn` into the log, and raise the console alarm on an
+ * error; the console still prints them.
+ */
 export function copyConsole(console: PageConsole, log: PageLog): void {
   const error = console.error.bind(console);
   const warn = console.warn.bind(console);
   console.error = (...data: unknown[]): void => {
     error(...data);
-    log.error(`console.error: ${consoleText(data)}`);
+    log.consoleError(`console.error: ${consoleText(data)}`);
   };
   console.warn = (...data: unknown[]): void => {
     warn(...data);

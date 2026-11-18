@@ -13,6 +13,7 @@ The component owns:
 - the marks: the comment box and the one outcome of each mark;
 - the heads-up display and the status strip, which never collapse;
 - the page side of the run log: log batches, console errors and warnings, uncaught errors;
+- the alarm banner: one line per kind of failure, a console error's line naming the run log;
 - the JSON protocol it shares with `qa-server`: the routes, the page and level file names, the
   shapes of the session facts, a log batch, a mark and their answers, the server's admissions
   of request bodies and the page's readers of answers;

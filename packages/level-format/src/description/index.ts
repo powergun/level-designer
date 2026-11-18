@@ -6,7 +6,6 @@
 export type {
   BaseStage,
   Description,
-  Finish,
   Glow,
   MaterialOverride,
   Prop,

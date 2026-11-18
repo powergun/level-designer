@@ -99,6 +99,17 @@ export function expectReaderSubset(container: GlbContainer): void {
   for (const primitive of primitives) expectDensePrimitive(container, primitive);
 }
 
+/**
+ * Evidence: every accessor from index `first` on, the appended ones, has a buffer view of
+ * its own that starts on four bytes.
+ */
+export function expectOwnAlignedViews(document: GltfDocument, first: number): void {
+  const views = (document.accessors ?? []).slice(first).map((accessor) => accessor.bufferView);
+  expect(new Set(views).size).toBe(views.length);
+  const offsets = views.map((view) => entryAt(document.bufferViews, view).byteOffset ?? 0);
+  expect(offsets.filter((offset) => offset % 4 !== 0)).toEqual([]);
+}
+
 /** The entry at an index, failing the test when it is absent. */
 export function entryAt<T>(list: readonly T[] | undefined, index: number | undefined): T {
   const entry = index === undefined ? undefined : list?.[index];

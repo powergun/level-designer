@@ -16,7 +16,7 @@ export interface ExpandedProp {
   readonly slabs: readonly RoundedSlab[];
 }
 
-/** The props step's outcome: every prop's rounded slabs, or its `place`, `kind` and `param` errors. */
+/** The props step's outcome: every prop's rounded slabs, or every error of the step. */
 export type PropsStep =
   | { readonly ok: true; readonly props: readonly ExpandedProp[] }
   | { readonly ok: false; readonly errors: readonly BuildError[] };
@@ -41,12 +41,13 @@ function outsideError(prop: Prop, path: string): BuildError {
 }
 
 /**
- * Places and expands every prop on the floor under its `at`, then rounds each slab once with
- * the format's rounding. A prop outside the interior yields `place` and is not expanded; every
- * error of the step is returned in description order.
+ * Places and expands every prop on the floor under its `at` with the description's glows and
+ * finish table, then rounds each slab once with the format's rounding. A prop outside the
+ * interior yields `place` and is not expanded; every error of the step is returned in
+ * description order.
  */
 export function expandProps(description: Description, prepared: PreparedStatic): PropsStep {
-  const glows = new Set(description.glows.keys());
+  const context = { glows: new Set(description.glows.keys()), finishes: description.finishes };
   const errors: BuildError[] = [];
   const props: ExpandedProp[] = [];
   description.props.forEach((prop, index) => {
@@ -56,7 +57,7 @@ export function expandProps(description: Description, prepared: PreparedStatic):
       return;
     }
     const floor = floorHeightAt(prepared.level, prop.at[0], prop.at[1]);
-    const expansion = expandProp(prop, path, floor, glows);
+    const expansion = expandProp(prop, path, floor, context);
     if (!expansion.ok) {
       errors.push(...expansion.problems);
       return;

@@ -9,6 +9,7 @@ import type {
   Slab,
   Vec3,
 } from "@level-designer/level-format";
+import { finishesDocument, finishTable, SLAB_FINISH } from "./finishes.ts";
 
 /** A JSON document as tests build it; only the admission under test reads its shape. */
 type Document = unknown;
@@ -59,12 +60,7 @@ export function validDescription(): Record<string, unknown> {
       doubleSided: ["Fence_01"],
     },
     seals: [validSeal()],
-    finishes: {
-      wood: { metalness: 0, roughness: 0.8 },
-      brick: { metalness: 0, roughness: 0.9 },
-      concrete: { metalness: 0, roughness: 0.95 },
-      metal: { metalness: 0.7, roughness: 0.4 },
-    },
+    finishes: finishesDocument(),
     glows: { cyan: { color: [0.2, 0.8, 1], strength: 6 } },
     props: [validProp()],
     lighting: validLighting(),
@@ -79,6 +75,7 @@ export function gridSlab(size: Vec3 = [2, 1.2, 0.3]): Slab {
     color: "#3b4046",
     position: [-4.0125, 0.3241, 12.5],
     rotation: [0, 0.6, 0, 0.8],
+    ...SLAB_FINISH,
   };
 }
 
@@ -88,7 +85,7 @@ export function gridLevel(first: readonly Slab[], second: readonly Slab[]): Leve
     { id: "crate-a", slabs: first },
     { id: "crate-b", slabs: second },
   ];
-  return { props, lighting: validLighting() };
+  return { finishes: finishTable(), props, lighting: validLighting() };
 }
 
 /** Whether a value can hold keys or items. */

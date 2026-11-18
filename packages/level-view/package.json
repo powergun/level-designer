@@ -4,6 +4,7 @@
   "type": "module",
   "exports": "./src/index.ts",
   "dependencies": {
+    "@level-designer/finish-paint": "workspace:*",
     "@level-designer/level-format": "workspace:*",
     "@level-designer/render-gateway": "workspace:*",
     "@level-designer/sec111-gateway": "workspace:*",

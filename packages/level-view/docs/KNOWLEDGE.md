@@ -1,14 +1,18 @@
 # level-view knowledge
 
 `@level-designer/level-view` draws a level pair through the rendering-poc pipeline, so the
-QA page shows the game's mood. It owns the start, the GLB loading, the mesh rules, the
-lighting mapping, the post pipeline with the game's look, the frame call and the failure
-hooks. It reaches the renderer through
+QA page shows the game's mood. It owns the start, the GLB loading, the painted twins, the
+stage wraps, the mesh rules, the lighting mapping, the post pipeline with the game's look, the frame call
+and the failure hooks. It reaches the renderer through
 [render-gateway](../../render-gateway/docs/KNOWLEDGE.md), the game values through
-[sec111-gateway](../../sec111-gateway/docs/KNOWLEDGE.md) and the lighting section through
-[level-format](../../level-format/docs/KNOWLEDGE.md).
+[sec111-gateway](../../sec111-gateway/docs/KNOWLEDGE.md), the lighting section and the
+finish table through [level-format](../../level-format/docs/KNOWLEDGE.md), and the
+painter through [finish-paint](../../finish-paint/docs/KNOWLEDGE.md).
 
 ## Units
+
+- `paint`: the painters. It holds the node back end of the painter's arithmetic, the
+  static material class, the painted twins and the stage wraps.
 
 - `scene`: the mapping rules and the mesh rules as plain three.js construction: the
   lights, the environment sphere, the clear colour, the loaded GLB, the camera and the look.
@@ -31,7 +35,8 @@ narrow step interfaces, so its tests run on fakes. The real steps run in a fixed
    and no GPU timing. A browser without any graphics backend is refused.
 2. It refuses a renderer that fell back to WebGL 2 and releases it. A WebGPU renderer gets
    both failure hooks at once, so a loss during the later steps also reaches the callback.
-3. It parses the GLB and applies the mesh rules.
+3. It parses the GLB, gives each painted material its twin or its stage wrap from the
+   finish table and the interior box, and applies the mesh rules.
 4. It dresses the scene by the mapping rules and bakes the environment.
 5. It builds the camera, lets the library choose the scene-pass quality, and builds the
    post uniforms with the game's 12 signature slots and the post pipeline with the look.
@@ -42,7 +47,8 @@ The outcome is `started`, `refused` or `failed`:
 
 - a refusal of the open passes through, and nothing is loaded;
 - a throw in the open fails step `renderer`;
-- a throw in the load fails step `glb`;
+- a throw in the load fails step `glb`, also a GLB material whose finish path the table
+  lacks: the error names the material and the path;
 - a throw in the present or the warm-up fails step `renderer`; a warm-up failure first
   detaches the window resize;
 - every failure after the open releases the renderer once; a release that fails too
@@ -75,6 +81,94 @@ names its running boot step.
 The key's fitted volume equals the interior box only for a vertical key. For a tilted key
 its near plane passes through the top corner nearest the light, so every caster above the
 box top, the roof included, shadows the interior.
+
+## The painted twins
+
+A GLB material whose `extras` (three's `userData`) carry `finish` names a finish path, and
+the level's table must hold that path. Such a material gets a twin only when its recipe
+draws what the GLB's fallback cannot: at least one layer, or a body `shade` other than 1.
+The twin is built once in the load and shared by every mesh that draws with it, so the
+slabs and boxes of one path and glow share a twin.
+
+Every other material keeps the GLB's own, untouched:
+
+- a plain path at shade 1, lamps included. Its fallback already holds the body's metalness
+  and roughness and the glow at its strength times the body's `lit`, and its tint is the
+  vertex colour times a white base colour, so a twin would draw the same look at the cost
+  of a GPU compile;
+- a material without `finish`.
+
+The geometry decides which rule a painted material takes, on its first mesh: a mesh with the
+slab data (`_slab`) takes the twin, and any other mesh is the stage's and takes the stage
+wrap. A seal's material and a slab of a hall role therefore draw as twins.
+
+A twin is a static material: a standard node material whose observer reports no node to
+refresh unless the build injects a per-draw node (the model-view matrix, the model-normal-view
+matrix, ambient occlusion or the shadow). three refreshes every draw of a plain node material
+in full each frame. A twin's graph reads only vertex attributes and constants, so nothing
+goes stale.
+
+A twin draws the path's recipe, as `recipeAt` resolves it, with `finish-paint`'s painter:
+
+- It keeps the source's colour, side and shadow side, and the surface's own normal.
+- The tint is the vertex colour, read once, times the source's colour; the twin switches off
+  three's own vertex colour product.
+- The base shade is the recipe's body over the tint; the layers then paint over it.
+- The face comes from the vertex data by the loader's names. The pattern coordinates (`uv`)
+  interpolate. The face's size (`uv1`) and the slab numbers (`_slab`: number, seed, wear,
+  class) reach the painter through flat varyings.
+- The footprint is the longer screen derivative of the pattern coordinates, at least 1e-6 m.
+- With a glow, `extras` carry `glowStrength`, the unscaled strength, and the emissive factor
+  holds the glow's colour. The twin emits that colour times the strength times the painter's
+  emission, and `"glow"` takes the glow's colour. Without a glow the twin emits nothing, and
+  `"glow"` takes the finish's `light`.
+
+## The stage wrap
+
+A stage material whose `extras` carry `finish` names a hall finish. When its recipe holds
+a layer, the material draws through a wrap; one without a layer, and a stage material
+without `finish`, keep the GLB's own, so the ceiling and the trusses pay nothing. One wrap
+serves every mesh of its material; a base material and its double-sided twin are two
+records, so they take two wraps.
+
+The wrap is a static material that is the source as three's scene pass converts it: every
+property copied, the way three's material library does. It sets three slots and no other:
+
+- The base shade is the source's own look. The albedo is the colour factor times the colour
+  map, and it is also the tint; the metalness and the roughness are the source's, their maps
+  included. The layers paint over it. The colour is opaque, as every base stage material is.
+- Every other slot stays the source's: the normal map, the emission, the ambient occlusion,
+  the alpha test, the side and the shadow side. Where no layer covers, a mix by 0 returns
+  its base, so the wrap shades exactly as its source.
+- The face is `finish-paint`'s hall frame rule on the position and the normal in the level
+  frame, with the interior box as constants: seed 0 and wear 1. `"glow"` takes the
+  finish's `light`.
+- The footprint is the longer screen derivative of the face's two coordinates, at least
+  1e-6 m.
+
+The level frame is the GLB scene's world frame. The present step adds the scene
+untransformed, and each mesh's world matrix composes the `stage` node's scale with the base
+node matrices. The position is the world matrix times the vertex, and the normal is the
+normal matrix times the geometry's normal, never the normal map's, normalised per pixel for
+the 0.7 limit. The mesh rules freeze both matrices, so the wrap refreshes no draw, and it
+sets no position node, so the key's shadow renders once as before.
+
+The base stage carries no vertex colours. A wrap keeps the source's vertex colour switch, so
+a stage mesh with colours would multiply a layer's colour by them too.
+
+One wrap draws on every surface of its material, which spans more than one floor or wall.
+On a curved, smooth-shaded part the interpolated normal can cross the 0.7 limit inside a
+triangle. The class then switches along a line across the triangle: a `top` layer draws on
+one side of it and an `outside` layer on the other, and the pattern coordinates jump from
+plan to wall coordinates there. The footprint, a derivative of those coordinates, spikes
+along the line, so a layer with a detail fades out on it and a filtered edge blurs there.
+
+The node back end maps each of the fourteen operations to three's shader node of the same
+meaning and argument order. Its `hash` is `latticeHash` over those nodes inside one shader
+function, `finishLatticeHash`, which a program declares once and calls per hash.
+
+The graphs are built in the load, and the warm-up compiles one program per twin, one for
+each path and glow in use whose recipe draws beyond the fallback, and one per stage wrap. A changed recipe shows at the next start.
 
 ## The frame call
 
@@ -120,9 +214,40 @@ The tests run under Bun without a GPU and assert scene facts, never a pixel:
 - a WebGL fallback is refused and released; both fired hooks reach the callback once, and
   three's own device-lost handler runs first.
 
+### The painters
+
+- On a painted GLB built in the test:
+  - a box and two slabs of a layered path share one twin, and a glowing slab of a path with
+    a shade has its own;
+  - a plain lamp at shade 1 and the stage keep the GLB's materials;
+  - a path the table lacks fails the load.
+- A twin keeps its source's colour, side and shadow side.
+- The static material reports no node to refresh, and does once the build injects a
+  per-draw node.
+- Each operation of the node back end gives three's node of its meaning, its operands in
+  order.
+- On the CPU, through three's node builder on a renderer that is only constructed: every
+  twin of the committed description's table builds both programs; the face's size and the
+  slab numbers are flat varyings; the vertex colour enters once; two `noise` layers call one
+  hash function eight times; a glow emits its colour times its strength.
+
+### The stage wraps
+
+- On the painted GLB, two stage meshes of a hall finish share one wrap that keeps the
+  source's name, colour, roughness and side; its double-sided twin takes its own, and a slab
+  of the same path a twin.
+- A stage material without a finish or of a hall finish without a layer keeps its own, and
+  a stage path the table lacks fails the load.
+- A wrap keeps every map, factor, side and shadow side of a textured source and sets no
+  normal, emissive or position node.
+- On the CPU, the textured wrap of a hall finish builds both programs and reports no node to
+  refresh. A textured material asks the renderer's feature query while it builds, so that
+  test answers it with false.
+
 ## Limits a human judges in QA
 
-No test under Bun can start the renderer, bake, compile or draw. The human judges:
+No test under Bun can start the renderer, bake, compile or draw. The human judges the
+start and the mood:
 
 - that the start reaches WebGPU on the QA machine and the level shows after the warm-up;
 - the haze, bloom, exposure and the look of bright strips against the game;
@@ -133,3 +258,14 @@ No test under Bun can start the renderer, bake, compile or draw. The human judge
   unlike sec-111's per-pixel evaluation, and the difference after the blur is inferred to
   be invisible, not observed;
 - that a lost device or a GPU error shows on the page.
+
+The human also judges the painters:
+
+- that the painters' programs compile on the GPU, with the `_slab` and `uv1` inputs and the
+  flat varyings, how long the start's compile takes, and the frame rate with painted props;
+- that the scene pass takes a twin as it takes a converted standard material;
+- that a wrapped textured program compiles, how long the start's compile takes with the
+  wraps, the frame rate with the floors and walls wrapped, and that an uncovered surface
+  looks exactly as it passed;
+- the painted look: the tints, the inside faces in their slab's colour, the glows under
+  bloom, and the footprint's fade at a face's edges, where one pixel quad spans two faces.

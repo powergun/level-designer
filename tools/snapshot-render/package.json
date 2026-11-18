@@ -4,6 +4,8 @@
   "type": "module",
   "exports": "./src/index.ts",
   "dependencies": {
+    "@level-designer/finish-paint": "workspace:*",
+    "@level-designer/level-format": "workspace:*",
     "@level-designer/level-glb": "workspace:*"
   }
 }

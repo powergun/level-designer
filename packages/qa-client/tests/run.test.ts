@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { ROUTES } from "@level-designer/qa-client/protocol";
-import { bootReady, bootTestPage } from "./page-fixture.ts";
+import { bootReady, bootTestPage, FINISHES } from "./page-fixture.ts";
 import { acceptedSession, FAKE_RUN, ok } from "./protocol-fake.ts";
 
 /** The running page's periodic flush, ms. */
@@ -13,6 +13,11 @@ test("a console.error and a console.warn reach the log", async () => {
   page.timers.advance(FLUSH_MS);
   expect(page.fake.logged("console.error: render Error: lost texture", "error")).toBe(true);
   expect(page.fake.logged("console.warn: slow frame", "warn")).toBe(true);
+});
+
+test("the view starts with the level's finish table", async () => {
+  const page = await bootReady();
+  expect(page.view.inputs.map((input) => input.finishes)).toEqual([FINISHES]);
 });
 
 test("the heads-up display shows the level, the hash, the verdict and the mark count", async () => {
@@ -57,7 +62,7 @@ test("a lost device or a GPU error is shown and stops the drawing", async () => 
     page.timers.frames(3);
     expect(page.view.frames).toHaveLength(drawn);
     const label = kind === "device-lost" ? "GPU device lost" : "GPU error";
-    const text = `${label}: reason unknown: the GPU process exited; drawing stopped`;
+    const text = `drawing stopped: ${label}: reason unknown: the GPU process exited`;
     expect(page.text("banner")).toContain(text);
     expect(page.fake.logged(text, "error")).toBe(true);
   }
@@ -109,13 +114,13 @@ test("a log batch without an answer raises the banner and names the lost lines",
   page.fake.script(ROUTES.log, "hold");
   page.surroundings.console.error("one more");
   page.timers.advance(15_000);
-  await page.timers.settle(() => page.text("banner") !== "");
+  await page.timers.settle(() => page.text("banner").includes("log batch failed"));
   expect(page.text("banner")).toMatch(
     /log batch failed: no answer; \d+ page lines are not in the run log/,
   );
 });
 
-test("an uncaught error and an unhandled rejection raise the banner with their stack", async () => {
+test("an uncaught error and an unhandled rejection raise the banner, and the log line holds their stack", async () => {
   const page = await bootReady();
   page.window.throwUncaught(new Error("frame state broke"));
   expect(page.text("banner")).toContain("page error: Error: frame state broke");
@@ -136,7 +141,7 @@ async function failedDuringStart(kind: "device-lost" | "gpu-error"): Promise<{
   await page.timers.settle(() => page.view.inputs.length === 1);
   page.view.fail({ kind, message: "reset during compile" });
   const label = kind === "device-lost" ? "GPU device lost" : "GPU error";
-  const text = `${label}: reset during compile; drawing stopped`;
+  const text = `drawing stopped: ${label}: reset during compile`;
   expect(page.text("banner")).toContain(text);
   expect(page.fake.logged(text, "error")).toBe(true);
   return { page, text };
@@ -173,10 +178,10 @@ test("a frame that throws raises the banner, stops the drawing and the strip say
   page.view.breakFrames(new Error("Rapier: unreachable executed"));
   page.timers.frames(3);
   expect(page.text("banner")).toContain(
-    "a frame failed; drawing stopped: Error: Rapier: unreachable",
+    "drawing stopped: a frame failed: Error: Rapier: unreachable",
   );
   expect(page.text("status")).toBe("drawing stopped: a frame failed; see the banner");
-  expect(page.fake.logged("a frame failed; drawing stopped", "error")).toBe(true);
+  expect(page.fake.logged("drawing stopped: a frame failed: Error: Rapier", "error")).toBe(true);
   expect(page.timers.pendingFrames).toBe(0);
 });
 
@@ -223,7 +228,7 @@ test("a GPU failure after the start leaves no ready in the status strip", async 
 
 test("a dead run log never pushes a lost device out of the banner, and falls quiet", async () => {
   const page = await bootReady();
-  const device = "GPU device lost: reason unknown: the GPU process exited; drawing stopped";
+  const device = "drawing stopped: GPU device lost: reason unknown: the GPU process exited";
   page.view.fail({ kind: "device-lost", message: "reason unknown: the GPU process exited" });
   page.fake.script(ROUTES.log, "hold");
   const posts = (): number =>

@@ -4,6 +4,7 @@ import type { ParamRefusal, ParamValues } from "../admit/index.js";
 import { mirrorX, mirrorZ, moveBox } from "../frame/index.js";
 import type { Box, BoxRole, Role } from "../frame/index.js";
 import { LEAST_HANG, PANEL } from "./dimensions.js";
+import { PATHS } from "./finishes.js";
 import { hollowBox } from "./hollow.js";
 import { defineKind } from "./kind.js";
 import type { Kind } from "./kind.js";
@@ -43,8 +44,8 @@ interface Layers {
 }
 
 /** A metal box role. */
-function metal(box: Box, facing: BoxRole["facing"], paint: string): BoxRole {
-  return { form: "box", box, facing, material: "metal", color: paint };
+function metal(box: Box, facing: BoxRole["facing"], paint: string, finish: string): BoxRole {
+  return { form: "box", box, facing, material: "metal", color: paint, finish };
 }
 
 /** The four runway roles: the +X beam's web and flange, then the -X beam's; webs face the centre line. */
@@ -63,10 +64,10 @@ function runway(p: Bridge, layers: Layers): BoxRole[] {
     [-halfT, halfT],
   ];
   return [
-    metal(web, "-X", paint),
-    metal(flange, "down", paint),
-    metal(mirrorX(web), "+X", paint),
-    metal(mirrorX(flange), "down", paint),
+    metal(web, "-X", paint, PATHS.runway),
+    metal(flange, "down", paint, PATHS.flange),
+    metal(mirrorX(web), "+X", paint, PATHS.runway),
+    metal(mirrorX(flange), "down", paint, PATHS.flange),
   ];
 }
 
@@ -94,12 +95,12 @@ function bridgeRoles(p: Bridge, layers: Layers, bridgeZ: number): BoxRole[] {
   ];
   const at = (box: Box): Box => moveBox(box, [0, 0, bridgeZ]);
   return [
-    metal(at(truck), "-X", p.color),
-    metal(at(mirrorX(truck)), "+X", p.color),
-    metal(at(web), "+Z", p.color),
-    metal(at(flange), "down", p.color),
-    metal(at(mirrorZ(web)), "-Z", p.color),
-    metal(at(mirrorZ(flange)), "down", p.color),
+    metal(at(truck), "-X", p.color, PATHS.truck),
+    metal(at(mirrorX(truck)), "+X", p.color, PATHS.truck),
+    metal(at(web), "+Z", p.color, PATHS.girder),
+    metal(at(flange), "down", p.color, PATHS.flange),
+    metal(at(mirrorZ(web)), "-Z", p.color, PATHS.girder),
+    metal(at(mirrorZ(flange)), "down", p.color, PATHS.flange),
   ];
 }
 
@@ -115,7 +116,7 @@ function trolleyRoles(p: Bridge, layers: Layers, trolleyX: number, bridgeZ: numb
       material: "metal",
       color: p.color,
     },
-    true,
+    { top: PATHS.housingTop, plusX: PATHS.hoist, minusX: PATHS.hoist, ends: PATHS.hoist },
   ).map((role) => ({ ...role, box: moveBox(role.box, [trolleyX, layers.girderTop, bridgeZ]) }));
   const hookBase = layers.rail - p.hookDrop;
   const [halfW, halfT] = [HOOK_BLOCK.width / 2, HOOK_BLOCK.thickness / 2];
@@ -124,7 +125,7 @@ function trolleyRoles(p: Bridge, layers: Layers, trolleyX: number, bridgeZ: numb
     [hookBase, hookBase + HOOK_BLOCK.height],
     [bridgeZ - halfT, bridgeZ + halfT],
   ];
-  return [...housing, metal(hook, "+Z", p.color)];
+  return [...housing, metal(hook, "+Z", p.color, PATHS.hook)];
 }
 
 /**
@@ -149,7 +150,7 @@ function hookLimit(p: Bridge): readonly ParamRefusal[] {
 export const BRIDGE_CRANE: Kind = defineKind(
   "bridge-crane",
   BRIDGE_PARAMS,
-  (p): Role[] => {
+  (p) => {
     const rail = p.railHeight;
     const beamTop = rail + PANEL + RUNWAY_WEB_HEIGHT;
     const layers: Layers = { rail, beamTop, girderTop: beamTop + PANEL + GIRDER_WEB_HEIGHT };
@@ -157,11 +158,12 @@ export const BRIDGE_CRANE: Kind = defineKind(
       -p.travel / 2 + END_TRUCK_LENGTH / 2 + p.bridgeAt * (p.travel - END_TRUCK_LENGTH);
     const inner = p.span / 2 - END_TRUCK_WIDTH / 2;
     const trolleyX = -inner + TROLLEY_WIDTH / 2 + p.trolleyAt * (2 * inner - TROLLEY_WIDTH);
-    return [
+    const roles: Role[] = [
       ...runway(p, layers),
       ...bridgeRoles(p, layers, bridgeZ),
       ...trolleyRoles(p, layers, trolleyX, bridgeZ),
     ];
+    return { roles };
   },
   hookLimit,
 );

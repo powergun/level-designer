@@ -21,10 +21,19 @@ export function describe(value: unknown): string {
 }
 
 /**
- * The kind of an alarm: the drawing stopped, the run log failed, or the page threw. The banner
- * keeps one alarm of each kind, so one failing part never pushes another out of view.
+ * The kind of an alarm: the drawing stopped, the run log failed, the page threw, or a console
+ * error came. The banner keeps one alarm of each kind, so one failing part never pushes another
+ * out of view.
  */
-export type AlarmKind = "drawing" | "run-log" | "page-error";
+export type AlarmKind = "drawing" | "run-log" | "page-error" | "console-error";
+
+/** What a page without a run says of its lines: no line reaches the run log. */
+export const UNLOGGED = "the page's lines are not in the run log";
+
+/** The console alarm: a pipeline that fails to build reaches the page only as a console error. */
+function consoleAlarm(where: string): string {
+  return `a console error: programs may have failed and props may be missing; ${where}`;
+}
 
 /** Raises an alarm; false when the same text is already in view. */
 export type Alarm = (kind: AlarmKind, text: string) => boolean;
@@ -47,6 +56,10 @@ function bounded(text: string): string {
 export class PageLog {
   private lines: PageLine[] = [];
   private run: string | null = null;
+  /** Where the console alarm sends the reader: the run log, its path from the join on. */
+  private consoleWhere = "see the run log";
+  /** Whether a console error has raised the console alarm. */
+  private consoleRaised = false;
   /** Whether the server refused this page's run, which ends the posting for good. */
   private ended = false;
 
@@ -58,11 +71,12 @@ export class PageLog {
   ) {}
 
   /**
-   * Post under `run` from now on, every 5 s whatever the boot does next; lines written before
-   * the join wait for it.
+   * Post under `run`, whose lines land in `runLog`, from now on, every 5 s whatever the boot does
+   * next; lines written before the join wait for it. A console alarm in view gains the path.
    */
-  joinRun(run: string): void {
+  joinRun(run: string, runLog: string): void {
     this.run = run;
+    this.placeConsoleAlarm(`see the run log ${runLog}`);
     const { timers } = this.transport;
     const tick = (): void => {
       this.flush();
@@ -85,6 +99,31 @@ export class PageLog {
   error(text: string): void {
     this.record("error", text);
     this.flush();
+  }
+
+  /**
+   * Write a console error's line, raise the console alarm once, and flush. A later console error
+   * writes its own line only, because the alarm's text is already in view.
+   */
+  consoleError(text: string): void {
+    this.record("error", text);
+    this.consoleRaised = true;
+    this.alarmed("console-error", consoleAlarm(this.consoleWhere));
+    this.flush();
+  }
+
+  /** The session step failed before the join: the console alarm says no line reaches the log. */
+  noRun(): void {
+    this.placeConsoleAlarm(UNLOGGED);
+  }
+
+  /**
+   * Point the console alarm at `where` from now on; an alarm already in view changes its text in
+   * the banner alone, so its line is logged once.
+   */
+  private placeConsoleAlarm(where: string): void {
+    this.consoleWhere = where;
+    if (this.consoleRaised) this.alarm("console-error", consoleAlarm(where));
   }
 
   /** Raise an alarm of `kind`, and write its error line and flush unless it was already in view. */
@@ -136,6 +175,7 @@ export class PageLog {
     if (this.ended) return;
     this.ended = true;
     this.lines = [];
+    this.placeConsoleAlarm(UNLOGGED);
     const text = `reload the page: the server restarted (${message}); this page's lines no longer reach the run log`;
     this.alarm("run-log", text);
   }

@@ -2,7 +2,7 @@ import { describeValue, keyPath } from "@level-designer/level-format";
 import { listed } from "./text.js";
 
 /** The build error rules this component owns. */
-type PropRule = "kind" | "param";
+type PropRule = "kind" | "param" | "finish";
 
 /**
  * One reason a prop is refused: its rule, the path of the offending value and the message an
@@ -21,6 +21,19 @@ export function unknownKind(propPath: string, kind: string, kinds: readonly stri
     rule: "kind",
     path,
     message: `${path}: unknown kind ${describeValue(kind)}; the kinds are ${listed(kinds, "and")}`,
+  };
+}
+
+/**
+ * The `finish` problem of the prop at `propPath`, whose kind names the finish path `finish` that
+ * the description's table lacks: `<path>: <kind> needs the finish "<finish>/<role>"`.
+ */
+export function missingFinish(propPath: string, kind: string, finish: string): PropProblem {
+  const path = keyPath(propPath, "kind");
+  return {
+    rule: "finish",
+    path,
+    message: `${path}: ${kind} needs the finish ${describeValue(finish)}`,
   };
 }
 

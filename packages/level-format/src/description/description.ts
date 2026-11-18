@@ -1,6 +1,6 @@
+import type { FinishTable } from "../finish/index.js";
 import type { Lighting } from "../lighting/index.js";
 import type { LinearRgb, Vec3 } from "../shape/index.js";
-import type { SlabMaterial } from "../slab/index.js";
 
 /** The schema id of the committed level description; a breaking change replaces it. */
 export const DESCRIPTION_SCHEMA = "level-designer-description/1";
@@ -11,12 +11,16 @@ export interface Glow {
   readonly strength: number;
 }
 
-/** An override of one base material; an omitted key keeps the source value. */
+/**
+ * An override of one base material; an omitted key keeps the source value. A `finish`, a
+ * path of the table, makes that role the material's hall finish.
+ */
 export interface MaterialOverride {
   readonly tint?: LinearRgb;
   readonly metalness?: number;
   readonly roughness?: number;
   readonly emissive?: Glow;
+  readonly finish?: string;
 }
 
 /** The scale and the look of the base stage, keyed by base material and mesh names. */
@@ -32,12 +36,6 @@ export interface Seal {
   readonly min: Vec3;
   readonly max: Vec3;
   readonly color: string;
-  readonly metalness: number;
-  readonly roughness: number;
-}
-
-/** The surface response of one material. */
-export interface Finish {
   readonly metalness: number;
   readonly roughness: number;
 }
@@ -59,7 +57,7 @@ export interface Description {
   readonly name: string;
   readonly base: BaseStage;
   readonly seals: readonly Seal[];
-  readonly finishes: Readonly<Record<SlabMaterial, Finish>>;
+  readonly finishes: FinishTable;
   readonly glows: ReadonlyMap<string, Glow>;
   readonly props: readonly Prop[];
   readonly lighting: Lighting;

@@ -9,6 +9,7 @@ import {
   expectNoRequiredExtension,
   expectObjectRoots,
   expectOneBufferContainer,
+  expectOwnAlignedViews,
   expectReaderSubset,
   entryAt,
   expectSameJson,
@@ -77,6 +78,7 @@ test("the static scene is one glTF binary with one JSON chunk, one BIN chunk and
   expectOneBufferContainer(glb, scene.document);
   expectNoRequiredExtension(scene.document);
   expectReaderSubset(scene);
+  expectOwnAlignedViews(scene.document, base.document.accessors?.length ?? 0);
 });
 
 test("the static scene keeps the base nodes, accessors, buffer views, images, textures, samplers and buffer bytes verbatim", () => {
@@ -154,6 +156,25 @@ test("in the static scene, base materials keep their indices, take their overrid
     "Material",
     false,
   ]);
+});
+
+test("in the static scene, a base material whose override names a finish carries it in its extras, its twin too", () => {
+  const written = scene.document.materials ?? [];
+  const twinOf = (name: string): number | undefined =>
+    scene.document.meshes?.find((mesh) => mesh.name === name)?.primitives[0]?.material;
+  const [tubeTwin, planeTwin] = [
+    "factory_tube_01.001_Material.003_0",
+    "Plane.001_Material.002_0",
+  ].map((name) => written[twinOf(name) ?? -1]);
+  expect([written[4]?.extras, tubeTwin?.extras]).toEqual([
+    { finish: "floor/front" },
+    { finish: "floor/front" },
+  ]);
+  // `Material` overrides without a finish; the others and the plane's twin have no override.
+  const withoutFinish = [...written.slice(0, 4), ...written.slice(5, 11), planeTwin];
+  expect(withoutFinish.map((material) => material?.extras)).toEqual(
+    withoutFinish.map(() => undefined),
+  );
 });
 
 test("in the static scene, a double-sided base mesh points to a double-sided twin of its material", () => {

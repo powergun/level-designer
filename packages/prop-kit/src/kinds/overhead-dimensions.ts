@@ -13,8 +13,11 @@ export const END_TRUCK_HEIGHT = 0.4;
 /** An end truck's length along the runway: it carries both girders and the trolley. */
 export const END_TRUCK_LENGTH = 3;
 
-/** A girder web's height: the bridge's main member, deeper than a runway web. */
-export const GIRDER_WEB_HEIGHT = 0.6;
+/**
+ * A girder web's height: the bridge's main member, 1.25 m by the art direction, so the girders
+ * read as the deep double girder of the crane references; the crane still rises at most 2.4 m.
+ */
+export const GIRDER_WEB_HEIGHT = 1.25;
 
 /** The distance between the two girder webs' centres: a double-girder bridge, as on the reference. */
 export const GIRDER_SPACING = 1.5;
@@ -22,7 +25,7 @@ export const GIRDER_SPACING = 1.5;
 /** The trolley's width across the girders: a hoist housing that reads as a box. */
 export const TROLLEY_WIDTH = 1.2;
 
-/** The trolley's height on the girder webs; with it the crane rises 1.7 m above `railHeight`. */
+/** The trolley's height on the girder webs; with it the crane rises 2.35 m above `railHeight`. */
 export const TROLLEY_HEIGHT = 0.5;
 
 /** The hook block's width, height and thickness: a block a player recognises under the trolley. */

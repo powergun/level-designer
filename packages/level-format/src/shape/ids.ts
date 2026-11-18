@@ -1,17 +1,42 @@
 import type { ShapeNode } from "./node.js";
 import type { FormatProblem } from "./problem.js";
-import { shownPath } from "./render.js";
+import { keyPath, quote, shownPath } from "./render.js";
 
-/** An id: lowercase letters, digits and hyphens, a letter first, at most 48 characters. */
-const ID_PATTERN = /^[a-z][a-z0-9-]{0,47}$/;
+/** The id rule: lowercase letters, digits and hyphens, a letter first, at most 48 characters. */
+const ID_BODY = "[a-z][a-z0-9-]{0,47}";
+
+/** An id. */
+const ID_PATTERN = new RegExp(`^${ID_BODY}$`);
 
 /** The requirement text of an id. */
 const ID_REQUIREMENT =
   "an id of lowercase letters, digits and hyphens that starts with a letter, at most 48 characters";
 
+/** A finish path: two ids joined by a slash, `finish/role`. */
+const FINISH_PATH = new RegExp(`^${ID_BODY}/${ID_BODY}$`);
+
 /** An id-shaped string; the placeholder is empty. */
 export function readId(node: ShapeNode): string {
   return node.matching(ID_PATTERN, ID_REQUIREMENT);
+}
+
+/** A finish path `finish/role` of two ids; the placeholder is empty. */
+export function readFinishPath(node: ShapeNode): string {
+  return node.matching(FINISH_PATH, 'a finish path "<finish>/<role>" of two ids');
+}
+
+/**
+ * The entries of an object whose names are ids, such as finishes and roles. A name's path
+ * takes the record-key form, and a name that is no id is a problem and yields no entry.
+ */
+export function readIdEntries(node: ShapeNode): [string, ShapeNode][] {
+  return node.entries(Number.POSITIVE_INFINITY, keyPath).filter(([name, child]) => {
+    const isId = ID_PATTERN.test(name);
+    if (!isId) {
+      child.fail(`a name that is ${ID_REQUIREMENT}`, `the name ${quote(name)}`);
+    }
+    return isId;
+  });
 }
 
 /**

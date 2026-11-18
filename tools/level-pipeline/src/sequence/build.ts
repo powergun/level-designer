@@ -40,7 +40,7 @@ function dress(
   }));
   const slabErrors = admitSlabs(props);
   if (slabErrors.length > 0) return blocked(slabErrors);
-  const level: Level = { props, lighting: description.lighting };
+  const level: Level = { finishes: description.finishes, props, lighting: description.lighting };
   const hash = createHash("sha256").update(inputs.description).digest("hex");
   const built = {
     description,

@@ -1,51 +1,58 @@
 # Look development design
 
-The look development gives every dressed object of the dark factory a procedural material
-and keeps it destructible. This document states the premises, the terms, how cost is
-judged and what keeps a painter cheap, the shader templates and their arithmetic, the
-layer kinds, the components and what agents see. The [finish format](finish-format.md)
-defines the data and the rules by which a renderer draws it. The research reports of
-this directory hold the evidence: `research-destruction-look-dev.md` for the method and
+The look development gives every surface of the dark factory that a player sees up close a
+procedural material: the dressed objects, which stay destructible, and the seals, the
+static objects and the hall's own surfaces, which never break. This document states the
+premises, the terms, the shader templates and their arithmetic, the layer kinds, the
+components and what agents see. The [finish format](finish-format.md) defines the data
+and the rules by which a renderer draws it.
+[Non-destructible objects](non-destructible-objects.md) states what a static object is
+and how a finish reaches a seal, a static object and the hall.
+[Painter cost](painter-cost.md) states how cost is judged, what keeps a painter cheap
+and what a bake would keep and lose. The research reports of this directory hold the
+evidence: `research-destruction-look-dev.md` for the method and
 `research-dark-factory-surfaces.md` for the surfaces.
-
-**Human note** for non-destructible objects, we also want to apply the same look-development
-techniques. Since non-destructible objects will survive gunshots and remain in 100% integrity,
-we need such material to look more interesting and detailed (while balance the quality-vs-performance
-issue) because players will likely get a close look at them.
 
 ## Premises
 
-The owner's decisions:
+The owner's decisions on materials and cost:
 
 - A procedural material is a shader, as on the walls, pillars and spheres of Wall Lab, so
-  the level's `.glb` stays as small as possible. **Human note** "small" does not have a hard
-  limit. But we must justify every data added to the `.glb` file (i.e., there is no better
-  way to store such data other than storing them in the `.glb` file; "better" means implementation
-  complexity, load-time performance, and ease of development)
-- A finish is easy to change for an agent and for a person, so it is data. Shader code
-  is templated and instantiated from the sheet, the table of recipes. Performance comes
-  first in how that is done.
+  the level's `.glb` holds no image for it.
+- "Small" sets no hard limit on the `.glb`. Every datum the design adds to it is
+  justified: no better place holds it, judged by implementation complexity, load time and
+  ease of development. The finish format gives each reason.
+- A finish is easy to change for an agent and for a person, so it is data. Shader code is
+  templated and instantiated from the sheet, the table of recipes.
+- The art comes first, on a good-enough technical direction. The team writes no code that
+  is obviously slow and makes no obvious performance mistake: what is static is computed
+  once, never per frame. Performance tuning is a separate task, after the art is approved.
 - Cost is judged by the owner, by eye, from the frame rate that the QA page shows. No
-  tool is built to measure it. Wall Lab is unoptimised and holds 60 frames a second on
-  the owner's machine, so painters that are designed for performance run faster.
-  **Human note** we will take the battle-tested development approach here: deliver the art
-  expectation first while using a good-enough technical direction in terms of technical
-  design and implementation choices; once the art is approved, we can do focused performance
-  tuning, which is a separate task and not within the scope of this task. We follow the
-  principle that "do not write code that is obviously slow"
+  tool is built to measure it.
 - The materials are baked into the `.glb`, as textures of at most 1,024 px, only when the
-  owner finds that the shaders cost too much. **Human note** this does not require a scientific
-  comparison or profiling. As said before "do not make obvious perf mistakes" such as
-  computing expensive static shadows per frame rather than per-bake them as textures.
-- From Wall Lab project, only the walls, the pillars and the spheres are references. Nothing is
-  taken from its statues.
-- Clearly separate dressed object that stays destructible from the indestructible static objects (if any).
-  The dressed destructible objects are for gameplay; the static objects are for mood-creation and gaps-filling.
-- The owner judges the look in a browser. No agent launches a server or a browser. Agent should
-  restrict the use of headless browser in the foreground of background as this disrupts human's
-  workflow.
+  owner finds that the shaders cost too much. The owner decides that by eye: the choice
+  needs no comparison and no profile.
 
-The rules of the design:
+The owner's decisions on references, on objects and on the work:
+
+- From Wall Lab, only the walls, the pillars and the spheres are references. Nothing is
+  taken from its statues.
+- The look development is additive. The level the owner passed is proved for layout and
+  stays: no passed prop moves, turns or leaves.
+- The dressed destructible objects are for gameplay. Static, indestructible objects are
+  allowed, for mood and to fill gaps, and stay clearly apart from them.
+- A static object is floor litter, thin and small, or an overhead object on a wall, a
+  deck or the ceiling. It has no collision and takes part in no simulation, and it blocks
+  no player's path and no player's sight.
+- Non-destructible objects get the same look development. They never break and players
+  see them close up, so their materials are more interesting and detailed, in a balance
+  of quality and performance.
+- The team pauses at the end of each milestone, and the owner tests the build for art
+  direction and overall performance.
+- The owner judges the look in a browser. No agent launches a server or a browser, and
+  none uses a headless browser, in the foreground or in the background.
+
+The rules of the design, for a finish:
 
 - A finish is a recipe in the level description, built from a closed set of layer kinds.
   The level pair stays data: it carries recipes, never code.
@@ -56,18 +63,24 @@ The rules of the design:
   nodes it is shader code; filled with plain numbers it computes the same pattern on the
   CPU, for the art team's finish sheet.
 - sec-111 draws a finish by the same rules. At adoption it takes a copy of the
-  interface, both back ends, the kinds and the painter, which the owner allowed, and
-  guards keep the two copies in step.
-- Performance is a property of the design: arithmetic kinds, noise for wear alone, no
-  relief, one static material for each finish path, detail that fades with the
-  footprint, and plain caps on a recipe. A recipe over a cap blocks the build.
+  interface, both back ends, the kinds, the painter and the slab's frame rule, which the
+  owner allowed.
+- Performance is a property of the design: arithmetic kinds, noise for wear, and for a
+  hall surface's variation last, no relief, one static material for each finish path,
+  detail that fades with the footprint, and plain caps on a recipe. A recipe over a cap
+  blocks the build.
+
+The rules of the design, for what a finish is drawn on:
+
 - A mark sits on an existing slab through per-slab parameters. No plate slab is added.
+- A static object is a box with a finish, in its own section of the description and with
+  its own role in the `.glb`. It joins the build after sec-111's preparation and is only
+  drawn; the build holds it to its limits with numbers.
+- The hall's surfaces take finishes too: a recipe's layers, drawn over a stage material's
+  own look. Floor lines are layers of the floors' recipes.
 - Lettering is drawn as glyphs by the painter and is built last. If glyphs read badly,
   the way out is one small glyph image; it would be an image in the `.glb`, so the owner
   rules on it then.
-- Floor lines wrap the stage's floor materials.
-- A slab's triangles share their equal corners, and its colours are stored compactly.
-  The size of the `.glb` before and after is a check.
 - A painter program that fails shows a message on the page in every run.
 
 The art direction's rulings:
@@ -76,21 +89,30 @@ The art direction's rulings:
   yellow up to about twice it, arms stay black. The lights stay as the owner passed them.
 - Finishes ship with their marks: placed marks, bands anchored to the floor or to a prop's
   top, a second hue inside a finish, and lit parts.
-- Floor lines are a surface treatment of the existing floor, with no object and no
-  collision. The 13 seals may take a finish.
-- The crane girders may deepen to about 1.25 m, as a prop-kit dimension. The two brick
-  fences become painted block walls and keep the brick physics.
-- No car bodies, no new kind, and the arm count stays.
+- The 13 seals, the static objects, the two floors and the side walls take finishes of
+  their own, richer in marks than a prop's; the art team's briefs say what that means on
+  each surface. Floor lines are a surface treatment of the existing floor, with no object
+  and no collision.
+- The crane girders deepen to 1.25 m, as a prop-kit dimension. The two brick fences
+  become painted block walls and keep the brick physics.
+- No car bodies. The kit keeps its nine kinds, and the sixteen arms stay.
 - Painters draw no relief: the hall's light is equal from every side, so a recess is
   painted as a dark line with a light lip.
 - The damaged look is verified at adoption. The design states it per finish as data.
 
+The rulings add to the level the owner passed. Every passed prop stays where it stands,
+and a new prop goes where the owner asks for it after a milestone's test.
+
 ## Terms
 
+A finish and its parts:
+
 - Finish: a named procedural material, apart from a slab's physics material and its tint.
-- Role: the part of its kind a slab is, such as a container's side or its door.
+- Role: one named part that a finish paints, such as a container's side, its door or a
+  floor.
 - Recipe: the definition of one role of a finish as data, an ordered list of layers.
-- Finish path: a finish and a role, written `finish/role`. A slab names one.
+- Finish path: a finish and a role, written `finish/role`. A slab, a box and a stage
+  material name one.
 - Layer kind: one of the closed set of patterns a layer can be, such as bands or cells.
 - Template: a layer kind as code, one small function with named parameters that returns
   a coverage. A recipe fills it with its numbers.
@@ -98,71 +120,19 @@ The art direction's rulings:
   roughness, metalness and emission.
 - Arithmetic interface: the operations the layer kinds are written over. A back end
   supplies them for one scalar type: numbers on the CPU, shader nodes on the GPU.
-- Pattern coordinates: two lengths in metres that place a point on a face of a slab.
+- Pattern coordinates: two lengths in metres that place a point on a face.
 - Footprint: the metres of pattern one pixel or one texel covers at a point.
-- Hash: one evaluation of the lattice hash, the dearest operation of a painter.
 
-## Cost
+What a finish is drawn on:
 
-### How cost is judged
-
-The QA page shows the frame rate on its heads-up display in every normal run, as
-`<n> fps`, capped by the display's refresh rate. The owner reads it while walking the
-level, each time finishes land. Painters are designed to hold it, as Wall Lab holds 60
-frames a second on the owner's machine with painters that are heavy and unoptimised.
-
-### What the references pay
-
-A painter of Wall Lab is heavy by design. Counted in its source, per pixel and per branch
-taken: formed concrete spends 24 hashes, brick 32, the metal sphere 44 and fractured
-concrete 56. One value-noise lookup in three axes is eight hashes. Each painter adds a
-bump from screen derivatives and specular anti-aliasing. sec-111 pays this on six walls of
-about 7 by 3.2 m under one key and four points. The level has one key and eight points,
-and every lit pixel evaluates every light.
-
-Measured with a CPU raster at the game's lens on the committed level: from the five spawns
-and the centre aisle the props cover 0 to 14 % of the frame, the seals up to 8 % and the
-floor 31 to 44 %. One metre from a tall prop the prop covers the whole frame. Painters on
-props are therefore cheap at a spawn and dear at cover, and a painter on the floor touches
-a third or more of every frame.
-
-### What keeps a painter cheap
-
-- Nothing is interpreted per pixel. A recipe's numbers are constants in the text of its
-  shader, not data that the shader reads while it runs.
-- Factory finishes are arithmetic: bands, cells, dots and rectangles cost a few
-  operations and at most one hash each. Noise serves wear alone. Value noise runs on the
-  two pattern coordinates and costs four hashes, half of a lookup of the references.
-- A painter draws no relief: no bump from screen derivatives and no specular
-  anti-aliasing. Its only derivative is the footprint.
-- A recipe is small by its caps: at most 24 layers, of them at most two `noise` layers
-  and at most three `glyphs` layers. The recipes of the art direction's briefs spend at
-  most 6 hashes, a quarter of the cheapest reference painter.
-- The graph has no branch, so a layer costs its arithmetic on every pixel of its slab,
-  also outside its mark. A mark that few slabs carry is therefore a role of its own and
-  never a layer of a shared recipe.
-- One material serves each finish path and glow, and each of its graphs reads static
-  inputs only, so no draw is refreshed per frame. Tests pin the material count.
-- Every edge is filtered over the footprint, and fine layers fade with it. A painter
-  needs no supersampling to stay calm in motion.
-- `level-view` paints no interior: the QA app shows no damage.
-
-The caps are plain numbers that an author reads off a recipe: few layers, noise for wear
-alone, few legends. `level-format` refuses a recipe over a cap where it admits the
-table.
-
-three.js refreshes every draw of a node material in full each frame. The references avoid
-that with a static material class, whose observer reports no node to refresh unless the
-build injects one of four per-draw nodes: the model-view matrix, the model-normal-view
-matrix, ambient occlusion or the shadow. The class is a file of Wall Lab's demo, not of a
-library, and sec-111 holds its own copy. `level-view` holds its own too, in its unit
-`paint`, because the level draws 608 slab meshes.
-
-### If the owner finds painters too dear
-
-Lighter recipes come first: fewer layers, no noise, fewer floor lines. The bake is the
-second remedy, and the owner chooses it. "The fallback" below says what a bake keeps and
-what it loses.
+- Prop: a dressed destructible object, built from slabs by one of the kit's nine kinds.
+- Seal: a static box that closes the hall.
+- Static object: a box that is only drawn, to fill a gap: floor litter, or an overhead
+  object on a wall, a deck or the ceiling.
+- Box: a seal or a static object, as a shape that carries a finish.
+- Hall surface: a surface of the base stage. A hall finish is a role that a stage
+  material names.
+- Non-destructible object: a seal, a static object or a hall surface.
 
 ## Templates and their arithmetic
 
@@ -171,8 +141,9 @@ a coverage. The finish table is the sheet that fills the templates. When a level
 `level-view` instantiates the templates of each recipe's layers with that recipe's
 numbers and joins them into one static shader for each finish path. The numbers become
 constants in the shader's text. The only values a painter reads while it runs are the
-slab's own, from the vertex data of the `.glb`: the pattern coordinates, the face's size
-and the slab's number, seed, wear and class.
+surface's own. A slab and a box give them as vertex data of the `.glb`: the pattern
+coordinates, the face's size and the number, seed, wear and class. A hall surface gives
+its position and its normal.
 
 A template is a TypeScript function over a small arithmetic interface, not text in a
 shading language. Filled with shader nodes it becomes shader code. Filled with plain
@@ -199,7 +170,7 @@ The hash has one source. `latticeHash` is a function of the unit, written over t
 fourteen operations after Wall Lab's `hash31`, and every back end builds its `hash` from
 it. The hash is an operation so that a back end can build it once: the node back end
 emits it as one shader function that a painter calls, where plain arithmetic would repeat
-its body at every call. The third scalar of a cell carries the slab's seed.
+its body at every call. The third scalar of a cell carries the seed.
 
 The number back end lives beside the interface. Every operation rounds its result to a
 32-bit float, so a hash follows the arithmetic of a GPU as closely as rounding allows. A
@@ -216,15 +187,16 @@ and its `hash` is `latticeHash` over those nodes inside one shader function.
 One source for two back ends is the cheapest way to give agents an honest picture. A
 template is written once; written twice, by hand for the CPU and for the GPU, it would be
 two copies that nobody can compare without a GPU, and a sheet could show what the browser
-does not draw. The finish sheet, the value table and the tests of the templates under
-Bun are what the number back end is for.
+does not draw. The finish sheet and the tests of the templates under Bun are what the
+number back end is for.
 
 ## The layer kinds
 
-The unit `kinds` of `finish-paint` holds the templates, one for each layer kind. Each is
-a function over the interface with constant parameters in metres. Each filters an edge
-over one footprint centred on it, so coverage is one half on the edge and a pattern
-fades to its mean coverage before it aliases:
+The unit `kinds` of `finish-paint` holds the templates of the layer kinds. `face` needs
+none: the painter covers a `face` layer with 1. `glyphs` comes in milestone 7. Each
+template is a function over the interface with constant parameters in metres. Each
+filters an edge over one footprint centred on it, so coverage is one half on the edge and
+a pattern fades to its mean coverage before it aliases. Four kinds draw a field:
 
 - `bands`: the coverage of bands of one width that repeat at one period along one
   coordinate, box-filtered over the footprint. A footprint of many periods returns the
@@ -235,18 +207,21 @@ fades to its mean coverage before it aliases:
 - `dots`: the coverage of discs of one radius on a lattice with a pitch along each
   coordinate. A disc's edge is a linear ramp of the distance over one footprint, and the
   coverage fades to the discs' share of the lattice.
-- `rectangle`: the coverage of one axis-aligned rectangle given by two corners.
 - `noise`: value noise in 0 to 1 on the two coordinates, with a wavelength along each
   and smooth interpolation between four hashed corners. It fades to 0.5 by its shorter
   wavelength.
-- `face`: the whole face, for a face's own paint or light.
+
+Five kinds draw a mark:
+
+- `rectangle`: the coverage of one axis-aligned rectangle given by two corners.
+- `face`: the whole face, for a face's own paint or light; the painter covers it with 1,
+  without a template.
 - `disc`: the coverage of one disc, ring or diamond at a place, for hubs, plates, points
   and warning labels.
 - `border`: the coverage of a frame of one width at one inset from a face's outline.
 - `glyphs`: the coverage of a legend, a row of stencil glyphs of seven strokes each. A
-  digit comes from the slab's number; a letter is fixed by the layer. A pixel finds the
-  glyph box under it and tests the seven strokes against that glyph's mask. It spends no
-  hash.
+  digit comes from the number; a letter is fixed by the layer. A pixel finds the glyph
+  box under it and tests the seven strokes against that glyph's mask. It spends no hash.
 
 `bands`, `rectangle` and the gaps of `cells` reach their mean by their box filters. The
 other fades use the footprint fade, a helper of the unit after Wall Lab's `lodFade`: it
@@ -254,115 +229,207 @@ removes a feature as the footprint grows from 0.22 to 0.5 of the feature's wavel
 The kinds trust their parameters and a positive footprint; the caller owns both. `cells`
 and `noise` take the seed as one more scalar and pass it to every hash.
 
+Every kind returns a coverage in 0 to 1, and a kind whose arithmetic can leave that range
+clamps it. `bands`, `rectangle` and `dots` do: a filter's difference at a long coordinate
+loses bits in 32-bit floats. `dots` also clamps its far share, because the format cannot
+refuse a disc wider than its cell: a radius and a pitch may both be shares of a face.
+
+A kind keeps the constant edges of every `smoothstep` rising. WGSL refuses a `smoothstep`
+whose constant edges do not rise, when the shader is created, and the drawing stops. A
+noise's mask rises because its softness lies above 0.
+
 The art direction asked for two things beyond a straight band of a fixed period, and
 `bands` takes both without a new kind and without a new operation. A band at 45 degrees
-runs along the sum of the two coordinates. A fitted period is the face's extent over a
-whole number of periods; the face's size reaches the painter with each vertex. `cells`
-and `dots` take the fit the same way. A band with flanks is `bands` with a ramp.
+runs along the sum of the two coordinates. A fitted period is the range of the layer's
+coordinate on the face over a whole number of periods; the face's size reaches the
+painter with the face. `cells` and `dots` take the fit the same way. A band with flanks
+is `bands` with a ramp, each flank centred on the band's edge.
 
 ## The painter
 
-The unit `painter` of `finish-paint` evaluates a recipe by the mapping rules of the
-finish format: the body, then each layer in order, each mixing its effect into the shade
-by its coverage. It is generic over the interface, so one function serves both back
-ends. Beside it the unit renders a recipe on the number back end: a face as pixels, and
-a face's mean albedo, roughness and metalness.
+The unit `painter` of `finish-paint` evaluates a recipe on a face by the painting rules
+of the finish format: the base shade, then each layer in order, each mixing its effect
+into the shade by its coverage. The caller gives the base shade: the recipe's body for a
+slab or a box, the stage material's own values for the hall. A face is what a frame rule
+gives: the two coordinates, a low corner, a size, a class and the number, the seed and
+the wear. The painter is generic over the interface, so one function serves both back
+ends.
+
+The painter takes a recipe as it draws and resolves nothing. `recipeAt` of
+`level-format` is the one reading of a finish path: it resolves `extends` and the default
+body, and returns the body, the layers and the finish's `light`. The kit, the pipeline
+and the view call it, so none of them holds a default and the view parses no path. The
+unit also exports the decode of a finish's `#rrggbb` text to linear RGB, for a layer's
+`color` and for a caller's `light`. `level-glb` keeps a decode of its own for a seal's
+colour, by its rule of no workspace dependency.
+
+Three more parts stand beside the painter:
+
+- The slab's frame rule, on plain numbers, in the unit `frame`. `slab-model` calls it for
+  the intact mesh, and sec-111 takes it with its copy for its chunk meshes, so a pattern
+  cannot jump at a slab's first damage. The unit also builds the painter's face from a
+  vertex's data, for the view and for the swatch.
+- The hall's frame rule, in the same unit, over the interface, from a position, a normal
+  and the interior box. Both back ends share it, and its tests run on numbers.
+- The swatch, in a unit of its own, which renders a recipe on the number back end: a face
+  as pixels, and the mean albedo of those pixels.
 
 ## Painters in `level-view`
 
-`level-view` holds the unit `paint`: the node back end, the static material class and
-the painted materials. It has no switch: a level's finishes are what it draws.
+`level-view` holds the unit `paint`: the node back end, the static material class, the
+painted twins and the stage wrap. It has no switch: the level's finish table decides what
+it paints. The painter cost document says what the static material class saves.
 
-A GLB material's name is its finish path and glow. One painted twin exists for each GLB
-material of a seal or a slab. It evaluates that path's recipe from the level `.json` on
-the vertex data the GLB carries, keeps the source's colour, sidedness and shadow side,
-multiplies the slab's vertex colour once, and keeps the surface's own normal. A glow
-gives the emission its colour and strength.
+A GLB material of a finish path carries the path and its glow in its `extras`; its name
+only repeats them. Such a material gets a painted twin only when its recipe draws what
+the GLB's fallback cannot: a layer, or a body `shade` other than 1. A plain path keeps
+the material the GLB gives it, lamps included: the fallback already holds the body's
+metalness and roughness and the glow, so a twin would draw the same look at the cost of
+a GPU program. One twin serves every slab, seal and static object that draws with its
+material. It evaluates that path's recipe from the level `.json` on the vertex data the
+GLB carries, keeps the source's colour, sidedness and shadow side, multiplies the vertex
+colour once, and keeps the surface's own normal. A glow gives the emission its colour,
+the material's emissive factor, and its unscaled strength, from the `extras`.
+
+The view reads the `extras` of every material of a finish path once, at the load, twin or
+not, and fails loudly there. `extras` of a wrong shape, or a finish path that the level's
+table lacks, fail the start at its `glb` step, with the material's name and the path in
+the error.
+
+A stage material whose `extras` carry a hall finish with at least one layer draws through
+the stage wrap, a static material. The wrap takes the material's own look as the base
+shade and mixes the role's layers over it, on the hall's frame. Where no layer covers, a
+wrapped material shades exactly as its source: it keeps every map, factor, side and
+shadow side. A floor line is such a layer, so the wrap needs no floor height and no test
+of its own for a floor. A stage material without a finish, or with a role of no layer,
+keeps its material, so the ceiling and the trusses pay nothing.
+
+The mesh decides the rule: a mesh that carries the slab's vertex data takes the twin
+rule, and a stage mesh takes the wrap. One wrap draws on every surface of its stage
+material, and its double-sided twin takes a wrap of its own. The class comes per pixel
+from the surface's own normal, so on a curved part, a pipe or a tank, an `on: "top"`
+layer draws on the band that faces up, and the mark ends sharply where the class turns.
 
 Instantiation happens once, in the view's start, before the compile, so the warm-up
-compiles what the frames draw: one shader for each finish path and glow in use, about 45
-for the level. Building a shader on the CPU is quick: under Bun, without a GPU, a graph
-of forty layers took 2 to 4 ms and its program text 13 to 21 ms. Each program then
-compiles once on the GPU, behind the boot's status strip; how long 45 programs take
-there shows on the owner's machine alone. A changed recipe shows at the next start of
-the QA app, with no code and no rebuild of anything but the level.
-
-For a level with floor lines the stage's floor materials draw through the floor wrap.
-The wrap draws a stage material as the GLB states it and mixes the line colour over it
-by a mask. The mask is the largest coverage among the level's rectangles in plan
-coordinates, each evaluated by the kind `rectangle`, multiplied by two tests: the
-surface faces up, and it lies within 0.05 m of a floor height. The wrap goes on the
-stage materials that carry a floor and on no other, found once at load, so walls and
-ceiling pay nothing. Where the mask is zero, a wrapped material shades exactly as its
-source: it keeps every map, factor, side and shadow side. The floor heights and the
-lines are in scaled metres, the unit of the eye and of the GLB's world positions.
+compiles what the frames draw: one shader for each twin and one for each wrapped stage
+material. The twins number at most the finish paths and glows in use, about 45 for the
+props and one for each box path beyond them.
+Building a shader on the CPU is quick: under Bun, without a GPU, a graph of forty layers
+took 2 to 4 ms and its program text 13 to 21 ms. Each program then compiles once on the
+GPU, behind the boot's status strip; how long the programs take there shows on the
+owner's machines alone, at the first milestone's test. A changed recipe shows at the next
+start of the QA app, with no code and no rebuild of anything but the level.
 
 ## A program that fails
 
-A painter program that fails to compile on the GPU raises no failure of its own.
-three.js reports it as a console error, skips every draw of it and lets the compile
-resolve: the level shows with props missing. The QA page already copies every console
-error into the run log. A console error also raises the page alarm, in the place of the
-app's other alarms: one banner that says that programs may have failed and
-props may be missing, and names the run log. It holds in every run, because every run
-draws painters. The page raises it for every console error: it cannot tell a failed
-program from another error without reading the error's text.
+A painter program can fail on a GPU in two ways, and the page shows both:
 
-That is the whole mechanism: one rule in `qa-client`, one test, and one row in the QA
-app's list of visible failures. The browser's own console messages still reach neither
-the page nor the run log.
+- Its shader fails to compile. three.js creates the shader module outside any error
+  scope, so the failure reaches the renderer's error hook as a GPU error. `level-view`
+  hands it to the page, which shows the error and stops the drawing: a failure the QA app
+  already shows.
+- Its pipeline fails to build. three.js reports that as a console error, skips every draw
+  of the program and lets the compile resolve: the level shows with props missing. The QA
+  page copies every console error into the run log. A console error also raises an alarm
+  of its own kind, `console-error`, beside the drawing's, the run log's and the page's:
+  one line of the alarm banner, with a fixed text that says that programs may have failed
+  and props may be missing, and with the run log's path.
+
+The banner shows one line for each kind of alarm, so a console error never pushes a lost
+device out of view. A line is the first line of its alarm's text, cut at 240 characters;
+the whole text and a stack stay in the run log. The console alarm holds in every run and
+at every boot step. Raised before the session facts, its line gains the run log's path
+when they arrive; after a failed session step it says that the page's lines are not in
+the run log. The page raises the alarm for every console error: it cannot tell a failed
+program from another error without reading the error's text. The alarm is the whole new
+mechanism: one rule in `qa-client`, one test, and one row in the QA app's list of visible
+failures. The browser's own console messages still reach neither the page nor the run
+log.
 
 ## Components
 
-`finish-paint` is the one new component, browser-safe, in `packages/`. It depends on
-`level-format` for the recipe's type. Its consumers:
+`finish-paint` is the one new component, browser-safe, in `packages/`, with the units
+`arithmetic`, `kinds`, `frame` and `painter`. It depends on `level-format` for the
+recipe's types. Its consumers:
 
-- `level-view`: the interface, the kinds and the painter, for the node back end.
-- `snapshot-render`: the pixels of a recipe, for the finish sheet.
-- `level-pipeline`: the means of a recipe, for the report's value table.
+- `level-view`: the interface, the kinds, the painter and the hall's frame rule, for the
+  node back end.
+- `slab-model`: the slab's frame rule, for the intact mesh.
+- `snapshot-render`: the swatch of a recipe, for the finish sheet.
 
 The other components change inside their duties:
 
-- `level-format` admits the finish table with its caps, the slab's finish data and the
-  floor's colour and lines, and writes them in the level `.json`.
-- `prop-kit` names a finish path for every slab, takes the new parameters, composes a
-  slab's number and deepens the girder.
-- `slab-model` returns an indexed mesh with the pattern data of every vertex.
-- `level-glb` writes that data, the compact colours, one fallback material per finish
-  path and glow, and the seals' pattern data.
-- `qa-client` passes the level's recipes, floor lines and floor heights to the view and
-  raises the page alarm for a console error.
+- `level-format` admits the finish table with its caps, a slab's finish data, the static
+  objects, a box's paint keys and a base override's finish, in its units `length`,
+  `layer`, `finish` and `description`. It writes the finish data in the level `.json`,
+  and owns `recipeAt` and the hash of an id into a seed.
+- `prop-kit` names a finish path for every slab, with the glows and the finish table as
+  its context, takes the new parameters, composes a slab's number and deepens the girder.
+- `slab-model` gives every vertex of a slab its pattern data and the slab's colour, which
+  it takes from the destruction lib model: destruction lib stays the one decoder of a
+  slab's colour.
+- `level-glb` writes that data, one fallback material per finish path and glow, the
+  static objects' nodes, a painted box's data and a stage material's finish path. It
+  takes one drawn body per finish path in use beside the glows.
+
+The components that judge, build and show the level:
+
+- `level-rules` judges a static object by `interior` and `static`.
+- `level-pipeline` carries the finish data to the pair, reads each path's body with
+  `recipeAt` for `level-glb`, and stands the static objects on the prepared floors for
+  the level scene.
+- `level-cli` fills the finish sheet's swatches from the built level.
+- `qa-client` passes the level's recipes to the view and raises the console alarm for a
+  console error.
 
 No gateway changes: no sibling's surface is needed.
 
 ## What agents see
 
 An agent never sees a shader's output. The same templates, filled with plain numbers,
-give it a preview in its smallest form. Its consumer is the art team's author and its
-reviewer, who change a finish and judge it before the owner spends a look on it:
+give it a preview in its smallest form, the finish sheet. Its consumer is the art team's
+author and its reviewer, who change a finish and judge it before the owner spends a look
+on it:
 
-- The finish sheet: each finish path in use on its largest face of the level, with a
-  ruler in metres, beside its inside face and its edges. It draws the face at 5 mm per
-  pixel, or at 20 mm when the face is longer than 8 m, and again at 40 mm, what survives
-  20 m.
-- The report's value table: per finish path and tint in use, its mean albedo as linear
-  luminance and the computed luminance of a top, a side and an underside, beside the
-  floor's 0.054.
+- The sheet gives each finish path one page, because an image reader shrinks a large
+  picture until its marks are lost. A page shows albedo only.
+- A prop's finish path shows on its largest outside face of the level, between its two
+  end edges, with its inside face and its top and bottom edges. A box's path shows on its
+  largest face.
+- The sheet draws these faces at 5 mm per pixel, or at 20 mm when the outside face is
+  longer than 8 m, and the outside face again at 40 mm, what survives 20 m. The sheet owns
+  these scales; a swatch states only its slab.
+- Under each face the sheet prints a ruler in metres and its mean albedo as linear
+  luminance. The author holds the mean against the value ladder, and the facing ratios of
+  the look and lighting document turn it into the luminance of a top, a side and an
+  underside.
+- A hall finish that an override names gets one page, with one tile for each class its
+  layers draw on, over a plain grey ground: the sheet reads no texture, so it shows the
+  marks and not the surface's value. A wall or a ceiling shows as a window of 16 by 8 m
+  from the interior's low corner, at 20 mm.
+- A floor shows whole at the plan sheet's 50 mm and orientation, split into two halves
+  side by side, with rulers in level coordinates. A floor line 0.1 m wide shows as 2 px;
+  a joint shows only as a tone. The author reads a floor line against the layout with the
+  plan sheet beside it.
 
-The level sheets stay as they are, with every slab in its tint. No agent can judge the
-response to the level's lights, bloom, haze, or shimmer in motion. The owner judges
-those in the browser, and nobody sees a damaged finish before adoption.
+The level sheets stay as they are, with every slab in its tint. The plan sheet draws no
+floor line: that would take the recipes into a second component, and the floor's swatch
+already places the lines. No agent can judge the response to the level's lights, bloom,
+haze, or shimmer in motion. The owner judges those in the browser, and nobody sees a
+damaged finish before adoption.
 
-## The fallback
+## Changing a finish
 
-Nothing is built for a bake now. If the owner chooses one, the number back end becomes a
-baker: it evaluates a recipe per texel, and `level-glb` writes the result as textures of
-at most 1,024 px with the pattern coordinates as texture coordinates. The switch keeps
-everything except the node back end.
+A finish changes like any other part of the level description, with no code. The author
+works in the draft, as for a prop:
 
-A tile carries what repeats and what is anchored at one end of a face: a field, a band at
-the floor, a fitted bay. It cannot carry what depends on a slab's size at both ends or on
-its number: corner posts, chevrons at both girder ends, a code. Under a bake such a mark
-moves onto a cut piece of its slab or is dropped. Floor lines have no bake: a tile of
-1,024 px over a floor 120 m long holds 12 cm per texel, wider than a line. A bake
-therefore costs marks as well as megabytes, which the owner's choice weighs.
+```sh
+just validate --description levels/dark-factory.draft.json
+just snapshot --description levels/dark-factory.draft.json
+```
+
+The author changes a value of a role under `finishes`, or adds, moves or removes a layer.
+The validator names the path of a value out of form or over a cap, and the changed role's
+page of the finish sheet shows it. The accepted draft replaces the committed description. The view
+instantiates the shaders from the table at its start, so the owner sees a changed number
+at the QA app's next start.

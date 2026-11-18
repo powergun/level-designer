@@ -2,11 +2,12 @@ import { afterEach, beforeEach } from "bun:test";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
+import { run } from "@level-designer/level-cli";
 import type { Pipeline, Streams } from "@level-designer/level-cli";
 import type { BuildError, BuiltLevel, ReadOutcome, Report } from "@level-designer/level-pipeline";
 import type { PreparedLevel } from "@level-designer/sec111-gateway";
 import { readCommittedLevel } from "@level-designer/sec111-gateway/testing";
-import type { SnapshotInput } from "@level-designer/snapshot-render";
+import type { FinishSwatch, SnapshotInput } from "@level-designer/snapshot-render";
 
 /** The committed description path the fake pipeline names as its default. */
 export const COMMITTED = join(tmpdir(), "committed", "dark-factory.json");
@@ -38,6 +39,12 @@ export interface Calls {
   readonly builds: number[];
   readonly validations: BuiltLevel[];
   readonly renders: SnapshotInput[];
+  readonly pages: FinishSwatch[];
+}
+
+/** The PNG bytes the fake renderer returns for a finish page: its label's text, so distinct. */
+export function pageBytes(label: string): Uint8Array {
+  return new TextEncoder().encode(label);
 }
 
 /** The PNG bytes the fake renderer returns for each sheet, distinct per sheet. */
@@ -50,7 +57,7 @@ export const SHEET_BYTES = {
 
 /** A fake pipeline that answers by `script` and records every call. */
 export function fakePipeline(script: Script): { pipeline: Pipeline; calls: Calls } {
-  const calls: Calls = { reads: [], builds: [], validations: [], renders: [] };
+  const calls: Calls = { reads: [], builds: [], validations: [], renders: [], pages: [] };
   const pipeline: Pipeline = {
     committedDescription: COMMITTED,
     readInputs: (path) => {
@@ -76,8 +83,23 @@ export function fakePipeline(script: Script): { pipeline: Pipeline; calls: Calls
       const { custom, ...three } = SHEET_BYTES;
       return input.custom === undefined ? three : { ...three, custom };
     },
+    renderFinishSheet: (swatch) => {
+      calls.pages.push(swatch);
+      return pageBytes(swatch.label);
+    },
   };
   return { pipeline, calls };
+}
+
+/** One `snapshot` run on a built level: its exit status, its captured streams and its calls. */
+export async function runSnapshot(
+  built: BuiltLevel,
+  workdir: string,
+): Promise<{ readonly status: number; readonly output: Captured; readonly calls: Calls }> {
+  const { pipeline, calls } = fakePipeline({ build: { ok: true, built } });
+  const output = capture();
+  const status = await run(["snapshot", "--workdir", workdir], pipeline, output.streams);
+  return { status, output, calls };
 }
 
 /** A crate prop of a description at the plan point `at`. */
@@ -97,13 +119,12 @@ export async function fakeBuilt(): Promise<BuiltLevel> {
     haze: { density: 0, color: [0, 0, 0], glow: 0 },
     exposure: 1,
   } as const;
-  const finish = { metalness: 0, roughness: 1 } as const;
   return {
     description: {
       name: "fixture-hall",
       base: { scale: 3.89956, materials: new Map(), doubleSided: [] },
       seals: [],
-      finishes: { wood: finish, brick: finish, concrete: finish, metal: finish },
+      finishes: new Map(),
       glows: new Map(),
       props: [crate("front", [-5, 10]), crate("back", [0, -55])],
       lighting,
@@ -111,7 +132,7 @@ export async function fakeBuilt(): Promise<BuiltLevel> {
     hash: "0123456789ab",
     glb: new Uint8Array([103, 108, 84, 70]),
     json: '{"props":[]}\n',
-    level: { props: [], lighting },
+    level: { finishes: new Map(), props: [], lighting },
     baseImages: 11,
     prepared: { level: prepared, files: { document: "{}", navMesh: new Uint8Array() } },
   };

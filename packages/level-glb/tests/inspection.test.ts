@@ -131,21 +131,24 @@ describe("world triangles", () => {
     expect(corners.size).toBe(8);
   });
 
-  test("give a slab its vertex colour, and a glowing slab its glow colour", () => {
+  test("give a slab its vertex colour, a lit glowing slab its glow colour and an unlit one its vertex colour", () => {
     const triangles = readWorldTriangles(assembleLevelScene(staticScene(), PROPS, LOOKS));
-    expect(triangles.positions).toHaveLength((1 + 12 + 10) * 9);
-    // After the floor and the seal: two crate slabs, the lamp's glowing and plain slab, the sign.
+    expect(triangles.positions).toHaveLength((1 + 12 + 14) * 9);
+    // After the floor and the seal: two crate slabs, then the lamp's lit glowing strip, its
+    // unlit glowing housing and its plain lit strip, then the sign's unlit glowing housing.
     expect(triangle(triangles, 13).corners).toEqual([
       [0, 0, 1],
       [1, 0, 1],
       [1, 1, 1],
     ]);
-    const colors = [13, 15, 17, 19].map((t) => triangle(triangles, t).color);
+    const colors = [13, 15, 17, 19, 21, 23].map((t) => triangle(triangles, t).color);
     const expected = [
       [0.5, 0.3, 0.1],
       [0.5, 0.3, 0.1],
       [0, 0.8, 1],
       [0.2, 0.2, 0.2],
+      [0.2, 0.2, 0.2],
+      [0.4, 0.1, 0.1],
     ];
     for (const [at, color] of colors.entries()) {
       color.forEach((value, channel) =>

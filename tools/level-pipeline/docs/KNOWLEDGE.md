@@ -22,11 +22,16 @@ sec-111 install and throws. `COMMITTED_DESCRIPTION` is the path of
 3. prepare the static scene with sec-111's `prepareLevel` and the empty wall list
    `{"walls":[]}`;
 4. place and expand every prop with `prop-kit` on the floor under its `at`, read with
-   `floorHeightAt` from the prepared static level, then round every slab once with
-   `roundSlab` and admit all slabs with `admitSlabs`;
-5. mesh every rounded slab with `slab-model`;
-6. append one object per prop with `level-glb` and encode the level `.json` with
+   `floorHeightAt` from the prepared static level, with the description's glows and
+   finish table, so each slab carries its finish path, number, seed and wear; then round
+   every slab once with `roundSlab` and admit all slabs with `admitSlabs`;
+5. mesh every rounded slab with `slab-model`, with its colour and pattern data per vertex;
+6. append one object per prop with `level-glb`, each slab drawn with the material of its
+   finish path and glow, and encode the level `.json`, finish table included, with
    `level-format`.
+
+Step 6 gives `level-glb` the body of every finish path in use, read with `level-format`'s
+`recipeAt`. The pipeline holds no finish default and no `extends` rule.
 
 A given prepared static level replaces step 3; it must be the preparation of the same
 static scene. The tests of one file share one preparation this way.
@@ -46,7 +51,8 @@ count cap's and `prepare`'s. The steps raise these rules:
 - the static scene: `base`, from `level-glb`'s base name errors;
 - the preparation: `prepare` at the path `$`, with the message `sec-111 level preparation
   failed: ` followed by the message of the error sec-111 throws;
-- the props: `place`, `kind` and `param`, in description order;
+- the props: `place` from the pipeline and `kind`, `param` and `finish` from `prop-kit`,
+  all in description order;
 - the slab admission: `slab`, from `level-format`.
 
 The pipeline owns `place`: a prop whose `at` lies outside the interior's plan, with the
@@ -94,6 +100,12 @@ level, and each such build asserts that the count did not change.
   sec-111's limit. A point light moved under the floor is rejected with `light-floor`
   alone. 201 light strips beside the crates exceed the prop budget, and the level is still
   accepted with its counts beside the budget.
+
+The fixture's finish table holds the paths of a crate and a light strip.
+
+The committed test builds `levels/dark-factory.json` with one preparation. The level is
+accepted, and every material of a `luminaire/` path names a glow and emits its colour at
+its strength; the glows met are those the props name.
 
 The read test writes a description into a temporary folder, reads it back, names a
 missing file and removes the folder.

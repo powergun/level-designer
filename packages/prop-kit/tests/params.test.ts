@@ -90,6 +90,45 @@ describe("the param error names the form, the choices or the names", () => {
   });
 });
 
+describe("the parameters that choose a role pass at every value and fail one step beside", () => {
+  test("door takes +z, -z or none and nothing else", () => {
+    for (const door of ["+z", "-z", "none"]) {
+      expect(expanded("container", { color: DARK, door }).length).toBe(5);
+    }
+    for (const door of ["+Z", "front", "", true, 1]) {
+      const problem = onlyProblem("container", { color: DARK, door });
+      expect(problem.path).toBe("props[3].params.door");
+    }
+    expect(onlyProblem("container", { color: DARK, door: "+Z" }).message).toBe(
+      'props[3].params.door: container takes door +z, -z or none, got "+Z"',
+    );
+  });
+
+  test("stencil takes true or false and nothing else", () => {
+    for (const stencil of [true, false]) {
+      expect(expanded("crate", { color: DARK, stencil }).length).toBe(5);
+    }
+    for (const stencil of ["true", 0, 1, null]) {
+      const problem = onlyProblem("crate", { color: DARK, stencil });
+      expect(problem.path).toBe("props[3].params.stencil");
+    }
+    expect(onlyProblem("crate", { color: DARK, stencil: "false" }).message).toBe(
+      'props[3].params.stencil: crate takes stencil as true or false, got "false"',
+    );
+  });
+
+  test("a partition's finish takes text and nothing else", () => {
+    const wall = { width: 2, height: 2, color: DARK };
+    for (const finish of [3, true, null, ["block", "wall"]]) {
+      const problem = onlyProblem("partition", { ...wall, finish });
+      expect([problem.rule, problem.path]).toEqual(["param", "props[3].params.finish"]);
+    }
+    expect(onlyProblem("partition", { ...wall, finish: 3 }).message).toBe(
+      "props[3].params.finish: partition takes finish as finish/role text, got 3",
+    );
+  });
+});
+
 describe("the param error names the glows", () => {
   test("a glow that glows does not name", () => {
     const problem = onlyProblem("conveyor", { length: 2, color: DARK, glow: "pink" });
@@ -136,7 +175,7 @@ describe("the param error names the glows", () => {
       ["param", "props[3].params.color"],
     ]);
     expect(problems[1]?.message).toBe(
-      'props[3].params.lid: crate takes only size and color, got "lid"',
+      'props[3].params.lid: crate takes only size, color, stencil, wear and seed, got "lid"',
     );
   });
 });
@@ -187,11 +226,45 @@ describe("the articulated and overhead kinds", () => {
   });
 });
 
+describe("the paint parameters every kind takes", () => {
+  test("wear passes at 0 and 1 and names its range one step beyond", () => {
+    for (const wear of [0, 1]) {
+      expect(expanded("crate", { color: DARK, wear }).length).toBe(5);
+    }
+    for (const wear of [-0.0001, 1.0001]) {
+      expect(onlyProblem("crate", { color: DARK, wear })).toEqual({
+        rule: "param",
+        path: "props[3].params.wear",
+        message: `props[3].params.wear: crate takes wear 0 to 1, got ${wear}`,
+      });
+    }
+  });
+
+  test("seed passes at 0 and 4095 and refuses a value beyond, a fraction and text", () => {
+    for (const seed of [0, 4095]) {
+      expect(expanded("crate", { color: DARK, seed }).length).toBe(5);
+    }
+    for (const seed of [-1, 4096, 0.5, "7"]) {
+      const problem = onlyProblem("crate", { color: DARK, seed });
+      expect([problem.rule, problem.path]).toEqual(["param", "props[3].params.seed"]);
+      expect(problem.message).toStartWith(
+        "props[3].params.seed: crate takes seed as a whole number 0 to 4095, got ",
+      );
+    }
+  });
+});
+
 /** An optional glow, as the listing shows it. */
 const optionalGlow = { name: "glow", type: "glow", required: false } as const;
 
 /** The required colour every kind takes, as the listing shows it. */
 const requiredColor = { name: "color", type: "color", required: true } as const;
+
+/** The two parameters every kind takes after its own, as the listing shows them. */
+const COMMON = [
+  { name: "wear", type: "number", min: 0, max: 1, default: 0.3 },
+  { name: "seed", type: "seed", min: 0, max: 4095 },
+] as const;
 
 /** The format's kinds with their parameters, ranges, choices and defaults, in its order. */
 const LISTING: ReturnType<typeof listKinds> = [
@@ -203,6 +276,7 @@ const LISTING: ReturnType<typeof listKinds> = [
       { name: "height", type: "number", min: 0.6, max: 1.2, default: 0.9 },
       requiredColor,
       optionalGlow,
+      ...COMMON,
     ],
   },
   {
@@ -214,6 +288,7 @@ const LISTING: ReturnType<typeof listKinds> = [
       { name: "material", type: "material", choices: ["metal", "concrete"], default: "metal" },
       requiredColor,
       optionalGlow,
+      ...COMMON,
     ],
   },
   {
@@ -225,15 +300,26 @@ const LISTING: ReturnType<typeof listKinds> = [
       requiredColor,
       { name: "baseColor", type: "color", required: false },
       optionalGlow,
+      ...COMMON,
     ],
   },
   {
     name: "container",
-    params: [{ name: "length", type: "number", min: 3, max: 12.2, default: 6.06 }, requiredColor],
+    params: [
+      { name: "length", type: "number", min: 3, max: 12.2, default: 6.06 },
+      requiredColor,
+      { name: "door", type: "choice", choices: ["+z", "-z", "none"], default: "none" },
+      ...COMMON,
+    ],
   },
   {
     name: "crate",
-    params: [{ name: "size", type: "number", min: 0.6, max: 1.8, default: 1.2 }, requiredColor],
+    params: [
+      { name: "size", type: "number", min: 0.6, max: 1.8, default: 1.2 },
+      requiredColor,
+      { name: "stencil", type: "boolean", default: true },
+      ...COMMON,
+    ],
   },
   {
     name: "partition",
@@ -248,6 +334,17 @@ const LISTING: ReturnType<typeof listKinds> = [
         default: "concrete",
       },
       requiredColor,
+      {
+        name: "finish",
+        type: "finish",
+        byMaterial: {
+          concrete: "cast-concrete/panel",
+          metal: "steel-stock/stack",
+          wood: "timber/stack",
+          brick: "block/wall",
+        },
+      },
+      ...COMMON,
     ],
   },
   {
@@ -261,6 +358,7 @@ const LISTING: ReturnType<typeof listKinds> = [
       { name: "hookDrop", type: "number", min: 0.5, max: 8, default: 2 },
       requiredColor,
       { name: "runwayColor", type: "color", required: false },
+      ...COMMON,
     ],
   },
   {
@@ -269,6 +367,7 @@ const LISTING: ReturnType<typeof listKinds> = [
       { name: "height", type: "number", min: 3, max: 8, default: 5 },
       { name: "boom", type: "number", min: 2, max: 8, default: 4 },
       requiredColor,
+      ...COMMON,
     ],
   },
   {
@@ -279,6 +378,7 @@ const LISTING: ReturnType<typeof listKinds> = [
       { name: "height", type: "number", min: 2.5, max: 17 },
       requiredColor,
       { name: "glow", type: "glow", required: true },
+      ...COMMON,
     ],
   },
 ];

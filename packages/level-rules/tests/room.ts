@@ -1,12 +1,63 @@
 import { expect } from "bun:test";
-import type { Lighting, PointLight, Seal, Slab, Vec3 } from "@level-designer/level-format";
+import type {
+  Finish,
+  FinishTable,
+  Lighting,
+  PointLight,
+  Recipe,
+  Seal,
+  Slab,
+  SlabFinish,
+  Vec3,
+} from "@level-designer/level-format";
 import { roundSlab } from "@level-designer/level-format";
 import type { GlbInspection } from "@level-designer/level-glb";
 import type { Finding } from "@level-designer/level-rules";
 import { judgeLevel } from "@level-designer/level-rules";
 import type { PreparedLevel } from "@level-designer/sec111-gateway";
 import { floorHeightAt } from "@level-designer/sec111-gateway";
+import type { PropContext } from "@level-designer/prop-kit";
 import { expandProp } from "@level-designer/prop-kit";
+
+/**
+ * The finish paths `prop-kit` names for the kinds these tests expand, so that each expands:
+ * conveyor, crate, metal enclosure wider than a cabinet, light strip and concrete partition.
+ */
+const KIT_PATHS: readonly string[] = [
+  "bed/deck",
+  "housing/skirt",
+  "housing/top",
+  "housing/machine",
+  "housing/machine-plate",
+  "cast-concrete/panel",
+  "timber/lid",
+  "timber/crate",
+  "timber/crate-stencil",
+  "luminaire/band",
+  "luminaire/strip",
+];
+
+/** A finish table that holds exactly the given `finish/role` paths, each a plain recipe. */
+function tableOf(paths: readonly string[]): FinishTable {
+  const plain: Recipe = { layers: [] };
+  const table = new Map<string, Finish>();
+  for (const path of paths) {
+    const [name = "", role = ""] = path.split("/");
+    const roles = new Map(table.get(name)?.roles ?? []);
+    roles.set(role, plain);
+    table.set(name, { cut: { family: "metal", color: "#808080" }, light: "#ffffff", roles });
+  }
+  return table;
+}
+
+/** The finish table of every test description and level: the kit paths above, plain. */
+const FINISHES: FinishTable = tableOf(KIT_PATHS);
+
+/** What every test expansion takes: the glow `cyan` and the test finish table. */
+export const KIT_CONTEXT: PropContext = { glows: new Set(["cyan"]), finishes: FINISHES };
+
+/** The four finish keys of a hand-built slab, naming a path of the test table. */
+export const SLAB_FINISH: SlabFinish = { finish: "housing/machine", number: 0, seed: 0, wear: 0.3 };
 
 /** An axis-aligned box of the prepared level's shape. */
 interface Box {
@@ -116,12 +167,11 @@ function lighting(points: readonly PointLight[]): Lighting {
 /** The five facts of a built level from a hall and a scene. */
 export function factsOf(prepared: PreparedLevel, scene: Scene = {}): LevelFacts {
   const props = scene.props ?? [];
-  const finish = { metalness: 0.5, roughness: 0.5 };
   const description = {
     name: "test",
     base: { scale: scene.baseScale ?? 1, materials: new Map(), doubleSided: [] },
     seals: scene.seals ?? [],
-    finishes: { wood: finish, brick: finish, concrete: finish, metal: finish },
+    finishes: FINISHES,
     glows: new Map(),
     props: props.map((p) => ({ id: p.id, kind: "crate", at: p.at, yaw: 0, params: new Map() })),
     lighting: lighting(scene.points ?? []),
@@ -129,6 +179,7 @@ export function factsOf(prepared: PreparedLevel, scene: Scene = {}): LevelFacts 
   return {
     description,
     level: {
+      finishes: FINISHES,
       props: props.map((p) => ({ id: p.id, slabs: p.slabs })),
       lighting: description.lighting,
     },
@@ -167,6 +218,7 @@ export function slab(size: Vec3, position: Vec3, yaw = 0): Slab {
     color: "#808080",
     position,
     rotation: [0, Math.sin(half), 0, Math.cos(half)],
+    ...SLAB_FINISH,
   });
 }
 
@@ -185,7 +237,7 @@ export function kitProp(
 ): TestProp {
   const prop = { id, kind, at: site.at, yaw: site.yaw, params: new Map(Object.entries(params)) };
   const floor = floorHeightAt(prepared, site.at[0], site.at[1]);
-  const expansion = expandProp(prop, "props[0]", floor, new Set(["cyan"]));
+  const expansion = expandProp(prop, "props[0]", floor, KIT_CONTEXT);
   if (!expansion.ok) {
     throw new Error(`expected ${kind} to expand: ${JSON.stringify(expansion.problems)}`);
   }

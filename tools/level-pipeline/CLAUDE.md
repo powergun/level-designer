@@ -10,6 +10,8 @@
   from `@level-designer/level-format`.
 - Read the interior, floors and spawns from the prepared static level and store none of
   them.
+- Read a finish path's body only with `@level-designer/level-format`'s `recipeAt`; hold
+  no finish default.
 - Judge nothing in the build; the validation runs `@level-designer/level-rules`.
 - Read files and write none; `level-cli` owns the file writes.
 - Keep this the only test home that prepares a level. The builds of one test file share

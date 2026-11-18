@@ -135,6 +135,41 @@ test("kinds prints each parameter's range, form or choices and its default", asy
   expect(output.out).toContain(`param\t${glow.name}\tglow\ta name of glows\t${presence}`);
 });
 
+test("kinds prints a seed's whole-number range and the hash of the id as its default", async () => {
+  const { pipeline } = fakePipeline({ build: { ok: true, built: scene.built } });
+  const output = capture();
+  await run(["kinds"], pipeline, output.streams);
+  const seed = listKinds()
+    .flatMap((kind) => kind.params)
+    .find((param) => param.type === "seed");
+  if (seed?.type !== "seed") throw new Error("no kind takes a seed");
+  expect(output.out).toContain(
+    `param\t${seed.name}\tseed\t${seed.min} to ${seed.max}\tdefault the hash of the id`,
+  );
+});
+
+test("kinds prints a choice's choices, a flag's two values and a finish's default by material", async () => {
+  const { pipeline } = fakePipeline({ build: { ok: true, built: scene.built } });
+  const output = capture();
+  await run(["kinds"], pipeline, output.streams);
+  const params = listKinds().flatMap((kind) => kind.params);
+  const choice = params.find((param) => param.type === "choice");
+  const flag = params.find((param) => param.type === "boolean");
+  const finish = params.find((param) => param.type === "finish");
+  if (choice?.type !== "choice" || flag?.type !== "boolean" || finish?.type !== "finish") {
+    throw new Error("no kind takes a choice, a boolean and a finish");
+  }
+  expect(output.out).toContain(
+    `param\t${choice.name}\tchoice\t${choice.choices.join(",")}\tdefault ${choice.default}`,
+  );
+  expect(output.out).toContain(`param\t${flag.name}\tboolean\ttrue,false\tdefault ${flag.default}`);
+  const finishLine = output.out.find((line) => line.startsWith(`param\t${finish.name}\tfinish\t`));
+  const fallback = finishLine?.split("\t").at(-1) ?? "";
+  for (const [material, path] of Object.entries(finish.byMaterial)) {
+    expect(fallback).toContain(`${material}=${path}`);
+  }
+});
+
 test("kinds prints an optional colour as optional and a required one as required", async () => {
   const { pipeline } = fakePipeline({ build: { ok: true, built: scene.built } });
   const output = capture();

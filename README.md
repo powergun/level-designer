@@ -8,7 +8,7 @@ designer's code.
 ## Current state
 
 The repository holds the Bun workspace, its development pipeline, the art direction
-references and fourteen components in four groups.
+references and fifteen components in four groups.
 
 The gateways are the only bridges to the sibling repositories:
 
@@ -23,7 +23,11 @@ The gateways are the only bridges to the sibling repositories:
 The library components carry the level's data and judgement:
 
 - [level-format](packages/level-format/README.md): the level description and the level
-  `.json`: admission, the canonical text, the slab grid and the slab box;
+  `.json`: admission, the canonical text, the finish table, the slab grid and the slab
+  box;
+- [finish-paint](packages/finish-paint/README.md): the one implementation of the
+  finishes: the arithmetic interface with its number back end, the layer kinds, the
+  painter, the slab's frame rule and the swatch, written once for the CPU and the GPU;
 - [level-glb](packages/level-glb/README.md): the GLB contract: scene assembly, inspection
   and world triangles;
 - [slab-model](packages/slab-model/README.md): the only place where a slab becomes a
@@ -36,7 +40,8 @@ The library components carry the level's data and judgement:
 The QA app lets the human walk and fly through the level in a browser:
 
 - [level-view](packages/level-view/README.md): draws a level pair through the game's
-  renderer with the game's look and the level's lighting;
+  renderer with the game's look and the level's lighting, its props and boxes painted by
+  their finishes and its stage materials by their hall finishes;
 - [qa-client](packages/qa-client/README.md): the QA page: boot, walk in the game's
   collision, fly, marks, heads-up display and the protocol it shares with the server;
 - [qa-server](tools/qa-server/README.md): the loopback server under Bun: it builds the
@@ -46,12 +51,14 @@ The QA app lets the human walk and fly through the level in a browser:
 The tools run under Bun:
 
 - [snapshot-render](tools/snapshot-render/README.md): the browser-free renderer of a
-  level GLB into plan, section and perspective PNG sheets;
+  level GLB into plan, section and perspective PNG sheets, and of a finish path or a hall
+  finish into its page of the finish sheet;
 - [level-pipeline](tools/level-pipeline/README.md): the one build sequence: it reads the
-  description and the base stage, builds a level or returns its build errors, and
-  validates a built level into a report;
+  description and the base stage, builds a level with its finish data or returns its
+  build errors, and validates a built level into a report;
 - [level-cli](tools/level-cli/README.md): the command-line tool: it lists the prop kinds,
-  validates a description, builds the level pair and draws the snapshot sheets.
+  validates a description, builds the level pair and draws the snapshot sheets and the
+  finish pages.
 
 The committed level description, `levels/dark-factory.json`, is the authoring source of
 truth. The level pair is a build product of it and is never committed.
@@ -92,7 +99,7 @@ The command-line tool builds and judges the level description:
 just kinds        # prop kinds with their parameters, ranges and defaults
 just validate     # build in memory, judge, print the report
 just build        # validate, then write the pair to .tmp/level/
-just snapshot     # plan, section and view sheets in .tmp/snapshots/
+just snapshot     # sheets in .tmp/snapshots/, finish pages in .tmp/snapshots/finish/
 ```
 
 Each command reads `levels/dark-factory.json` unless `--description <path>` names
@@ -143,6 +150,9 @@ Judge what agents cannot see:
 When the app fails, the run log explains why. It opens before the sibling check and the
 build, and records the start facts, the build, every request, every page step and how
 the run ended. Only a run log that cannot be opened prints on the terminal alone.
+In every run, a console error raises one line of the page's alarm banner, beside the other
+alarm kinds: it says that programs may have failed and props may be missing, and it names
+the run log.
 The browser's own console messages never reach the run log. When the view looks wrong
 and the page shows no message, copy the text of the browser's console into a mark, or
 send it with the two files.

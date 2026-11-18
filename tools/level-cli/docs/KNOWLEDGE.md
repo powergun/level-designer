@@ -22,7 +22,8 @@ with Bun and pass the scratch directory as `--workdir`, so no source names it.
   `<workdir>/level/<name>.json`, only when the validator accepts.
 - `snapshot` builds without judging, so a rejected level can still be seen. It writes
   `plan.png`, `section.png` and `view.png` to `<workdir>/snapshots/`, and `custom.png` when
-  `--eye` and `--look-at` name a view.
+  `--eye` and `--look-at` name a view. Then it writes one finish page per finish path in
+  use to `<workdir>/snapshots/finish/`.
 
 Every command takes `--description <path>` and `--workdir <dir>`. The description defaults
 to the committed one that `level-pipeline` names. `build` and `snapshot` need `--workdir`;
@@ -61,7 +62,11 @@ Every line is tab-separated and starts with its fact's name.
   `blocked: <n> errors`, or `blocked: 1 error` for one.
 - The kind listing prints `kind <name>`, then one `param` line per parameter: its name, its
   type, its range, form or choices, and its default, `required` or `optional`. A colour and a
-  glow print `required` or `optional` as `prop-kit`'s listing states.
+  glow print `required` or `optional` as `prop-kit`'s listing states. A material and a choice
+  print their choices joined by commas, a boolean prints `true,false`, and both print their
+  default. A finish prints `a path of finishes` and `default by material`, then the listing's
+  path for each material as `material=path`, joined by commas. A seed prints its
+  whole-number range and `default the hash of the id`.
 
 Every length prints with `level-format`'s `formatLength`, and a point as its three lengths
 joined by commas. The kind parameters' ranges and defaults print through it too: most are
@@ -82,6 +87,57 @@ The tool fills the renderer's input from the built level and the game values:
 - one section line at `level-rules`' hang height, where a hanging prop starts; the tool
   holds no height of its own;
 - the custom view of `--eye` and `--look-at`. The two points must differ.
+
+## Finish pages
+
+The art team reads one page per finish path, not one sheet of all paths: an image reader
+scales a large sheet down until its marks are lost. A path is in use when a slab of the
+built level names it. Its page is `<finish>.<role>.png`, the path with its `/` turned into
+a `.`; a finish and a role are ids, so the name holds no other dot. The pages follow the
+paths' first use: props in level order, slabs in slab order.
+
+Each page's swatch stands on the path's largest outside face: the slab whose width times
+height is the largest. On a tie the first slab in level order keeps it, so the same level
+gives the same pages. The swatch takes from the built level only:
+
+- the path as its label, and the drawn recipe from `level-format`'s `recipeAt`;
+- the slab's colour as the level states it, its `#rrggbb` text;
+- the slab's size, seed and wear.
+
+The snapshot renderer decodes the colour and the finish's `light` and draws the page. A
+page shows albedo only, so a `"glow"` mark takes the finish's `light`, whatever glow a prop
+names.
+
+The finish page tests run `snapshot` on a hand-built level with a small finish table. Every
+page is written and announced in order of first use. A tie keeps the first slab, a slab one
+0.1 mm grid step wider takes the path, and a thick slab loses to a thinner one with a larger
+face.
+
+## Hall pages
+
+A hall finish is in use when a base override of the description names it as `finish`; the
+level `.json` holds no override, so the description is the source. Each hall finish gets
+one page under the same name rule, after the slab pages, in the order the overrides first
+name it. A path that both a slab and an override name gets its hall page only.
+
+A hall swatch takes the path, its drawn recipe from `recipeAt` and a plain grey ground,
+`#808080`, as its tint: the sheet reads no stage texture, so it shows the marks and not the
+surface's value. Its subject holds the interior box of the prepared static level and the
+classes the role draws on: the distinct `on` of its drawn layers, extended ones first, in
+order of first appearance. The format limits them to `top`, `bottom` and `outside`. The
+snapshot renderer owns the rest: the hall's frame, a wall's or a ceiling's window of 16 by
+8 m, and a floor whole in the plan sheet's scale and orientation. A role without layers
+gets a page with its title only.
+
+The hall page tests prove the order, one page per path, the hall page that wins a shared
+path, and each swatch's interior, classes, recipe and grey.
+
+## Finish directory
+
+After a successful build and before it writes, `snapshot` removes the finish directory with
+everything in it, so the directory holds exactly the pages of this level. A level without
+props writes the sheets and no page. A blocked build writes nothing and leaves the
+directory as it was. The finish page tests prove the empty and the blocked case.
 
 ## What the tests prove
 

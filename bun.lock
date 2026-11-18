@@ -17,6 +17,9 @@
     },
     "packages/finish-paint": {
       "name": "@level-designer/finish-paint",
+      "dependencies": {
+        "@level-designer/level-format": "workspace:*",
+      },
     },
     "packages/level-format": {
       "name": "@level-designer/level-format",
@@ -43,6 +46,7 @@
     "packages/level-view": {
       "name": "@level-designer/level-view",
       "dependencies": {
+        "@level-designer/finish-paint": "workspace:*",
         "@level-designer/level-format": "workspace:*",
         "@level-designer/render-gateway": "workspace:*",
         "@level-designer/sec111-gateway": "workspace:*",
@@ -79,6 +83,7 @@
       "name": "@level-designer/slab-model",
       "dependencies": {
         "@level-designer/destruction-gateway": "workspace:*",
+        "@level-designer/finish-paint": "workspace:*",
         "@level-designer/level-format": "workspace:*",
       },
     },
@@ -118,6 +123,8 @@
     "tools/snapshot-render": {
       "name": "@level-designer/snapshot-render",
       "dependencies": {
+        "@level-designer/finish-paint": "workspace:*",
+        "@level-designer/level-format": "workspace:*",
         "@level-designer/level-glb": "workspace:*",
       },
     },

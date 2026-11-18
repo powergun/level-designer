@@ -32,10 +32,13 @@ function tinted(factor: readonly number[] | undefined, tint: readonly number[]):
   return [r * (tint[0] ?? 1), g * (tint[1] ?? 1), b * (tint[2] ?? 1), a];
 }
 
-/** A base material with its override applied, made single-sided. */
+/**
+ * A base material with its override applied, made single-sided. A finish path joins the
+ * material's own `extras` as `finish`; without one the material gains no `extras`.
+ */
 function overridden(material: GltfMaterial, override: MaterialOverride | undefined): GltfMaterial {
   const pbr: GltfPbr = material.pbrMetallicRoughness ?? {};
-  const { tint, metalness, roughness, emissive } = override ?? {};
+  const { tint, metalness, roughness, emissive, finish } = override ?? {};
   const pbrMetallicRoughness: GltfPbr = {
     ...pbr,
     ...(tint === undefined ? {} : { baseColorFactor: tinted(pbr.baseColorFactor, tint) }),
@@ -47,7 +50,15 @@ function overridden(material: GltfMaterial, override: MaterialOverride | undefin
     material.extensions === undefined && glow.extensions === undefined
       ? {}
       : { extensions: { ...material.extensions, ...glow.extensions } };
-  return { ...material, ...glow, ...extensions, pbrMetallicRoughness, doubleSided: false };
+  const extras = finish === undefined ? {} : { extras: { ...material.extras, finish } };
+  return {
+    ...material,
+    ...glow,
+    ...extensions,
+    ...extras,
+    pbrMetallicRoughness,
+    doubleSided: false,
+  };
 }
 
 /** The base materials and meshes after the look: overrides, sidedness and double-sided twins. */

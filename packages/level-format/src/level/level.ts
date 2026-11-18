@@ -1,3 +1,4 @@
+import type { FinishTable } from "../finish/index.js";
 import type { Lighting } from "../lighting/index.js";
 import type { Slab } from "../slab/index.js";
 
@@ -11,10 +12,11 @@ export interface LevelProp {
 }
 
 /**
- * The level `.json` as a typed value: the props in description order and the lighting. The
- * schema id is a fact of the text, so the value does not repeat it.
+ * The level `.json` as a typed value: the finish table, the props in description order and
+ * the lighting. The schema id is a fact of the text, so the value does not repeat it.
  */
 export interface Level {
+  readonly finishes: FinishTable;
   readonly props: readonly LevelProp[];
   readonly lighting: Lighting;
 }

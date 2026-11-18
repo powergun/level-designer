@@ -94,6 +94,26 @@ export class ShapeNode {
     return this.numberWhere("a positive number", (n) => n > 0);
   }
 
+  /** A number above zero and at most `max`. */
+  positiveUpTo(max: number): number {
+    return this.numberWhere(`a number above 0 and at most ${max}`, (n) => n > 0 && n <= max);
+  }
+
+  /** An integer from `min` to `max`, both included. */
+  integerIn(min: number, max: number): number {
+    const requirement = `an integer from ${min} to ${max}`;
+    return this.numberWhere(requirement, (n) => Number.isInteger(n) && n >= min && n <= max);
+  }
+
+  /** `true` or `false`; the placeholder is `false`. */
+  boolean(): boolean {
+    if (typeof this.value === "boolean") {
+      return this.value;
+    }
+    this.fail("true or false");
+    return false;
+  }
+
   /** Any string. */
   string(): string {
     return this.matching(/^/u, "a string");
@@ -118,12 +138,15 @@ export class ShapeNode {
     return choices[0];
   }
 
-  /** The items of a list of exactly `length` numbers; dead nodes when the list fails. */
-  tuple(length: number): ShapeNode[] {
+  /**
+   * The items of a list of exactly `length` items, numbers unless `requirement` says
+   * otherwise; dead nodes when the list fails.
+   */
+  tuple(length: number, requirement = `a list of ${length} numbers`): ShapeNode[] {
     const items = Array.isArray(this.value) && this.value.length === length ? this.value : [];
     const present = items.length === length;
     if (!present) {
-      this.fail(`a list of ${length} numbers`);
+      this.fail(requirement);
     }
     return Array.from({ length }, (_, index) =>
       this.child(items[index], itemPath(this.path, index), present),
@@ -171,8 +194,14 @@ export class ShapeNode {
     return present ? this.field(key) : undefined;
   }
 
-  /** The entries of an object used as a map of at most `max` entries; none when it fails. */
-  entries(max: number = Number.POSITIVE_INFINITY): [string, ShapeNode][] {
+  /**
+   * The entries of an object used as a map of at most `max` entries; none when it fails. A
+   * name's path is quoted in brackets unless `pathOf` gives another form.
+   */
+  entries(
+    max: number = Number.POSITIVE_INFINITY,
+    pathOf: (path: string, name: string) => string = entryPath,
+  ): [string, ShapeNode][] {
     if (!isRecord(this.value)) {
       this.fail("an object");
       return [];
@@ -183,6 +212,6 @@ export class ShapeNode {
       return [];
     }
     const value = this.value;
-    return keys.map((key) => [key, this.child(value[key], entryPath(this.path, key), true)]);
+    return keys.map((key) => [key, this.child(value[key], pathOf(this.path, key), true)]);
   }
 }

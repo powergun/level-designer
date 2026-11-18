@@ -1,34 +1,38 @@
-# Painter briefs: the recipes of the eleven finishes
+# Painter briefs: the ten finishes and the floor lines
 
-These briefs are the art director's input for the art pass of TASK-001.07. They were
-written before the last renaming of recipe keys in the finish format: `shade` was
-`value`, `detail` was `tier`, and `across` and `up` were `u` and `v`. The art pass brings
-them into line when it types the recipes. The recipes themselves are in
+These briefs are the art team's input for the art passes of TASK-001.07. Each finish of
+`docs/researches/2026-11-17-dark-factory-look-dev/research-dark-factory-surfaces.md` is written
+as the recipes of its roles, in the words of `finish-format.md` of the same directory: its kinds,
+keys, coordinates, faces and effects. The recipes themselves are in
 [the painter recipes](look-dev-painter-recipes.md).
 
-Scratch input for the art pass of TASK-001.07. Each finish of
-`docs/researches/2026-11-17-dark-factory-look-dev/research-dark-factory-surfaces.md` is written
-here as the recipes of its roles, in the words of `finish-format.md` as it stood at 21:08: its
-kinds, keys, axes, faces and effects. Every size is in metres and every luminance is linear.
-Hall luminances are computed from the authoring guide's figures: a non-metal face returns 0.44 of
-its albedo facing up, 0.24 as a side and 0.10 as an underside; the floor shows 0.054 and a tube
-0.31. No recipe was typed, built or seen: the sheets of milestone 3 are the first test.
+Every size is in metres and every luminance is linear. Hall luminances are computed from the
+figures of `docs/LOOK-AND-LIGHTING.md`: a non-metal face returns 0.44 of its albedo facing up,
+0.24 as a side and 0.10 as an underside; the floor shows 0.054 and a tube 0.31. The art team reads
+a recipe on its page of the finish sheet, which shows albedo only; the owner's browser shows it
+under the lights.
 
 ## 1. How the recipes are written
 
-- A layer reads: kind, its keys, the common keys, then `->` and its effects. An axis is named only
-  where it is not `x` and `y`; a face only where it is not `outside`.
-- A full-width box runs from `"-0.5w"` to `"0.5w"`; a full-height one from 0 to `"1h"`.
+- A layer reads: kind, its keys, the common keys, then `->` and its effects. `across`, `up` and
+  `on` are named only where they differ from the defaults: from the centre line, from the base
+  and `outside`.
+- A full-width box runs from `"-0.5w"` to `"0.5w"`; a full-height one from 0 to `"1h"`. A `clip`
+  is written as its two corners, `from` then `to`.
 - A recipe has no switch and no condition. A mark that some slabs carry is a role the kit names;
   a variant is a second role, and `extends` keeps it short.
-- `on` names one face, so a mark that both side faces show is written twice. The recipes say
-  "and the same on `inside`" for that.
-- A legend's `at` is read as the foot of its start, its centre or its end, by `align`.
+- `on` names the faces a layer draws on. A mark that both faces of a slab show draws on `sides`;
+  on the inside face it lies behind its place on the outside.
+- A legend's `at` is its foot: the low corner at its start, the middle of its base or the low
+  corner at its end, by `align`.
 - A layer marked `wear` scales with the prop's wear, 0.3 by default. A layer the look can do
   without is marked optional.
-- A field takes no tier: `bands` and `cells` filter to their mean by themselves, and a tier
-  would fade the field out and change the face's value with distance. A tier is for thin lines
-  and numerals only.
+- A field takes no `detail`: `bands` and `cells` filter to their mean by themselves, and a
+  detail would fade the field out and change the face's value with distance. A detail is for
+  thin lines and numerals only: `medium` is gone 15 m away and `fine` 4 m away.
+- A fitted period is checked against every face it meets. A face that measures a whole number
+  of periods plus one half sits on the edge of the fit's rounding, where a sheet and a frame can
+  differ by one bay.
 
 ### The value ladder
 
@@ -54,15 +58,22 @@ Albedo as linear luminance, with the hall luminance of a side in brackets:
 
 ### Cost
 
-- Bare metal is line work only, under 2 % of a face. The owner checks it for glare.
-- Every recipe stays under 10 hashes of the 16. `cells` spends one and `noise` four; a layer
-  written for two faces counts twice. Each noise is wear and optional.
+- Bare metal is line work only, under 2 % of a face. The owner checks it for glare. A bed's
+  rails, 16 % of a deck, are therefore ring grey paint.
+- Every recipe stays inside the format's caps: 24 layers, two `noise` layers and three legends,
+  the extended role's among them. The longest recipes hold 12 layers, no recipe holds more than
+  one `noise` layer, and only the girder holds two legends. Each noise is wear: corrugated's is
+  its rust and housing's is its optional dust. The seven finishes of milestone 4 hold none.
+- Every painted path is one more program when the view starts, and its layers are drawn on
+  every slab that names it. A mark that few slabs carry is a role of its own: `stack-posts`,
+  `mast-front`, `machine-plate`.
 - Girders, runways, end trucks, the trolley and the hook never come nearer than 12 m to an eye on
-  the floor. Their recipes hold no thin line but the optional stiffeners.
+  the floor. Their recipes hold four thin lines: the girder's optional stiffeners and its weld
+  line, the runway's conductor line and the hoist's seams.
 
-## 2. Ranking and the first three
+## 2. Ranking and the build order
 
-By what a finish adds to the resemblance:
+By what each adds to the resemblance:
 
 1. Housing: the machines of the line at eye level (enclosures, cabinets, skirts, pedestals).
 2. Bed: the light in the line.
@@ -76,7 +87,17 @@ By what a finish adds to the resemblance:
 10. Luminaire: lamps with joints.
 11. Block: the two fences.
 
-The first three to build, corrugated, beam and housing, are confirmed by the two main views.
+The build plan orders them by what each milestone draws and shows:
+
+- Milestone 1: housing, the smallest slice with real layers, on `bands`, `rectangle`, `dots` and
+  `noise`. The owner passed it so: the pedestal's door outline waits for the owner's word.
+- Milestone 2: corrugated on the containers, and beam, with `cells`, `face`, `disc`, `border` and
+  the finish sheet.
+- Milestone 3: the floor lines, with the hall's other marks.
+- Milestone 4: cast concrete, bed, casting, timber, steel stock, luminaire and block.
+- Milestone 6: the seal roles of corrugated. Milestone 7: every legend.
+
+The two main views confirm corrugated, beam and housing as the first three prop finishes.
 Measured: the share of the screen each prop group covers in the view sheet's two tiles from the
 player spawn, toward the back wall (opening) and toward the sealed end (aisle), 640 by 360 px with
 the game's lens. Each group was recoloured in a scratch copy of the description and its tile
@@ -96,11 +117,9 @@ By finish: Corrugated 2.68 and 8.20; Beam 2.33 and 1.97; Cast concrete 3.50 and 
 
 - The three cover 74 % of the prop pixels of the two views: 92 % of the aisle view and 49 % of
   the opening view.
-- Corrugated alone is 44 %, and the seals are most of it. The seal roles belong to the first
-  three.
+- Corrugated alone is 44 %, and the seals are most of it.
 - Cast concrete lifts the opening view to 83 %, because the four apron barriers stand in front of
-  the spawn. It is cheap: build it fourth. Bed comes fifth in the build although it ranks second
-  for the look.
+  the spawn.
 
 ## 3. Numerals
 
@@ -108,17 +127,21 @@ By finish: Corrugated 2.68 and 8.20; Beam 2.33 and 1.97; Cast concrete 3.50 and 
   the format states. Each stroke should be 0.14 of the height thick, with gaps of 0.05 where
   strokes meet: the gaps are a stencil's bridges, which is why the numeral reads as plant
   lettering and not as a display.
-- The legends and their texts: container code `"FLCU#######"`; crane capacity `"##t"` with `skip`
-  1; crane number `"#"`; jib capacity `"#t"`; station number `"###"`; pedestal number `"##"`;
-  crate code `"AC####"`; panel number `"P###"`; chalk numerals `"###"`; the gate's digit `"#"`.
+- A letter is one of A, C, E, F, H, J, L, P and U, or `t`. A `#` is a digit of the number.
+- The legends and their texts: container code `"FLCU######"`, four letters and the number's six
+  digits; crane capacity `"##t"` with `skip` 1; crane number `"#"`; jib capacity `"#t"`; station
+  number `"###"`; pedestal number `"##"`; crate code `"AC####"`; panel number `"P###"`; chalk
+  numerals `"###"`; the gate's digit `"#"`.
+- A recipe holds at most three legends. The girder holds two on each of its faces: its capacity
+  on the plate and its number on the disc.
 - Ink: white on dark paint; black on yellow and white; a darker value of the paint on timber and
   concrete.
-- A legend stands on `outside` only and on `x`, never on a mirrored axis.
+- A legend stands on `outside` only and takes neither `across` nor `up`, so it never reads
+  mirrored.
 - A stroke reads while it spans 1.5 px: up to about 47 glyph heights (5 m at 0.10, 14 m at 0.30,
-  29 m at 0.62). Legends up to 0.15 take tier b.
+  29 m at 0.62). Legends up to 0.15 take the `medium` detail.
 - Small print is not glyphs: a plate carries none. No word and no maker's name anywhere.
-- The crate and the arm's pedestal need a number from the kit; until they have one their legends
-  are left out (design check, cure 3).
+- A crate and an arm take no `number`: the kit hashes their digits from the prop's seed.
 
 ## 5. What an author sets
 
@@ -130,27 +153,45 @@ Per prop, beyond today's colours and `glow`; every other value is the recipe's:
 - bridge-crane: `capacity`, `number`. jib-crane: `capacity`.
 - crate: `stencil`.
 - partition: `finish`, `number`.
-- seal: `finish`, `number`.
-- the level: the floor's rectangles.
+- seal: `finish`, `number`, `wear`, `seed`, `glow`.
+- the level: the floor lines, as layers of the two floors' hall finishes.
 
 ## 6. What the recipes give up
 
 Nothing is missing from the kinds: the angle is `bands` along `diagonal`, and the fitted period
-is `fit`. Given up, and not asked for:
+is `fit`. Given up, the first three without being asked for:
 
 - bolts on a circle, arrows, wood grain;
 - a different mark from bay to bay: every bay of a housing carries the same window, handle and
   points;
-- bars and wear on the floor lines: floor layers are rectangles;
-- a legend on the trolley and the hoist, which share a role but not a digit count.
+- a legend on the trolley and the hoist, which share a role but not a digit count;
+- hose ribs, oil, mottling, flaked paint, tyre rubs and a crate's dirt: each is too fine or too
+  faint to read beside the marks that stay;
+- a strip's dark housing and lens: the whole batten glows, and only its joints are dark;
+- a mark at one end of a split slab. Every face of a split role draws the whole recipe: a girder
+  web above a span of 20.3 m and a container's side above 9.84 m are two faces. The girder's web
+  therefore carries no chevrons, and the trucks, the runways' ends and the hook mark a crane's
+  ends; a container of 12.2 m reads as two 20 foot boxes end to end. Such a mark waits for a role
+  per run, which nobody builds before the owner has seen the cranes.
 
 ## 7. Not checked
 
-- Whether each text parses and lands where it is meant: `"0.5w-0.30"`, a `clip` on `xe` and `yt`,
-  `phase` with `fit`, a legend's `at`.
-- Whether `diagonal` measures the sum of the two coordinates or the true distance. The recipes
-  assume the true distance for bars 0.10 wide; on the sum they take period 0.28 and width 0.14,
-  and the brace is already written for the sum.
-- The cost of any recipe and any value in the renderer: every hall luminance is computed.
-- Which end of a link is its upper edge.
+- Any recipe under the level's lights. Every role that a slab names is typed in the level and
+  read on its page of the finish sheet, on its path's largest face. The seal roles and the
+  legends are neither typed nor computed, and `cast-concrete/wall` and `top` have no page.
+- A lit value: a page shows albedo only, so the cabinet's data rows, the bed's light bars and the
+  strips' joints were never seen. The painter's number back end places them.
+- A face that no page shows: a container's other four tints, a crane's shorter faces and the
+  smaller crates, stacks, barriers and fences are computed on the painter's number back end.
+- Whether each mark of the seal roles and each legend lands where it is meant: a share with an
+  offset, a `clip` under `across` `ends` or `up` `top`, `phase` with `fit`, a legend's `at`.
+- Whether a fitted period of the seal roles meets a face at a whole number of periods plus one
+  half.
+- Whether a floor line's plan rectangle catches an up-facing surface of a base part that shares
+  the floor's stage material.
+- The glare of the bodies smoother than roughness 0.7: corrugated, beam, bed and casting.
+  `docs/LOOK-AND-LIGHTING.md` gives the figure for the metal roles: the points' highlights pass
+  the bloom threshold on a fifth of the standing places at 0.6 and on none from 0.7.
+- The cost of any recipe and any value in the renderer: every hall luminance is computed, and
+  the owner reads the frame rate and the view's start time.
 - The screen shares hold for the sheet's two spawn views only, at 640 by 360 px.

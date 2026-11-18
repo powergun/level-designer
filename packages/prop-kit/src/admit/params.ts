@@ -1,7 +1,7 @@
 import { describeValue, isSurfaceColor, keyPath } from "@level-designer/level-format";
 import { paramProblem } from "./problem.js";
 import type { PropProblem } from "./problem.js";
-import type { ParamSpec, ParamTable, ParamValues } from "./spec.js";
+import type { NumberSpec, ParamSpec, ParamTable, ParamValues, SeedSpec } from "./spec.js";
 import { listed } from "./text.js";
 
 /** Where a prop's parameters are judged: the prop's path and the glow names of the description. */
@@ -36,22 +36,43 @@ function takes(name: string, spec: ParamSpec, glows: ReadonlySet<string>): strin
   if (spec.type === "color") {
     return `${name} as #rrggbb text`;
   }
-  if (spec.type === "material") {
+  if (spec.type === "material" || spec.type === "choice") {
     return `${name} ${listed(spec.choices, "or")}`;
+  }
+  if (spec.type === "seed") {
+    return `${name} as a whole number ${spec.min} to ${spec.max}`;
+  }
+  if (spec.type === "boolean") {
+    return `${name} as true or false`;
+  }
+  if (spec.type === "finish") {
+    return `${name} as finish/role text`;
   }
   return glowTakes(name, glows);
 }
 
+/** Whether `value` is a number in the spec's range, and a whole one for a seed. */
+function admitsNumber(spec: NumberSpec | SeedSpec, value: unknown): boolean {
+  const whole = spec.type === "number" || Number.isInteger(value);
+  return whole && typeof value === "number" && value >= spec.min && value <= spec.max;
+}
+
 /** Whether `value` is an admitted value of `spec`, which has been given. */
 function admits(spec: ParamSpec, value: unknown, glows: ReadonlySet<string>): boolean {
-  if (spec.type === "number") {
-    return typeof value === "number" && value >= spec.min && value <= spec.max;
+  if (spec.type === "number" || spec.type === "seed") {
+    return admitsNumber(spec, value);
   }
   if (spec.type === "color") {
     return isSurfaceColor(value);
   }
-  if (spec.type === "material") {
+  if (spec.type === "material" || spec.type === "choice") {
     return spec.choices.some((choice) => choice === value);
+  }
+  if (spec.type === "boolean") {
+    return typeof value === "boolean";
+  }
+  if (spec.type === "finish") {
+    return typeof value === "string";
   }
   return typeof value === "string" && glows.has(value);
 }
@@ -61,8 +82,11 @@ function fallback(spec: ParamSpec): Read | undefined {
   if (spec.type === "number") {
     return spec.default === undefined ? undefined : { ok: true, value: spec.default };
   }
-  if (spec.type === "material") {
+  if (spec.type === "material" || spec.type === "choice" || spec.type === "boolean") {
     return { ok: true, value: spec.default };
+  }
+  if (spec.type === "seed" || spec.type === "finish") {
+    return { ok: true, value: undefined };
   }
   return spec.required ? undefined : { ok: true, value: undefined };
 }

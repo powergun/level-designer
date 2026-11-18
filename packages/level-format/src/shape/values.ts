@@ -47,3 +47,14 @@ export function readHexColor(node: ShapeNode): string {
 export function isUnit(components: readonly number[]): boolean {
   return Math.abs(Math.hypot(...components) - 1) <= UNIT_TOLERANCE;
 }
+
+/** The value at an optional `key` of a record by `read`, or `fallback` when it is absent. */
+export function readOptional<T>(
+  node: ShapeNode,
+  key: string,
+  read: (field: ShapeNode) => T,
+  fallback: T,
+): T {
+  const field = node.optionalField(key);
+  return field === undefined ? fallback : read(field);
+}

@@ -58,7 +58,9 @@ console. The boot watch takes the first five of them. The real document and wind
 ports, and the browser-safe type check of both page scripts proves it. The page reads its
 regions once, by id and tag; a missing region throws before the start, and the boot watch
 reports it. The canvas region is the one `level-view` draws on, so the view starter takes
-`level-view`'s own input and the program passes `startLevelView` as it is.
+`level-view`'s own input and the program passes `startLevelView` as it is. The page fills that
+input from the level files: the GLB, the decoded level's finish table and lighting, and the
+prepared level's interior.
 
 The physics starter is a port because Rapier's asynchronous start in the browser is the living
 producer of a physics failure. The view port holds `frame` and `frameRate`, so the scripted view
@@ -125,7 +127,10 @@ strip. No region covers another. The display and the status strip carry an inlin
 height, so they never collapse and grow with their text; text wraps, and no script sets a
 height or an overflow that clips. The status strip, the alarm banner and the error list each
 have a maximum height in the stylesheet and scroll past it, so a message taller than the window
-stays in reach. The alarm banner shows the newest alarm first. Tests under Bun prove the
+stays in reach. The alarm banner shows the newest alarm first, each as one line: the first line
+of its text, cut at 240 characters. Four such lines wrap to about eight in a window 1,280 px
+wide, so the first line of every kind stays in view at once; a stack and the rest of a long
+text are in the run log. Tests under Bun prove the
 document order, the inline styles and those stylesheet rules. Only the human's QA shows the
 layout itself at the owner's window size and scaling.
 
@@ -138,17 +143,32 @@ again. An `other-run` refusal ends the posting for good with one banner line, be
 later batch would be refused the same way.
 
 The banner holds one alarm of each kind, newest first: the drawing (a lost GPU device, a GPU
-error, a frame that throws), the run log (a failed or refused batch, a `logFailure`) and the
-page (an uncaught error or rejection). A new alarm replaces the one of its own kind only, so a
-dead run log never pushes a lost device out of view. A text already in view is not raised
+error, a frame that throws), the run log (a failed or refused batch, a `logFailure`), the page
+(an uncaught error or rejection) and the console (a `console.error` call). A new alarm
+replaces the one of its own kind only, so a dead run log never pushes a lost device out of view. A text already in view is not raised
 again, and its line is not written again, so a dead log falls quiet. A stopped drawing replaces
-`ready` in the status strip with `drawing stopped`. A rejected level keeps its verdict banner
+`ready` in the status strip with `drawing stopped`. A drawing alarm's text begins with
+`drawing stopped`, then the failure's kind and its message, so the banner's cut never removes
+the consequence of a multi-line GPU error. A rejected level keeps its verdict banner
 in view.
 
-The page copies the calls to `console.error` and `console.warn` into the log, with no page
-message. So a texture that three.js cannot decode reaches the log: its GLB loader reports it as
-a console error, and the level still loads. The browser's own console messages, such as WebGPU
-validation warnings or failed resource loads, call neither function and never reach the run log.
+The page copies the calls to `console.error` and `console.warn` into the log. A painter
+program whose pipeline fails to build reaches the page only this way: three.js reports it as a
+console error, skips the program's draws and lets the compile resolve, so props go missing.
+Every console error therefore also raises the console alarm, in every run and at every boot
+step: one banner line that says programs may have failed and props may be missing, and names
+the run log's path from the session facts. Before the session facts it names the run log
+without a path, and the join adds the path to the line in view. After a failed session step
+it says that the page's lines are not in the run log, as the status strip does, and after an
+`other-run` refusal too. Its line is
+logged once: a later console error writes its own line only, and a changed path changes the
+banner alone. The page cannot tell a failed program from another console error without
+reading the error's text, so a texture that three.js cannot decode raises the alarm too. A
+console warning raises nothing. The browser's own console messages, such as WebGPU validation
+warnings or failed resource loads, call neither function and never reach the run log.
+
+A shader that fails to compile reaches the view's failure callback as a GPU error and stops the
+drawing like any other.
 
 The view's failure callback is live from the renderer's admission on, so a lost device can fire
 while the view still starts. The banner shows it at once, whatever the start does next:

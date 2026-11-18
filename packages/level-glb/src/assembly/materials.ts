@@ -41,23 +41,31 @@ function admitted<T>(entry: T | undefined, name: string, kind: string): T {
 }
 
 /**
- * A slab's material, named `finish/<material>` or `finish/<material>/glow/<glow>`. Its base
- * colour is white, so the slab's vertex colours show unchanged.
+ * The flat fallback of a finish path and its optional glow, named `finish/<path>` with
+ * `/glow/<glow>` after it; its `extras` join it to its recipe and keep a glow's unscaled
+ * strength for the painter. Its base colour is white, so the vertex colours show unchanged,
+ * and a glow emits at its strength times the body's `lit`.
  */
 export function slabMaterial(
   slab: Pick<SlabMesh, "finish" | "glow">,
   looks: SlabLooks,
 ): GltfMaterial {
-  const finish = admitted(looks.finishes[slab.finish], slab.finish, "finish");
+  const body = admitted(looks.bodies.get(slab.finish), slab.finish, "finish path");
   const look: GltfMaterial = {
     name: `finish/${slab.finish}`,
+    extras: { finish: slab.finish },
     pbrMetallicRoughness: {
       baseColorFactor: [1, 1, 1, 1],
-      metallicFactor: finish.metalness,
-      roughnessFactor: finish.roughness,
+      metallicFactor: body.metalness,
+      roughnessFactor: body.roughness,
     },
   };
   if (slab.glow === undefined) return look;
   const glow = admitted(looks.glows.get(slab.glow), slab.glow, "glow");
-  return { ...look, name: `${look.name}/glow/${slab.glow}`, ...emission(glow) };
+  return {
+    ...look,
+    name: `${look.name}/glow/${slab.glow}`,
+    extras: { finish: slab.finish, glow: slab.glow, glowStrength: glow.strength },
+    ...emission({ color: glow.color, strength: glow.strength * body.lit }),
+  };
 }

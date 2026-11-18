@@ -5,12 +5,12 @@ import type {
   ReadOutcome,
   Report,
 } from "@level-designer/level-pipeline";
-import type { Sheets, SnapshotInput } from "@level-designer/snapshot-render";
+import type { FinishSwatch, Sheets, SnapshotInput } from "@level-designer/snapshot-render";
 
 /**
  * Everything the tool calls to build, judge and draw a level: the level pipeline's read, build
- * and validation with its committed description, and the snapshot renderer. The program file
- * passes the real ones; tests inject fakes.
+ * and validation with its committed description, and the snapshot renderer's sheets and finish
+ * pages. The program file passes the real ones; tests inject fakes.
  */
 export interface Pipeline {
   readonly committedDescription: string;
@@ -18,6 +18,7 @@ export interface Pipeline {
   readonly buildLevel: (inputs: BuildInputs) => Promise<BuildOutcome>;
   readonly validateLevel: (built: BuiltLevel) => Promise<Report>;
   readonly renderSheets: (glb: Uint8Array, input: SnapshotInput) => Sheets;
+  readonly renderFinishSheet: (swatch: FinishSwatch) => Uint8Array;
 }
 
 /** The two output streams, one line per call: `out` for data and reports, `err` for the rest. */

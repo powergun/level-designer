@@ -1,3 +1,4 @@
+import type { FinishTable } from "@level-designer/level-format";
 import { type FailureCallback, openRenderer } from "./gpu/index.js";
 import { type PresentFacts, presentLevel, type ReadyView } from "./present.js";
 import { runStart, type StartOutcome } from "./run-start.js";
@@ -8,6 +9,8 @@ export interface LevelViewInput extends PresentFacts {
   readonly canvas: HTMLCanvasElement;
   /** The level GLB's bytes. */
   readonly glb: Uint8Array;
+  /** The level's finish table, from which the painted twins draw. */
+  readonly finishes: FinishTable;
   /** Receives a lost device or a GPU error, from the renderer's admission on. */
   readonly onFailure: FailureCallback;
 }
@@ -25,7 +28,7 @@ export type LevelViewStart = StartOutcome<ReadyView>;
 export function startLevelView(input: LevelViewInput): Promise<LevelViewStart> {
   return runStart({
     open: () => openRenderer(input.canvas, input.onFailure),
-    load: () => loadLevelGlb(input.glb),
+    load: () => loadLevelGlb(input.glb, input.finishes, input.interior),
     present: (context, level) => presentLevel(context, level, input),
   });
 }

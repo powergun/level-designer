@@ -4,6 +4,7 @@
  * flat-shaded by the one fixed light, depth tested, outlined where depth jumps, and a cut
  * plane's trace is drawn in black.
  */
+export { srgbByte } from "./shade.js";
 export { renderTile } from "./tile.js";
 export type { Vec3 } from "./vector.js";
 export { perspectiveView, pixelOf } from "./view.js";

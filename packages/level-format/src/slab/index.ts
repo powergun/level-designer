@@ -6,5 +6,5 @@
 export { slabBox } from "./box.js";
 export type { SlabBox } from "./box.js";
 export { formatLength, roundSlab } from "./round.js";
-export { canonicalSlab, readSlab, SLAB_MATERIALS } from "./slab.js";
-export type { Quaternion, Slab, SlabMaterial } from "./slab.js";
+export { canonicalSlab, MAX_SEED, readSlab, SLAB_MATERIALS } from "./slab.js";
+export type { Quaternion, Slab, SlabFinish, SlabMaterial } from "./slab.js";

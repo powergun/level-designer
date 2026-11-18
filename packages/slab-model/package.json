@@ -5,6 +5,7 @@
   "exports": "./src/index.ts",
   "dependencies": {
     "@level-designer/destruction-gateway": "workspace:*",
+    "@level-designer/finish-paint": "workspace:*",
     "@level-designer/level-format": "workspace:*"
   }
 }

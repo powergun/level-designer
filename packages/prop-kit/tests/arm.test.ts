@@ -5,6 +5,7 @@ import { expectSides, expectSound, grid, localOffset } from "./checks.ts";
 import type { Side } from "./checks.ts";
 import { ODD_SITE, ORIGIN } from "./fixtures.ts";
 import type { Params, TestSite } from "./fixtures.ts";
+import { edgeBiased, seeded } from "./sample.ts";
 
 // Owner: prop-kit's robot-arm kind. The range proof follows the rule-corner retro: corners, a
 // coarse grid and a seeded edge-biased sample, all held to the same checks.
@@ -56,25 +57,6 @@ function checkPose(pose: Params, site: TestSite): void {
       expect(x).toBeLessThanOrEqual(planes[1] + FLOAT);
     }
   }
-}
-
-/** A seeded generator of numbers in [0, 1): mulberry32, so every run draws the same sample. */
-function seeded(seed: number): () => number {
-  let state = seed;
-  return () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** A value of the range: its minimum a quarter of the time, its maximum a quarter, else uniform. */
-function edgeBiased(next: () => number, [min, max]: readonly [number, number]): number {
-  const pick = next();
-  if (pick < 0.25) return min;
-  if (pick < 0.5) return max;
-  return min + (max - min) * next();
 }
 
 /** The values from `min` to `max` in steps of `step`, both ends included. */

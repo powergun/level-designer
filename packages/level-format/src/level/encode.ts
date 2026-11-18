@@ -1,3 +1,4 @@
+import { canonicalFinishes } from "../finish/index.js";
 import { canonicalLighting } from "../lighting/index.js";
 import { canonicalSlab } from "../slab/index.js";
 import type { Level } from "./level.js";
@@ -10,6 +11,7 @@ import { LEVEL_SCHEMA } from "./level.js";
 export function encodeLevel(level: Level): string {
   const canonical = {
     schema: LEVEL_SCHEMA,
+    finishes: canonicalFinishes(level.finishes),
     props: level.props.map((prop) => ({ id: prop.id, slabs: prop.slabs.map(canonicalSlab) })),
     lighting: canonicalLighting(level.lighting),
   };

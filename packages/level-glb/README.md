@@ -8,10 +8,11 @@ entry, `@level-designer/sec111-gateway/stage`, a test-only dependency.
 
 The facade offers:
 
-- `assembleStaticScene`: the base stage under the scaled root `stage`, with the base look
-  and one seal object per seal, or every `base` build error;
-- `assembleLevelScene`: the static scene with one destructible object per prop and one
-  mesh node per slab;
+- `assembleStaticScene`: the base stage under the scaled root `stage`, with the base look,
+  a hall finish's path on its stage material, and one seal object per seal, or every
+  `base` build error;
+- `assembleLevelScene`: the static scene with one destructible object per prop, one mesh
+  node per slab with its pattern data, and one fallback material per finish path and glow;
 - `inspectGlb`: the triangle count, the primitives without a material and the image count;
 - `readWorldTriangles`: every drawn triangle in world space with its linear colour;
 - the types of their inputs and results: `BaseLook`, `SealBox`, `PropMeshes`, `SlabMesh`,

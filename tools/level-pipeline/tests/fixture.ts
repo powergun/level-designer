@@ -39,10 +39,20 @@ export const FIXTURE = {
     },
   ],
   finishes: {
-    wood: { metalness: 0, roughness: 0.9 },
-    brick: { metalness: 0, roughness: 0.9 },
-    concrete: { metalness: 0, roughness: 0.85 },
-    metal: { metalness: 0.8, roughness: 0.4 },
+    timber: {
+      cut: { family: "wood", color: "#6b4a2b" },
+      light: "#7ccbd6",
+      roles: {
+        "crate-stencil": { body: { roughness: 0.9 } },
+        crate: { body: { roughness: 0.9 } },
+        lid: { body: { roughness: 0.9 } },
+      },
+    },
+    luminaire: {
+      cut: { family: "metal", color: "#5a5d61" },
+      light: "#7ccbd6",
+      roles: { strip: { body: { metalness: 0.8, roughness: 0.4, lit: 1 } } },
+    },
   },
   glows: {},
   props: [FRONT_CRATE, SLAB_CRATE],

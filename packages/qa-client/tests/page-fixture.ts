@@ -1,4 +1,9 @@
-import { encodeLevel, type Level, type LevelProp } from "@level-designer/level-format";
+import {
+  encodeLevel,
+  type FinishTable,
+  type Level,
+  type LevelProp,
+} from "@level-designer/level-format";
 import { bootPage } from "@level-designer/qa-client";
 import { LEVEL_FILES, type SessionAnswer } from "@level-designer/qa-client/protocol";
 import {
@@ -24,6 +29,18 @@ const LIGHTING: Level["lighting"] = {
   haze: { density: 0.03, color: [0.01, 0.01, 0.02], glow: 0.5 },
   exposure: 1,
 };
+
+/** The walk level's finish table: one plain role, the path of every walk slab. */
+export const FINISHES: FinishTable = new Map([
+  [
+    "cast-concrete",
+    {
+      cut: { family: "concrete", color: "#808080" },
+      light: "#ffffff",
+      roles: new Map([["wall", { layers: [] }]]),
+    },
+  ],
+]);
 
 /**
  * The player's frame at the start, in plan: `forward` is the game's start direction and `right`
@@ -103,6 +120,10 @@ function slabOf(plan: SlabPlan): LevelProp["slabs"][number] {
     color: "#808080",
     position: [x, y, z],
     rotation: [0, Math.sin(half), 0, Math.cos(half)],
+    finish: "cast-concrete/wall",
+    number: 0,
+    seed: 0,
+    wear: 0.3,
   };
 }
 
@@ -110,6 +131,7 @@ function slabOf(plan: SlabPlan): LevelProp["slabs"][number] {
 function pathLevel(): Level {
   const { across, overhead, block, slanted } = WALK_SLABS;
   return {
+    finishes: FINISHES,
     props: [
       { id: "path", slabs: [slabOf(across), slabOf(overhead)] },
       { id: "side", slabs: [slabOf(block), slabOf(slanted)] },

@@ -9,7 +9,7 @@ import {
   readInputs,
   validateLevel,
 } from "@level-designer/level-pipeline";
-import { renderSheets } from "@level-designer/snapshot-render";
+import { renderFinishSheet, renderSheets } from "@level-designer/snapshot-render";
 
 process.exitCode = await run(
   Bun.argv.slice(2),
@@ -19,6 +19,7 @@ process.exitCode = await run(
     buildLevel,
     validateLevel,
     renderSheets,
+    renderFinishSheet,
   },
   {
     out: (line) => process.stdout.write(`${line}\n`),

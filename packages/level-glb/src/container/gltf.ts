@@ -39,9 +39,10 @@ interface GltfMaterialExtensions {
   readonly [name: string]: unknown;
 }
 
-/** A material: its look factors, sidedness and extensions. */
+/** A material: its look factors, sidedness, extensions and application data. */
 export interface GltfMaterial {
   readonly name?: string;
+  readonly extras?: Readonly<Record<string, unknown>>;
   readonly doubleSided?: boolean;
   readonly pbrMetallicRoughness?: GltfPbr;
   readonly emissiveFactor?: readonly number[];
