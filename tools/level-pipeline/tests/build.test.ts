@@ -9,8 +9,8 @@ import * as stage from "@level-designer/sec111-gateway/stage";
 import { field, glbDocument, listAt } from "./glb-json.js";
 import {
   CRATE_SHEET,
-  CYAN_GLOWS,
   crate,
+  DOOR_SEAL,
   emptyStage,
   FIXTURE,
   FLOOR_SHEET,
@@ -18,6 +18,7 @@ import {
   fixtureBytes,
   HUNG_SIGN,
   lightStrip,
+  SHUTTER_BODY,
   SLAB_CRATE,
 } from "./fixture.js";
 
@@ -234,7 +235,7 @@ describe("the validation of a built level", () => {
       lightStrip(`strip-${k}`, [-7 + (k % 15), -14 + 2 * Math.floor(k / 15)]),
     );
     const props = [FRONT_CRATE, SLAB_CRATE, ...strips];
-    const dressed = builtOf(await buildOnFixture({ glows: CYAN_GLOWS, props }));
+    const dressed = builtOf(await buildOnFixture({ props }));
     const report = await validateLevel(dressed);
     expect(report.findings).toEqual([]);
     expect(report.accepted).toBe(true);
@@ -283,7 +284,8 @@ describe("the static objects of a built level", () => {
   test("they stand between the seals and the props, and the litter names the lid it lies on", () => {
     const { roots, extras } = writtenNodes(built.glb);
     const ids = [FLOOR_SHEET.id, HUNG_SIGN.id, CRATE_SHEET.id];
-    expect(roots.slice(-6)).toEqual(["end-wall", ...ids, FRONT_CRATE.id, SLAB_CRATE.id]);
+    const seals = FIXTURE.seals.map((seal) => seal.id);
+    expect(roots.slice(-7)).toEqual([...seals, ...ids, FRONT_CRATE.id, SLAB_CRATE.id]);
     const lid = slabsOf(built, SLAB_CRATE.id).findIndex((slab) => slab.finish === "timber/lid");
     const support = `${SLAB_CRATE.id}/${lid}`;
     expect(extras.get(CRATE_SHEET.id)).toEqual({ role: "static", support });
@@ -348,5 +350,35 @@ describe("the static objects of a built level", () => {
     expect(report.findings.map((finding) => [finding.rule, finding.subject])).toEqual([
       ["static", FLOOR_SHEET.id],
     ]);
+  });
+});
+
+/** The material of the written mesh node `name`'s one primitive. */
+function materialOfMesh(glb: Uint8Array, name: string): unknown {
+  const document = glbDocument(glb);
+  const node = listAt(document, "nodes").find((candidate) => nameOf(candidate) === name);
+  const mesh = listAt(document, "meshes")[Number(field(node, "mesh"))];
+  const primitives = listAt(mesh, "primitives");
+  expect(primitives).toHaveLength(1);
+  return listAt(document, "materials")[Number(field(primitives[0], "material"))];
+}
+
+describe("the painted seal of a built level", () => {
+  test("it draws with the body its path extends and with its glow", () => {
+    const { extras } = writtenNodes(built.glb);
+    expect(extras.get(DOOR_SEAL.id)).toEqual({ role: "seal" });
+    const material = materialOfMesh(built.glb, `${DOOR_SEAL.id}/0`);
+    const glow = FIXTURE.glows[DOOR_SEAL.glow];
+    expect(field(material, "extras")).toEqual({
+      finish: DOOR_SEAL.finish,
+      glow: DOOR_SEAL.glow,
+      glowStrength: glow.strength,
+    });
+    const pbr = field(material, "pbrMetallicRoughness");
+    expect(field(pbr, "metallicFactor")).toBe(SHUTTER_BODY.metalness);
+    expect(field(pbr, "roughnessFactor")).toBe(SHUTTER_BODY.roughness);
+    expect(field(material, "emissiveFactor")).toEqual([...glow.color]);
+    const strength = field(field(material, "extensions"), "KHR_materials_emissive_strength");
+    expect(field(strength, "emissiveStrength")).toBe(glow.strength * SHUTTER_BODY.lit);
   });
 });

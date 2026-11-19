@@ -40,6 +40,11 @@ export function validSeal(id = "end-wall"): Record<string, unknown> {
   return { id, min: [0, 0, 0], max: [2, 3, 0.3], color: "#20242a", metalness: 0, roughness: 0.9 };
 }
 
+/** A painted seal record with the given id that states only its required keys. */
+export function paintedSeal(id = "end-wall"): Record<string, unknown> {
+  return { id, min: [0, 0, 0], max: [2, 3, 0.3], color: "#20242a", finish: SLAB_FINISH.finish };
+}
+
 /** A valid prop record with the given id. */
 export function validProp(id = "line-a-conveyor-03"): Record<string, unknown> {
   const params = { length: 8, color: "#3b4046", glow: "cyan" };

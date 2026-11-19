@@ -62,9 +62,10 @@ Albedo as linear luminance, with the hall luminance of a side in brackets:
 - Bare metal is line work only, under 2 % of a face. The owner checks it for glare. A bed's
   rails, 16 % of a deck, are therefore ring grey paint.
 - Every recipe stays inside the format's caps: 24 layers, two `noise` layers and three legends,
-  the extended role's among them. The longest recipes hold 12 layers, no recipe holds more than
-  one `noise` layer, and only the girder holds two legends. Each noise is wear: corrugated's is
-  its rust and housing's is its optional dust. The seven finishes of milestone 4 hold none.
+  the extended role's among them. The longest prop recipes hold 12 layers, and the seals' gate
+  holds 19. No recipe holds more than one `noise` layer, and only the girder holds two legends.
+  Each noise is wear: corrugated's rust, its seals' streaks and scuffs, and housing's optional
+  dust. The seven finishes of milestone 4 hold none.
 - Every painted path is one more program when the view starts, and its layers are drawn on
   every slab that names it. A mark that few slabs carry is a role of its own: `stack-posts`,
   `mast-front`, `machine-plate`.
@@ -96,7 +97,8 @@ The build plan orders them by what each milestone draws and shows:
   the finish sheet.
 - Milestone 3: the floor lines, with the hall's other marks.
 - Milestone 4: cast concrete, bed, casting, timber, steel stock, luminaire and block.
-- Milestone 6: the seal roles of corrugated. Milestone 7: every legend.
+- Milestone 6: the seal roles of corrugated and the overhead objects, which the seals brief
+  beside this note owns, `look-dev-seals-brief.md`. Milestone 7: every legend.
 
 The two main views confirm corrugated, beam and housing as the first three prop finishes.
 Measured: the share of the screen each prop group covers in the view sheet's two tiles from the
@@ -136,7 +138,7 @@ By finish: Corrugated 2.68 and 8.20; Beam 2.33 and 1.97; Cast concrete 3.50 and 
 - A recipe holds at most three legends. The girder holds two on each of its faces: its capacity
   on the plate and its number on the disc.
 - Ink: white on dark paint; black on yellow and white; a darker value of the paint on timber and
-  concrete.
+  concrete. The gate's digit takes the place and the ink that the seals brief states.
 - A legend stands on `outside` only and takes neither `across` nor `up`, so it never reads
   mirrored.
 - A stroke reads while it spans 1.5 px: up to about 47 glyph heights (5 m at 0.10, 14 m at 0.30,
@@ -154,7 +156,7 @@ Per prop, beyond today's colours and `glow`; every other value is the recipe's:
 - bridge-crane: `capacity`, `number`. jib-crane: `capacity`.
 - crate: `stencil`.
 - partition: `finish`, `number`.
-- seal: `finish`, `number`, `wear`, `seed`, `glow`.
+- seal: `finish` and `wear`, as the seals brief states them.
 - the level: the floor lines, as layers of the two floors' hall finishes.
 
 ## 6. What the recipes give up
@@ -178,16 +180,14 @@ is `fit`. Given up, the first three without being asked for:
 ## 7. Not checked
 
 - Any recipe under the level's lights. Every role that a slab names is typed in the level and
-  read on its page of the finish sheet, on its path's largest face. The seal roles and the
-  legends are neither typed nor computed, and `cast-concrete/wall` and `top` have no page.
+  read on its page of the finish sheet, on its path's largest face. The legends are neither
+  typed nor computed, and `cast-concrete/wall` and `top` have no page.
 - A lit value: a page shows albedo only, so the cabinet's data rows, the bed's light bars and the
   strips' joints were never seen. The painter's number back end places them.
 - A face that no page shows: a container's other four tints, a crane's shorter faces and the
   smaller crates, stacks, barriers and fences are computed on the painter's number back end.
-- Whether each mark of the seal roles and each legend lands where it is meant: a share with an
-  offset, a `clip` under `across` `ends` or `up` `top`, `phase` with `fit`, a legend's `at`.
-- Whether a fitted period of the seal roles meets a face at a whole number of periods plus one
-  half.
+- Whether each legend lands where it is meant: a share with an offset in its `at`, and its
+  `align`.
 - Whether a floor line's plan rectangle catches an up-facing surface of a base part that shares
   the floor's stage material.
 - The glare of the bodies smoother than roughness 0.7: corrugated, beam, bed and casting.

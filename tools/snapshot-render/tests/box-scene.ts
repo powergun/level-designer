@@ -53,6 +53,7 @@ export function boxScene(boxes: readonly SceneBox[]): Uint8Array {
     emptyStage(),
     { scale: 1, materials: new Map(), doubleSided: [] },
     seals,
+    { bodies: new Map(), glows: new Map() },
   );
   if (!built.ok) throw new Error("an empty base stage names no base material");
   return built.glb;

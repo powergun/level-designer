@@ -17,7 +17,7 @@ import {
   rootsOf,
 } from "./contract.js";
 import { accessorValues } from "./bin-data.js";
-import { BASE_NODES, BASE_SCALE, BASE_TRIANGLES, LOOK, SEALS } from "./fixtures.js";
+import { BASE_NODES, BASE_SCALE, BASE_TRIANGLES, LOOK, LOOKS, SEALS } from "./fixtures.js";
 
 /** The image, texture and sampler records; the last two pass through the assembly untyped. */
 function imageRecords(document: object): unknown[] {
@@ -68,7 +68,7 @@ let scene: GlbContainer;
 beforeAll(async () => {
   stageBytes = await readBaseStage();
   base = readGlb(stageBytes);
-  const built = assembleStaticScene(stageBytes, LOOK, SEALS);
+  const built = assembleStaticScene(stageBytes, LOOK, SEALS, LOOKS);
   if (!built.ok) throw new Error("the fixture look names only real base names");
   glb = built.glb;
   scene = readGlb(glb);
@@ -227,7 +227,7 @@ test("a base name the stage does not hold blocks the static scene with a `base` 
     materials: new Map([...LOOK.materials, ["Glass", {}], ["Material.099", {}]]),
     doubleSided: ["Plane.001_Material.002_0", "Material.003"],
   };
-  expect(assembleStaticScene(stageBytes, look, SEALS)).toEqual({
+  expect(assembleStaticScene(stageBytes, look, SEALS, LOOKS)).toEqual({
     ok: false,
     errors: [
       {

@@ -48,8 +48,9 @@ browser-safe.
 
 ## Types
 
-The facade exports the types of the description, a static object with its class, the
-level, the slab, the lighting section and the finish table: the table, a finish, a
-recipe, a layer with its pattern and effects, a length, and a slab's four finish keys.
+The facade exports the types of the description, a seal, flat or painted, with the painted
+one by name, a box's five paint keys, a static object with its class, the level, the slab,
+the lighting section and the finish table: the table, a finish, a recipe, a layer with its
+pattern and effects, a length, and a slab's four finish keys.
 
 Read the [component knowledge](docs/KNOWLEDGE.md) next.

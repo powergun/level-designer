@@ -28,8 +28,8 @@ The library components carry the level's data and judgement:
 - [finish-paint](packages/finish-paint/README.md): the one implementation of the
   finishes: the arithmetic interface with its number back end, the layer kinds, the
   painter, the slab's frame rule and the swatch, written once for the CPU and the GPU;
-- [level-glb](packages/level-glb/README.md): the GLB contract: scene assembly, inspection
-  and world triangles;
+- [level-glb](packages/level-glb/README.md): the GLB contract: scene assembly with the
+  static objects and the painted seals as painted boxes, inspection and world triangles;
 - [slab-model](packages/slab-model/README.md): the only place where a slab becomes a
   destruction lib model: the shared builder and the intact mesh;
 - [prop-kit](packages/prop-kit/README.md): the prop kinds: their parameter tables, their

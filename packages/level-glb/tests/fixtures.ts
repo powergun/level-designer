@@ -52,6 +52,39 @@ export const SEALS: readonly SealBox[] = [
   },
 ];
 
+/**
+ * Three painted seals around the flat window panel. Their extents differ on every axis, and
+ * their constants reach the ranges' ends (number 0 and 999,999, seed 0 and 4,095, wear 0 and 1).
+ * - `gate`: 4 x 3 x 0.3 m on the seal-only path `cladding/gate`, half lit, with the glow.
+ * - `shutter`: 0.3 x 2 x 5 m on the glowing housing's path and glow, which slabs and a static
+ *   object use too.
+ * - `sill`: on `floor/front`, the path of `LOOK`'s hall finish on `Material.003`.
+ */
+export const PAINTED_SEALS: readonly SealBox[] = [
+  {
+    id: "gate",
+    min: [-2, 0, 59.7],
+    max: [2, 3, 60],
+    color: "#ff8000",
+    paint: { finish: "cladding/gate", glow: "cyan", number: 999_999, seed: 4095, wear: 1 },
+  },
+  ...SEALS.slice(1),
+  {
+    id: "shutter",
+    min: [24, 1, 10],
+    max: [24.3, 3, 15],
+    color: "#808080",
+    paint: { finish: "housing/machine", glow: "cyan", number: 0, seed: 0, wear: 0 },
+  },
+  {
+    id: "sill",
+    min: [-1, 0, -1],
+    max: [1, 0.5, -0.8],
+    color: "#336699",
+    paint: { finish: "floor/front", number: 42, seed: 7, wear: 0.3 },
+  },
+];
+
 /** A slab's four constants: its number, seed, wear and face class. */
 type SlabConstants = readonly [number, number, number, number];
 
@@ -111,7 +144,10 @@ export const PROPS: readonly PropMeshes[] = [
   },
 ];
 
-/** The bodies of the four paths the props name and the static-only path, and a glow. */
+/**
+ * The bodies of the four paths the props name, the static-only path and the two paths only the
+ * painted seals name, and a glow.
+ */
 export const LOOKS: SlabLooks = {
   bodies: new Map([
     ["timber/crate", { metalness: 0, roughness: 0.8, lit: 0 }],
@@ -119,6 +155,8 @@ export const LOOKS: SlabLooks = {
     ["housing/machine", { metalness: 0.9, roughness: 0.3, lit: 0 }],
     ["housing/plate", { metalness: 0.5, roughness: 0.5, lit: 0.5 }],
     ["litter/sheet", { metalness: 0.6, roughness: 0.6, lit: 0 }],
+    ["cladding/gate", { metalness: 0.7, roughness: 0.4, lit: 0.5 }],
+    ["floor/front", { metalness: 0.1, roughness: 0.9, lit: 0 }],
   ]),
   glows: new Map([["cyan", { color: [0, 0.8, 1], strength: 40 }]]),
 };

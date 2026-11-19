@@ -43,48 +43,44 @@
       "min": [-17.7, -0.5, 30.22],
       "max": [17.7, 19.2, 31.5],
       "color": "#55595d",
-      "metalness": 0,
-      "roughness": 0.9
+      "finish": "corrugated/gate",
+      "wear": 0.5
     },
     {
       "id": "window-minus-x-rear",
       "min": [-16.4, 6.25, -82.35],
       "max": [-16.1, 11.6, -71.7],
       "color": "#55595d",
-      "metalness": 0,
-      "roughness": 0.9
+      "finish": "corrugated/shutter"
     },
     {
       "id": "window-minus-x-mid",
       "min": [-16.4, 6.25, -42.9],
       "max": [-16.1, 11.6, -32.25],
       "color": "#55595d",
-      "metalness": 0,
-      "roughness": 0.9
+      "finish": "corrugated/shutter"
     },
     {
       "id": "window-plus-x-rear",
       "min": [16.06, 6.25, -82.35],
       "max": [16.36, 11.6, -71.7],
       "color": "#55595d",
-      "metalness": 0,
-      "roughness": 0.9
+      "finish": "corrugated/shutter"
     },
     {
       "id": "window-plus-x-mid",
       "min": [16.06, 6.25, -42.9],
       "max": [16.36, 11.6, -32.25],
       "color": "#55595d",
-      "metalness": 0,
-      "roughness": 0.9
+      "finish": "corrugated/shutter"
     },
     {
       "id": "door-plus-x",
       "min": [16.06, -0.1, -15.25],
       "max": [16.36, 7.35, -7.8],
       "color": "#55595d",
-      "metalness": 0,
-      "roughness": 0.9
+      "finish": "corrugated/roller",
+      "wear": 0.6
     },
     {
       "id": "back-slot",
@@ -755,7 +751,158 @@
             { "kind": "face", "on": "inside", "color": "#3a2f2b" }
           ]
         },
-        "roof": { "body": { "shade": 1.1, "roughness": 0.8 } }
+        "roof": { "body": { "shade": 1.1, "roughness": 0.8 } },
+        "cladding": {
+          "body": { "roughness": 0.9 },
+          "layers": [
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.25,
+              "width": 0.05,
+              "ramp": 0.05,
+              "shade": 0.78
+            },
+            { "kind": "bands", "along": "up", "period": 3, "width": 0.03, "shade": 0.7 },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 1.9], "paint": 0.55 },
+            { "kind": "bands", "along": "across", "period": 6.667, "width": 0.3, "paint": 0.7 },
+            {
+              "kind": "noise",
+              "wavelength": [0.4, 5],
+              "threshold": 0.72,
+              "softness": 0.2,
+              "wear": true,
+              "shade": 0.8
+            }
+          ]
+        },
+        "gate": {
+          "extends": "cladding",
+          "layers": [
+            { "kind": "rectangle", "from": [-3, 0.5], "to": [3, 5.2], "paint": 0.9 },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.1,
+              "width": 0.03,
+              "clip": { "from": [-3, 0.5], "to": [3, 5.2] },
+              "shade": 0.7
+            },
+            { "kind": "rectangle", "from": [-3, 0.5], "to": [3, 0.75], "color": "#9c7618" },
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.3,
+              "width": 0.15,
+              "clip": { "from": [-3, 0.5], "to": [3, 0.75] },
+              "color": "#101010"
+            },
+            {
+              "kind": "rectangle",
+              "from": [3, 0.5],
+              "to": [3.15, 5.2],
+              "across": "out",
+              "shade": 0.5
+            },
+            { "kind": "rectangle", "from": [-3.15, 5.2], "to": [3.15, 5.6], "paint": 0.75 },
+            { "kind": "rectangle", "from": [-3.15, 5.57], "to": [3.15, 5.6], "shade": 1.3 },
+            { "kind": "rectangle", "from": [-0.55, 5.7], "to": [0.55, 6.9], "paint": 0.5 },
+            { "kind": "rectangle", "from": [-3.75, 1.6], "to": [-3.53, 1.92], "color": "#2a2d30" },
+            { "kind": "disc", "at": [-3.69, 1.8], "radius": 0.02, "color": "#9a2a1c" },
+            { "kind": "disc", "at": [-3.59, 1.8], "radius": 0.02, "color": "#868a8e" },
+            { "kind": "rectangle", "from": [-5.95, 0.5], "to": [-4.95, 2.65], "shade": 0.5 },
+            { "kind": "rectangle", "from": [-5.9, 0.5], "to": [-5, 2.6], "paint": 0.8 },
+            {
+              "kind": "rectangle",
+              "from": [-5.8, 1.5],
+              "to": [-5.1, 1.54],
+              "detail": "medium",
+              "color": "#9a9da0",
+              "metalness": 1,
+              "roughness": 0.7
+            }
+          ]
+        },
+        "slats": {
+          "body": { "roughness": 0.9 },
+          "layers": [
+            { "kind": "bands", "along": "up", "period": 0.1, "width": 0.03, "shade": 0.7 },
+            {
+              "kind": "rectangle",
+              "from": [0, 0],
+              "to": [0.25, "1h"],
+              "across": "ends",
+              "paint": 0.6
+            },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0],
+              "to": ["0.5w", 0.4],
+              "up": "top",
+              "paint": 0.75
+            },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0.4],
+              "to": ["0.5w", 0.43],
+              "up": "top",
+              "shade": 0.5
+            },
+            { "kind": "rectangle", "from": ["-0.5w", 0], "to": ["0.5w", 0.18], "paint": 0.6 }
+          ]
+        },
+        "shutter": {
+          "extends": "slats",
+          "layers": [
+            { "kind": "bands", "along": "across", "period": "0.3333w", "width": 0.2, "paint": 0.6 }
+          ]
+        },
+        "roller": {
+          "extends": "slats",
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0.1],
+              "to": ["0.5w", 0.35],
+              "color": "#9c7618"
+            },
+            {
+              "kind": "bands",
+              "along": "diagonal",
+              "period": 0.3,
+              "width": 0.15,
+              "clip": { "from": ["-0.5w", 0.1], "to": ["0.5w", 0.35] },
+              "color": "#101010"
+            },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 0.6,
+              "width": 0.3,
+              "clip": { "from": [-2.95, 1.65], "to": [2.95, 1.75] },
+              "color": "#0b0e10"
+            },
+            {
+              "kind": "rectangle",
+              "from": [0.6, 0.62],
+              "to": [0.95, 0.66],
+              "across": "out",
+              "detail": "medium",
+              "color": "#9a9da0",
+              "metalness": 1,
+              "roughness": 0.7
+            },
+            {
+              "kind": "noise",
+              "wavelength": [0.9, 0.15],
+              "threshold": 0.7,
+              "softness": 0.2,
+              "clip": { "from": ["-0.5w", 0.35], "to": ["0.5w", 2.2] },
+              "wear": true,
+              "shade": 0.7
+            }
+          ]
+        }
       }
     },
     "timber": {
@@ -1714,6 +1861,99 @@
               "color": "#9a9da0",
               "metalness": 1,
               "roughness": 0.7
+            }
+          ]
+        }
+      }
+    },
+    "sign": {
+      "cut": { "family": "metal", "color": "#9a9da0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "board": {
+          "body": { "roughness": 0.8 },
+          "layers": [
+            { "kind": "border", "width": 0.03, "inset": 0.04, "color": "#868a8e" },
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w+0.12", 0.3],
+              "to": ["0.5w-0.12", "1h-0.12"],
+              "shade": 0.55
+            },
+            {
+              "kind": "disc",
+              "radius": 0.09,
+              "at": [0.16, 0.18],
+              "across": "out",
+              "color": "#5a5f66"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.075,
+              "at": [0.16, 0.18],
+              "across": "out",
+              "color": "#0b0e10"
+            },
+            { "kind": "disc", "radius": 0.06, "at": [0.16, 0.18], "across": "out", "lit": 1 },
+            {
+              "kind": "disc",
+              "radius": 0.012,
+              "at": [0.055, 0.055],
+              "across": "ends",
+              "detail": "medium",
+              "color": "#101010"
+            },
+            {
+              "kind": "disc",
+              "radius": 0.012,
+              "at": [0.055, 0.055],
+              "across": "ends",
+              "up": "top",
+              "detail": "medium",
+              "color": "#101010"
+            }
+          ]
+        },
+        "hanger": { "body": { "roughness": 0.7 } }
+      }
+    },
+    "service": {
+      "cut": { "family": "metal", "color": "#9a9da0" },
+      "light": "#7ccbd6",
+      "roles": {
+        "pipes": {
+          "body": { "roughness": 0.7 },
+          "layers": [
+            {
+              "kind": "rectangle",
+              "from": ["-0.5w", 0.125],
+              "to": ["0.5w", 0.235],
+              "color": "#9c7618"
+            },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.12,
+              "width": 0.02,
+              "offset": 0.025,
+              "shade": 1.5
+            },
+            {
+              "kind": "bands",
+              "along": "up",
+              "period": 0.12,
+              "width": 0.03,
+              "phase": 0,
+              "shade": 0.35
+            },
+            { "kind": "bands", "along": "across", "period": 2, "width": 0.05, "shade": 0.45 },
+            {
+              "kind": "bands",
+              "along": "across",
+              "period": 6,
+              "width": 0.12,
+              "phase": 0,
+              "shade": 1.3
             }
           ]
         }
@@ -4975,6 +5215,251 @@
       "color": "#1a1c1f",
       "finish": "luminaire/band",
       "glow": "emergency"
+    },
+    {
+      "id": "bay-board-e-1",
+      "at": [15.095, -77.48],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.5259,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-e-2",
+      "at": [15.095, -57.35],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.5259,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-e-3",
+      "at": [15.095, -37.21],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.5259,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-e-4",
+      "at": [15.095, -17.75],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.85,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-e-5",
+      "at": [15.095, 3.75],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.85,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-e-6",
+      "at": [15.095, 23.19],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.85,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-w-1",
+      "at": [-14.825, -77.48],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.5259,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-w-3",
+      "at": [-14.825, -37.21],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.5259,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-w-5",
+      "at": [-14.825, 3.75],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.85,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "bay-board-w-6",
+      "at": [-14.825, 23.19],
+      "yaw": 90,
+      "size": [0.9, 1.1, 0.05],
+      "lift": 4.85,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "aisle-sign-1",
+      "at": [0, -19.7],
+      "size": [2.4, 0.8, 0.08],
+      "lift": 7.2,
+      "color": "#9a2a1c",
+      "finish": "sign/board",
+      "glow": "eye"
+    },
+    {
+      "id": "aisle-sign-1-rod-w",
+      "at": [-0.9, -19.7],
+      "size": [0.04, 8.3, 0.04],
+      "lift": 8,
+      "color": "#1a1c1f",
+      "finish": "sign/hanger"
+    },
+    {
+      "id": "aisle-sign-1-rod-e",
+      "at": [0.9, -19.7],
+      "size": [0.04, 8.3, 0.04],
+      "lift": 8,
+      "color": "#1a1c1f",
+      "finish": "sign/hanger"
+    },
+    {
+      "id": "aisle-sign-2",
+      "at": [0, 5.39],
+      "size": [2.4, 0.8, 0.08],
+      "lift": 7.2,
+      "color": "#9a2a1c",
+      "finish": "sign/board",
+      "glow": "eye"
+    },
+    {
+      "id": "aisle-sign-2-rod-w",
+      "at": [-0.9, 5.39],
+      "size": [0.04, 8.3, 0.04],
+      "lift": 8,
+      "color": "#1a1c1f",
+      "finish": "sign/hanger"
+    },
+    {
+      "id": "aisle-sign-2-rod-e",
+      "at": [0.9, 5.39],
+      "size": [0.04, 8.3, 0.04],
+      "lift": 8,
+      "color": "#1a1c1f",
+      "finish": "sign/hanger"
+    },
+    {
+      "id": "lane-sign",
+      "at": [-10, -69.86],
+      "size": [2.4, 0.8, 0.08],
+      "lift": 8.5759,
+      "color": "#9a2a1c",
+      "finish": "sign/board",
+      "glow": "eye"
+    },
+    {
+      "id": "lane-sign-rod-w",
+      "at": [-10.9, -69.86],
+      "size": [0.04, 6.6, 0.04],
+      "lift": 9.3759,
+      "color": "#1a1c1f",
+      "finish": "sign/hanger"
+    },
+    {
+      "id": "lane-sign-rod-e",
+      "at": [-9.1, -69.86],
+      "size": [0.04, 6.6, 0.04],
+      "lift": 9.3759,
+      "color": "#1a1c1f",
+      "finish": "sign/hanger"
+    },
+    {
+      "id": "ramp-sign",
+      "at": [0, -29.29],
+      "size": [2, 0.75, 0.06],
+      "lift": 5.7559,
+      "color": "#9a2a1c",
+      "finish": "sign/board"
+    },
+    {
+      "id": "pipes-e-1",
+      "at": [16.39, -84.33],
+      "yaw": 90,
+      "size": [11.08, 0.36, 0.12],
+      "lift": 5.1259,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
+    },
+    {
+      "id": "pipes-e-2",
+      "at": [16.39, -72.48],
+      "yaw": 90,
+      "size": [7.36, 0.36, 0.12],
+      "lift": 5.1259,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
+    },
+    {
+      "id": "pipes-e-3",
+      "at": [16.39, -62.13],
+      "yaw": 90,
+      "size": [6.94, 0.36, 0.12],
+      "lift": 5.1259,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
+    },
+    {
+      "id": "pipes-e-4",
+      "at": [16.39, -47.28],
+      "yaw": 90,
+      "size": [17.5, 0.36, 0.12],
+      "lift": 5.1259,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
+    },
+    {
+      "id": "pipes-e-5",
+      "at": [16.39, -27.15],
+      "yaw": 90,
+      "size": [17.5, 0.36, 0.12],
+      "lift": 5.45,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
+    },
+    {
+      "id": "pipes-e-6",
+      "at": [16.39, -2.94],
+      "yaw": 90,
+      "size": [9.36, 0.36, 0.12],
+      "lift": 5.45,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
+    },
+    {
+      "id": "pipes-e-7",
+      "at": [16.39, 13.12],
+      "yaw": 90,
+      "size": [17.5, 0.36, 0.12],
+      "lift": 5.45,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
+    },
+    {
+      "id": "pipes-e-8",
+      "at": [16.39, 27.36],
+      "yaw": 90,
+      "size": [5.72, 0.36, 0.12],
+      "lift": 5.45,
+      "color": "#4a4e52",
+      "finish": "service/pipes"
     }
   ],
   "lighting": {

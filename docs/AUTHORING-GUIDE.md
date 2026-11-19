@@ -325,13 +325,12 @@ Each error starts with the path of the value to change, such as `props[3].params
 
 A static object is one box of 12 triangles that is only drawn: litter, or an overhead
 object. Nothing collides with it, so the clearance rules, `overlap`, `support` and
-`low-top` pass it by, and flat stock too low for a prop enters as litter. The description's
-optional `statics` lists at most 256. A record takes `id`, `at`, `size`, `color` and
-`finish`, and any of `yaw`, `lift`, `on`, `number`, `wear`, `seed` and `glow`; "Static
-objects" in the [level-format knowledge](../packages/level-format/docs/KNOWLEDGE.md) gives
-each range and default. `at` is the centre's plan point, `size` is `[width, height,
-length]` with sides of 0.02 m or more, and `yaw` turns the length as a prop's. The keys
-name the class:
+`low-top` pass it by, and flat stock too low for a prop enters as litter. A record of
+`statics` takes `id`, `at`, `size`, `color` and `finish`, and any of `yaw`, `lift`, `on`,
+`number`, `wear`, `seed` and `glow`; "A box's paint" and "Static objects" in the
+[level-format knowledge](../packages/level-format/docs/KNOWLEDGE.md) give each range and
+default. `at` is the centre's plan point, `size` is `[width, height, length]` with sides
+of 0.02 m or more, and `yaw` turns the length as a prop's. The keys name the class:
 
 - floor litter, with neither `on` nor a lift: the build lays it on the floor under `at`;
 - litter on a prop, with `on`, the prop's id, and no `lift`: on the highest level top of
@@ -359,16 +358,16 @@ damage, so a litter stays on its prop there.
 
 ## Budgets and caps
 
-- First-pass budget: 800 slabs in 200 props. The report prints both counts beside the
-  budget and never rejects for it; the art team holds itself to it. The committed level
-  holds 616 slabs in 127 props, and 217 static objects: 200 litter pieces and 17 lamps.
-- Caps: 1,024 slabs, 300,000 triangles and 32 point lights. Above 1,024 slabs the build
-  is blocked, and above 300,000 triangles the level is rejected. The report prints the
-  point lights' count beside their cap.
+- First-pass budget: 800 slabs in 200 props. The report prints both counts beside it and
+  never rejects for it; the art team holds itself to it. The committed level holds 616
+  slabs in 127 props, and 245 static objects: 200 litter pieces and 45 overhead objects,
+  17 of them lamps.
+- Caps: above 1,024 slabs the build is blocked, above 300,000 triangles the level is
+  rejected, and the report prints the count of point lights beside their cap of 32.
 - The description admits at most 512 props, 256 static objects, 16 seals and eight glows.
 - The stage and the seals hold 113,853 triangles, so the props and the static objects may
-  add 186,147. The level's 217 static objects add 2,604, and the report prints the level's
-  count beside the cap: 136,493.
+  add 186,147. The level's 245 static objects add 2,940, and the report prints the level's
+  count, 136,829, beside the cap.
 - A slab's triangle count grows with its face: 12 for a 1 by 1 m slab, 20 for 2 by 1.2 m,
   44 for 4 by 2.4 m and 92 for 7 by 3.2 m. 800 crate slabs add 9,600 triangles; two bridge
   cranes of span 29.37 and travel 30 add 3,104.
@@ -388,11 +387,11 @@ recipes and the value ladder.
 - A role's `body` holds its path's metalness and roughness, and its `lit` the emission:
   every slab of a glowing prop names the glow, and only a lit body shines in it.
 - The committed table paints every finish with layers: `housing`, `corrugated`, `beam`,
-  `bed`, `casting`, `cast-concrete`, `timber`, `steel-stock`, `block`, the five roles of
-  `litter` and the joints of `luminaire/strip`. Six paths stay plain bodies: `housing/top`,
-  `corrugated/roof`, `beam/flange`, `beam/tie`, `cast-concrete/top` and `luminaire/band`.
-  The bodies of `steel-stock` and `luminaire` keep metalness 0.55, and every other body
-  stands at metalness 0. Both `luminaire` paths are lit.
+  `bed`, `casting`, `cast-concrete`, `timber`, `steel-stock`, `block`, `sign`, `service`,
+  the five roles of `litter` and the joints of `luminaire/strip`. Seven paths stay plain
+  bodies: `housing/top`, `corrugated/roof`, `beam/flange`, `beam/tie`, `cast-concrete/top`,
+  `luminaire/band` and `sign/hanger`. `steel-stock` and the two lit `luminaire` paths
+  keep metalness 0.55, and every other body stands at metalness 0.
 - Every kind takes `wear` and `seed`; the kinds command prints their ranges and defaults.
   A wearing layer follows `wear`, and `seed` varies a pattern between props.
 - Three parameters choose a role: a container's `door`, `+z` or `-z`, puts
@@ -401,6 +400,12 @@ recipes and the value ladder.
   partition takes its material's path; the level's barriers name `cast-concrete/barrier`
   and its stacks with posts `steel-stock/stack-posts`.
 - Every face of a slab takes the slab's tint, the inside face included.
+
+A seal with `finish` is painted: it takes `number`, `wear`, `seed` and `glow` as a static
+object does and leaves `metalness` and `roughness` to its role's body. A seal without
+`finish` draws flat, requires both and takes no paint key. Six of the 13 seals are painted:
+`end-wall` with `corrugated/gate`, which extends `cladding`, and `door-plus-x` and the
+four windows with `corrugated/roller` and `corrugated/shutter`, which extend `slats`.
 
 The snapshot command draws one page per finish path in use, `<finish>.<role>.png` in
 `.tmp/snapshots/finish/`. It empties that directory first, so it holds the pages of this
@@ -416,22 +421,22 @@ largest shown face, its width times the larger of its height and its length. The
 `top` is the view from above flipped top to bottom. `outside` is the side along the width;
 `inside`, `end-` and `end+` stand for no face of a box. No tile shows the sides along the
 length: type the side that carries a mark as the width, and turn the box by its `yaw`.
+A path that only painted seals name gets a seal page, after the box pages: the seal as a
+slab of its longer plan extent as the width, its height, and its shorter extent as the
+thickness, on the seal with the largest side. `outside` is then the seal's large side.
 
 Under each face stand a ruler in metres and the face's mean albedo as linear luminance,
 such as `outside 5mm 0.142`. A page shows albedo only, in the slab's or the box's tint, and
-draws a `"glow"` mark in the finish's `light`. The author holds each mean against the value
-ladder of the art team's notes. The [look and lighting](LOOK-AND-LIGHTING.md) document
-turns it into what a top, a side and an underside show, and gives the mood, the stage's
-materials, the hall's light, the bloom threshold, the tuning handles, the reference levels
-and how to add an emergency wall light. The QA app's next start shows the finish lit.
+draws a `"glow"` mark in the finish's `light`. The author holds each mean against the notes'
+value ladder; the [look and lighting](LOOK-AND-LIGHTING.md) document turns it into what a
+top, a side and an underside show. The QA app's next start shows the finish lit.
 
 ### Hall finishes
 
 A base override in `base.materials` takes `finish`, a path of the table, and that role is
 a hall finish: its layers draw over the stage material's own look, on every surface of
 that material. A hall finish states no `body`, takes no `lit` effect and draws on `top`,
-`bottom` or `outside` only, also through `extends`. The validator reports a fault at the
-offending value, with the hall path in the message. Its coordinates are the level's:
+`bottom` or `outside` only, also through `extends`. Its coordinates are the level's:
 
 - on `top` and `bottom`, the plan point `[x, z]`;
 - on `outside`, the level's Z on a wall that faces along X and the level's X elsewhere,
@@ -459,18 +464,15 @@ not the surface's value; the QA app shows the marks on the stage.
 
 ## Accepted limits
 
-The project knowledge lists the limits of the first pass that the owner accepts, and what
-the kit cannot express.
-
-`gap` has limits of its own. It does not judge a pair nearer than 0.7 m, so two props that
+Beside the owner's and the kit's limits, which the project knowledge lists, `gap` has
+limits of its own. It does not judge a pair nearer than 0.7 m, so two props that
 touch at an acute angle leave a wedge it never sees. It stays strict where nothing fills a
 gap: a notch 0.4 m deep beside a smaller crate fails, and so does a corridor mouth only
 0.36 m deep. A pocket against a wall of several body boxes gets one finding per box.
 
 ## The loop
 
-The author edits the git-ignored draft beside the committed file and replaces the
-committed file only when the validator accepts the draft:
+The author edits the git-ignored draft beside the committed file, first a copy of it:
 
 ```sh
 just kinds                                                   # once: kinds and parameters
@@ -480,19 +482,17 @@ just snapshot --description levels/dark-factory.draft.json --eye=9,12.5,-4 --loo
 just fmt                                                     # after the copy over the committed file
 ```
 
-- Start the draft as a copy of `levels/dark-factory.json`.
 - Edit the draft -> validate -> read the findings -> snapshot -> read every sheet and the
   changed paths' pages -> edit again.
 - The sheets land in `.tmp/snapshots/`: `plan.png` (the floor plan below 5.9 m and the
   overhead plan below 16.2 m, with a 10 m grid, the spawns with their 6 m circles and each
   prop's number), `section.png` (two long elevations and six cross sections, with lines at
   each floor and at 2.17 m), `view.png` (eight perspective views: from the spawns at
-  eye height and two overviews from 12 m up) and `custom.png`; the finish pages in
-  `.tmp/snapshots/finish/`.
+  eye height and two overviews from 12 m up) and `custom.png`.
 - A point that starts with a minus sign needs the `=` form, as in `--eye=-5,1.7,-20`.
 - Exit status 0 means accepted or done, 2 a blocked build or a rejected level, 3 a usage or
   file error, and 1 a defect or a broken sibling install.
 - One validate takes about 4 s, also with 800 crate slabs. A snapshot of the committed
-  level, with 45 finish pages, takes about 40 s.
+  level, with 51 finish pages, takes about 70 s.
 - When the validator accepts the draft, copy it over the committed file and run the
   formatter; `just lint` checks the committed file's layout.

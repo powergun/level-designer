@@ -3,6 +3,7 @@ import { admitSlabs, encodeLevel, parseDescription } from "@level-designer/level
 import type { Description, Level } from "@level-designer/level-format";
 import { assembleStaticScene, inspectGlb } from "@level-designer/level-glb";
 import type { BuildError, BuildInputs, BuildOutcome, PreparedStatic } from "./built.js";
+import { sealLooks } from "./looks.js";
 import { prepareStatic } from "./prepare.js";
 import { expandProps } from "./props.js";
 import { levelScene } from "./scene.js";
@@ -16,12 +17,13 @@ function blocked(errors: readonly BuildError[]): BuildOutcome {
   return { ok: false, errors };
 }
 
-/** The static scene of the description, or every `base` error. */
+/** The static scene of the description, a painted seal with its path's body, or every `base` error. */
 function staticScene(
   baseStage: Uint8Array,
   description: Description,
 ): { readonly ok: true; readonly glb: Uint8Array } | { readonly ok: false; errors: BuildError[] } {
-  const scene = assembleStaticScene(baseStage, description.base, description.seals);
+  const { seals, looks } = sealLooks(description);
+  const scene = assembleStaticScene(baseStage, description.base, seals, looks);
   if (scene.ok) return scene;
   return { ok: false, errors: scene.errors.map((error) => ({ rule: "base", ...error })) };
 }

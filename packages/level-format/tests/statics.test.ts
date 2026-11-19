@@ -150,6 +150,11 @@ describe("static objects: references and ids", () => {
     expect(missing.map((p) => p.message)).toEqual(['statics[0].finish: no finish "housing/door"']);
   });
 
+  test("a glows map that fails its shape yields its own problem alone", () => {
+    const document = changed(withStatic({ ...validStatic(), glow: "amber" }), "glows", "x");
+    expect(rulePaths(parseDescription(JSON.stringify(document)))).toEqual([["shape", "glows"]]);
+  });
+
   test("two static objects may not share an id", () => {
     expect(rulePaths(parse([validStatic("twin"), validStatic("twin")]))).toEqual([
       ["id", "statics[1].id"],

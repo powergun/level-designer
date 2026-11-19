@@ -4,7 +4,7 @@ import type { FinishSwatch } from "@level-designer/snapshot-render";
 import type { CustomView } from "../command-line/index.js";
 import { kindLines } from "../text/index.js";
 import type { OutputFile } from "./files.js";
-import { boxSwatches } from "./box-swatches.js";
+import { boxSwatches, sealSwatches } from "./box-swatches.js";
 import { clearDirectory, writeFiles } from "./files.js";
 import { finishSwatches } from "./finish-swatches.js";
 import { hallSwatches } from "./hall-swatches.js";
@@ -67,23 +67,28 @@ export async function build(
 const FINISH_PAGES = ["snapshots", "finish"] as const;
 
 /**
- * The swatch of every finish page: the slab pages, the box pages, then the hall pages. A path
- * that a base override names gets its hall page only, and a path that a slab and a static
- * object name gets its slab page only, so each file is written once.
+ * The swatch of every finish page: the slab pages, the box pages, the seal pages, then the
+ * hall pages. A path keeps the page of its strongest claim, an override's, then a slab's, a
+ * static object's and a painted seal's, so each file is written once.
  */
 function pageSwatches(built: BuiltLevel): readonly FinishSwatch[] {
   const hall = hallSwatches(built);
-  const hallPaths = new Set(hall.map((swatch) => swatch.label));
-  const slabs = finishSwatches(built.level).filter((swatch) => !hallPaths.has(swatch.label));
-  const taken = new Set([...hallPaths, ...slabs.map((swatch) => swatch.label)]);
-  const boxes = boxSwatches(built).filter((swatch) => !taken.has(swatch.label));
-  return [...slabs, ...boxes, ...hall];
+  const taken = new Set(hall.map((swatch) => swatch.label));
+  const untaken = (swatches: readonly FinishSwatch[]): readonly FinishSwatch[] => {
+    const kept = swatches.filter((swatch) => !taken.has(swatch.label));
+    for (const swatch of kept) taken.add(swatch.label);
+    return kept;
+  };
+  const slabs = untaken(finishSwatches(built.level));
+  const boxes = untaken(boxSwatches(built));
+  const seals = untaken(sealSwatches(built));
+  return [...slabs, ...boxes, ...seals, ...hall];
 }
 
 /**
  * `snapshot`: builds without judging and writes `snapshots/plan.png`, `section.png` and
  * `view.png` under the work directory, `custom.png` for a custom view, and one page per
- * finish path in use, a slab's, a box's or a hall finish's, as
+ * finish path in use, a slab's, a box's, a seal's or a hall finish's, as
  * `snapshots/finish/<finish>.<role>.png`, into a directory it first empties.
  */
 export async function snapshot(

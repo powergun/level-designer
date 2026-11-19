@@ -34,15 +34,28 @@ export interface BaseLook {
   readonly doubleSided: readonly string[];
 }
 
-/** A seal: an axis-aligned box in the level frame with its flat look; `color` is `#rrggbb`. */
-export interface SealBox {
+/** A seal's box: an axis-aligned box in the level frame and its `#rrggbb` colour. */
+interface SealShape {
   readonly id: string;
   readonly min: Vec3;
   readonly max: Vec3;
   readonly color: string;
+}
+
+/** A seal without a finish: it draws flat, by its own metalness and roughness. */
+export interface FlatSeal extends SealShape {
   readonly metalness: number;
   readonly roughness: number;
+  readonly paint?: undefined;
 }
+
+/** A seal with a finish: a painted box whose recipe's body owns its surface response. */
+interface PaintedSeal extends SealShape {
+  readonly paint: BoxPaint;
+}
+
+/** A seal: flat, or painted when it names a finish; `paint` tells them apart. */
+export type SealBox = FlatSeal | PaintedSeal;
 
 /** The body of one finish path's recipe: the flat fallback's surface response and emission. */
 interface SlabBody {
@@ -82,7 +95,7 @@ export interface StaticBox {
   readonly support?: { readonly prop: string; readonly slab: number };
 }
 
-/** The body of every finish path a slab or a static object names, by path, and the glows. */
+/** The body of every finish path in use, by path, and the glows. */
 export interface SlabLooks {
   readonly bodies: ReadonlyMap<string, SlabBody>;
   readonly glows: ReadonlyMap<string, Glow>;

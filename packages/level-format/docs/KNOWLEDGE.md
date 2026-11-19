@@ -24,7 +24,7 @@ no base material or mesh name and no placement: a prop's `kind` passes on as a s
 - `finish`: the finish table's types, its one admission with `extends` and the caps of a
   recipe, its canonical text, a path's drawn recipe, a hall finish's limits and the seed
   of an id. The description and the level `.json` share it.
-- `description`: the description type, its admission and a static object's class and box.
+- `description`: the description, its admission, a box's paint and a static object's box.
 - `level`: the level type, the slab admission, the decoder and the encoder.
 
 Dependencies point down: `shape` sits at the bottom, and `lighting`, `slab` and `length`
@@ -81,8 +81,8 @@ The description's root keys are `schema`, `name`, `base`, `seals`, `finishes`, `
 - An override takes any of `tint`, `metalness`, `roughness`, `emissive` and `finish`; an
   omitted key keeps the source value. A `finish` is a finish path, and its role is the
   material's hall finish, below.
-- A seal holds `id`, `min`, `max`, `color`, `metalness` and `roughness`. Its box passes
-  when `max - min` is at least 0.05 m on every axis.
+- A seal holds `id`, `min`, `max` and `color`, and its look, below. Its box passes when
+  `max - min` is at least 0.05 m on every axis.
 - `finishes` is the finish table, below.
 - `glows` maps a free-text name to a `color` and a `strength` from 0 to 100, the type of
   an emissive override.
@@ -101,6 +101,41 @@ are `#rrggbb` text in either letter case; a tint, an emissive colour and a glow 
 linear RGB triples. `isSurfaceColor` is the one check of the surface colour form: the seal
 and slab reads use it, and so can any component that admits a surface colour.
 
+## A box's paint
+
+A seal and a static object are boxes, and one reader owns a box's five paint keys:
+
+- `finish`, a finish path;
+- `number`, an integer from 0 to 999,999, by default 0;
+- `wear`, from 0 to 1, by default 0.3;
+- `seed`, an integer from 0 to 4,095, by default `seedOfId` of the box's id;
+- `glow`, the name of one of `glows`, absent when unstated.
+
+The admission fills every default, so each reader of the typed record finds the same
+values. A glow name that `glows` lacks is a `shape` problem at the `glow`. The description
+reads `glows` after `seals`, so it judges a seal's glow name right after `glows`, before the
+props. When `glows` is missing or fails its own shape, no glow name is judged.
+
+Once the whole description holds its shape, a box whose finish path the table lacks is a
+`finish` problem at its `finish`: `seals[<i>].finish: no finish "<finish>/<role>"`, and
+the same at `statics[<i>].finish`, one per box. These problems follow the hall finishes'
+in document order: the seals', then the static objects'.
+
+## Seals
+
+A seal's `finish` decides its look, and the typed `Seal` is a union on that key:
+
+- A flat seal states no `finish`. It requires `metalness` and `roughness` and takes no
+  other paint key. Its typed value holds `id`, `min`, `max`, `color`, `metalness` and
+  `roughness`.
+- A painted seal states a `finish` and takes the other four paint keys. It states neither
+  `metalness` nor `roughness`, because its recipe's body owns both. Its typed value
+  holds `id`, `min`, `max`, `color` and the filled paint keys, the type `PaintedSeal`.
+
+Each key of the other look is an unknown key, a `shape` problem at its path; a missing
+`metalness` or `roughness` of a flat seal is a missing key. A consumer tells the two looks
+apart by `seal.finish === undefined`.
+
 ## Static objects
 
 A static object is one box that is only drawn: litter on the floor or on a prop's top, or
@@ -110,19 +145,13 @@ an overhead object. Its record takes seven keys of its own and a box's five pain
   about +Y, by default 0; `size`, `[width, height, length]` in metres, each side at least
   0.02 m within the length slack; `lift`, the height of its underside above the floor
   under `at`, at least 0 and by default 0; `on`, the id of a prop it lies on; and `color`,
-  `#rrggbb` text.
-- The paint keys: `finish`, a finish path, required; `number`, an integer from 0 to
-  999,999, by default 0; `wear`, from 0 to 1, by default 0.3; `seed`, an integer from 0 to
-  4,095, by default `seedOfId` of the id; and `glow`, the name of one of `glows`.
+  `#rrggbb` text, its tint.
+- The paint keys, with `finish` required.
 
-`id`, `at`, `size`, `color` and `finish` are required. The admission fills every default,
-so each reader of the typed record finds the same values; `on` and `glow` stay absent when
+`id`, `at`, `size`, `color` and `finish` are required, and `on` stays absent when
 unstated. An `on` that names no prop is a `shape` problem at `statics[<i>].on`; a seal's
 id names no prop. A stated `lift` beside an `on` is a `shape` problem at the `lift`, a
-lift of 0 included, and the typed lift of such litter is 0. A glow name that `glows` lacks
-is a `shape` problem at the `glow`. Once the whole description holds its shape, a static
-object whose finish path the table lacks is a `finish` problem at its `finish`:
-`statics[<i>].finish: no finish "<finish>/<role>"`, one per object.
+lift of 0 included, and the typed lift of such litter is 0.
 
 `staticClass` reads the class from the keys: `prop` with an `on`, `overhead` with a
 positive lift, and `floor` otherwise. The class's limits belong to `level-rules`.

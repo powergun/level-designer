@@ -1,16 +1,6 @@
-import {
-  LENGTH_SLACK,
-  readFinishPath,
-  readHexColor,
-  readLinearRgb,
-  readVec3,
-} from "../shape/index.js";
+import { readFinishPath, readLinearRgb } from "../shape/index.js";
 import type { IdClaims, ShapeNode } from "../shape/index.js";
-import { formatLength } from "../slab/index.js";
-import type { Glow, MaterialOverride, Prop, Seal } from "./description.js";
-
-/** The thinnest a seal may be along any axis, in metres. */
-const MIN_SEAL_THICKNESS = 0.05;
+import type { Glow, MaterialOverride, Prop } from "./description.js";
 
 /** A colour with a strength from 0 to 100. */
 export function readGlow(node: ShapeNode): Glow {
@@ -36,31 +26,6 @@ export function readOverride(node: ShapeNode): MaterialOverride {
     ...(emissive === undefined ? {} : { emissive: readGlow(emissive) }),
     ...(finish === undefined ? {} : { finish: readFinishPath(finish) }),
   };
-}
-
-/** Records a seal whose box is thinner than the minimum along an axis. */
-function checkThickness(node: ShapeNode, seal: Seal): void {
-  const extents = seal.max.map((value, axis) => value - (seal.min[axis] ?? Number.NaN));
-  if (extents.some(Number.isNaN) || extents.every((e) => e >= MIN_SEAL_THICKNESS - LENGTH_SLACK)) {
-    return;
-  }
-  const shown = extents.map(formatLength).join(", ");
-  node.fail(`max - min of at least ${MIN_SEAL_THICKNESS} m on each axis`, `[${shown}]`);
-}
-
-/** One seal: an axis-aligned box with a unique id and a flat look. */
-export function readSeal(node: ShapeNode, ids: IdClaims): Seal {
-  node.record(["id", "min", "max", "color", "metalness", "roughness"]);
-  const seal: Seal = {
-    id: ids.claim(node.field("id")),
-    min: readVec3(node.field("min")),
-    max: readVec3(node.field("max")),
-    color: readHexColor(node.field("color")),
-    metalness: node.field("metalness").numberIn(0, 1),
-    roughness: node.field("roughness").numberIn(0, 1),
-  };
-  checkThickness(node, seal);
-  return seal;
 }
 
 /** One prop; its kind and parameters are left to `prop-kit`. */

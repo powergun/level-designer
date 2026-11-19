@@ -3,10 +3,11 @@ import { admitText, entryPath, IdClaims, itemPath, keyPath, readId } from "../sh
 import type { Admission, FormatProblem, ShapeNode } from "../shape/index.js";
 import { hallProblems, readFinishTable, recipeAt } from "../finish/index.js";
 import type { FinishTable } from "../finish/index.js";
-import type { BaseStage, Description } from "./description.js";
+import type { BaseStage, Description, Glow } from "./description.js";
 import { DESCRIPTION_SCHEMA } from "./description.js";
-import type { StaticObject } from "./description.js";
-import { readGlow, readOverride, readProp, readSeal } from "./records.js";
+import { judgeGlow } from "./paint.js";
+import { readGlow, readOverride, readProp } from "./records.js";
+import { readSeal } from "./seals.js";
 import { readStatic } from "./statics.js";
 
 /** The description caps. */
@@ -51,19 +52,40 @@ function hallFinishProblems(base: BaseStage, finishes: FinishTable): FormatProbl
   });
 }
 
-/** The static objects whose finish path the table lacks, each a `finish` problem. */
-function staticFinishProblems(
-  statics: readonly StaticObject[],
+/** The boxes of the list `list` whose stated finish path the table lacks, each a `finish` problem. */
+function boxFinishProblems(
+  list: string,
+  boxes: readonly { readonly finish?: string | undefined }[],
   finishes: FinishTable,
 ): FormatProblem[] {
-  return statics.flatMap((object, i) => {
-    if (recipeAt(finishes, object.finish) !== undefined) {
+  return boxes.flatMap((box, i) => {
+    if (box.finish === undefined || recipeAt(finishes, box.finish) !== undefined) {
       return [];
     }
-    const at = keyPath(itemPath("statics", i), "finish");
-    const message = `${at}: no finish ${JSON.stringify(object.finish)}`;
+    const at = keyPath(itemPath(list, i), "finish");
+    const message = `${at}: no finish ${JSON.stringify(box.finish)}`;
     return [{ rule: "finish" as const, path: at, message }];
   });
+}
+
+/** The glows, and their names unless the map itself failed its shape. */
+interface Glows {
+  readonly values: ReadonlyMap<string, Glow>;
+  readonly names: ReadonlySet<string> | undefined;
+}
+
+/**
+ * The glows map. Its names are unknown when the map is missing or fails its own shape, so
+ * that one fault yields one problem and no glow name is judged against it.
+ */
+function readGlows(node: ShapeNode, problems: readonly FormatProblem[]): Glows {
+  const before = problems.length;
+  const entries = node.entries(MAX_GLOWS);
+  const failed = node.value === undefined || problems.length > before;
+  return {
+    values: new Map(entries.map(([glow, child]) => [glow, readGlow(child)])),
+    names: failed ? undefined : new Set(entries.map(([glow]) => glow)),
+  };
 }
 
 /**
@@ -82,24 +104,29 @@ function readDescription(root: ShapeNode, problems: FormatProblem[]): Descriptio
   const seals = root.field("seals").list(MAX_SEALS);
   const sealValues = seals.map((node) => readSeal(node, ids));
   const finishes = readFinishTable(root.field("finishes"));
-  const glows = root.field("glows").entries(MAX_GLOWS);
-  const glowValues = new Map(glows.map(([glow, node]) => [glow, readGlow(node)]));
+  const glows = readGlows(root.field("glows"), problems);
+  seals.forEach((node, i) => {
+    if (sealValues[i]?.finish !== undefined) {
+      judgeGlow(node, glows.names);
+    }
+  });
   const props = root.field("props").list(MAX_PROPS);
   const propValues = props.map((node) => readProp(node, ids));
   const propIds = new Set(propValues.map((prop) => prop.id));
   const statics = root.optionalField("statics")?.list(MAX_STATICS) ?? [];
-  const staticValues = statics.map((node) => readStatic(node, ids, glowValues, propIds));
+  const staticValues = statics.map((node) => readStatic(node, ids, glows.names, propIds));
   const lighting = readLighting(root.field("lighting"));
   if (problems.length === 0) {
     problems.push(...hallFinishProblems(base, finishes));
-    problems.push(...staticFinishProblems(staticValues, finishes));
+    problems.push(...boxFinishProblems("seals", sealValues, finishes));
+    problems.push(...boxFinishProblems("statics", staticValues, finishes));
   }
   return {
     name,
     base,
     seals: sealValues,
     finishes,
-    glows: glowValues,
+    glows: glows.values,
     props: propValues,
     statics: staticValues,
     lighting,

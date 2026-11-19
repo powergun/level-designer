@@ -9,9 +9,11 @@
 export { parseDescription, staticBox, staticClass } from "./description/index.js";
 export type {
   BaseStage,
+  BoxPaint,
   Description,
   Glow,
   MaterialOverride,
+  PaintedSeal,
   Prop,
   Seal,
   StaticClass,

@@ -30,15 +30,29 @@ export interface BaseStage {
   readonly doubleSided: readonly string[];
 }
 
-/** One static, indestructible box that closes the hall, with its flat look. */
-export interface Seal {
+/** A seal's box: its id, its axis-aligned corners and its `#rrggbb` colour or tint. */
+interface SealBounds {
   readonly id: string;
   readonly min: Vec3;
   readonly max: Vec3;
   readonly color: string;
+}
+
+/** A seal without a finish: it draws flat, by its own metalness and roughness. */
+interface FlatSeal extends SealBounds {
   readonly metalness: number;
   readonly roughness: number;
+  readonly finish?: undefined;
 }
+
+/** A seal with a finish: a painted box, whose recipe's body owns metalness and roughness. */
+export interface PaintedSeal extends SealBounds, BoxPaint {}
+
+/**
+ * One static, indestructible box that closes the hall. `finish` tells the two looks apart:
+ * a seal without it is flat, and one with it is a painted box.
+ */
+export type Seal = FlatSeal | PaintedSeal;
 
 /**
  * One prop: its stable id, its kind, the plan position `[x, z]` of its origin, its yaw in

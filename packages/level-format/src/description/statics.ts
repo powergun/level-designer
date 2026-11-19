@@ -1,14 +1,10 @@
-import { seedOfId } from "../finish/index.js";
 import { LENGTH_SLACK, readFinishPath, readHexColor, readOptional } from "../shape/index.js";
 import type { IdClaims, ShapeNode } from "../shape/index.js";
-import { MAX_NUMBER, MAX_SEED } from "../slab/index.js";
-import type { BoxPaint, Glow, StaticObject } from "./description.js";
+import type { StaticObject } from "./description.js";
+import { judgeGlow, readBoxPaint } from "./paint.js";
 
 /** The shortest side of a static object, in metres. */
 const MIN_SIDE = 0.02;
-
-/** A box's default wear. */
-const DEFAULT_WEAR = 0.3;
 
 /** A static object's required keys, and its optional ones with the paint keys. */
 const REQUIRED_KEYS = ["id", "at", "size", "color", "finish"] as const;
@@ -45,30 +41,14 @@ function readLift(node: ShapeNode | undefined, besideOn: boolean): number {
 }
 
 /**
- * A box's five paint keys on a record whose keys the caller has checked; the seed defaults
- * to the hash of the box's id, and a `glow` names one of `glows`.
- */
-function readBoxPaint(node: ShapeNode, id: string, glows: ReadonlyMap<string, Glow>): BoxPaint {
-  const finish = readFinishPath(node.field("finish"));
-  const number = readOptional(node, "number", (n) => n.integerIn(0, MAX_NUMBER), 0);
-  const wear = readOptional(node, "wear", (n) => n.numberIn(0, 1), DEFAULT_WEAR);
-  const seed = readOptional(node, "seed", (n) => n.integerIn(0, MAX_SEED), seedOfId(id));
-  const glowNode = node.optionalField("glow");
-  const glow =
-    glowNode === undefined
-      ? undefined
-      : readKnown(glowNode, new Set(glows.keys()), "a name of glows");
-  return { finish, number, wear, seed, ...(glow === undefined ? {} : { glow }) };
-}
-
-/**
  * One static object with every default filled. An `on` names one of `props`, and a stated
- * `lift` beside it is refused, even 0.
+ * `lift` beside it is refused, even 0. A `glow` names one of `glows`, unknown when that map
+ * failed.
  */
 export function readStatic(
   node: ShapeNode,
   ids: IdClaims,
-  glows: ReadonlyMap<string, Glow>,
+  glows: ReadonlySet<string> | undefined,
   props: ReadonlySet<string>,
 ): StaticObject {
   node.record(REQUIRED_KEYS, OPTIONAL_KEYS);
@@ -86,7 +66,8 @@ export function readStatic(
   const lift = readLift(node.optionalField("lift"), onNode !== undefined);
   const on = onNode === undefined ? undefined : readKnown(onNode, props, "the id of a prop");
   const color = readHexColor(node.field("color"));
-  const paint = readBoxPaint(node, id, glows);
+  const paint = readBoxPaint(node, id, readFinishPath(node.field("finish")));
+  judgeGlow(node, glows);
   const pose = { id, at: [x, z] as const, yaw, size: [width, height, length] as const, lift };
   return { ...pose, ...(on === undefined ? {} : { on }), color, ...paint };
 }

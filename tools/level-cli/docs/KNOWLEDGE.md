@@ -23,7 +23,8 @@ with Bun and pass the scratch directory as `--workdir`, so no source names it.
 - `snapshot` builds without judging, so a rejected level can still be seen. It writes
   `plan.png`, `section.png` and `view.png` to `<workdir>/snapshots/`, and `custom.png` when
   `--eye` and `--look-at` name a view. Then it writes one finish page per finish path in
-  use to `<workdir>/snapshots/finish/`: the slab pages, the box pages, then the hall pages.
+  use to `<workdir>/snapshots/finish/`: the slab pages, the box pages, the seal pages, then
+  the hall pages.
 
 Every command takes `--description <path>` and `--workdir <dir>`. The description defaults
 to the committed one that `level-pipeline` names. `build` and `snapshot` need `--workdir`;
@@ -92,7 +93,7 @@ The tool fills the renderer's input from the built level and the game values:
 
 The art team reads one page per finish path, not one sheet of all paths: an image reader
 scales a large sheet down until its marks are lost. A path is in use when a slab, a static
-object or a base override names it. Its page is `<finish>.<role>.png`, the path with its
+object, a painted seal or a base override names it. Its page is `<finish>.<role>.png`, the path with its
 `/` turned into a `.`; a finish and a role are ids, so the name holds no other dot. The
 slab pages follow the paths' first use: props in level order, slabs in slab order.
 
@@ -139,6 +140,27 @@ order of the three kinds of page, the swatch's fields, the tie whether the heigh
 length is the larger, a 0.1 mm grid step wider that takes the path, the length that counts
 where it exceeds the height, and the slab and hall pages that keep a shared path.
 
+## Seal pages
+
+A seal with a finish is a painted box, and its path gets a seal page when no slab, static
+object or base override names the path. A flat seal names no path. The seal pages come
+after the box pages and before the hall pages, under the same name rule, in the paths'
+first use in description order: the slab and box pages hold the stronger claims on a
+shared path, and the hall pages are a page of another form.
+
+A seal page is a slab's page too. Its swatch takes the description alone: the path and its
+recipe from `recipeAt`, the seal's colour text, its admitted seed and wear, and a slab
+subject from the seal's extents. A seal has no yaw, so its longer plan extent is the width,
+X on a tie, its height the height, and its shorter plan extent the thickness. The page
+stands on the seal with the path's largest side, its width times its height; on a tie the
+first seal keeps the path. The `outside` tile is then the seal's large side, and the `top`
+and `bottom` tiles are its faces only where the longer extent runs along X.
+
+The seal page tests run `snapshot` on the box fixture with seals. They prove the order of
+the four kinds of page, the swatch's fields, the width along Z and along X, also by one
+0.1 mm grid step, the largest side, also over a thicker seal, the tie, and the slab, box and hall pages that keep a
+shared path while a flat seal adds none.
+
 ## Hall pages
 
 A hall finish is in use when a base override of the description names it as `finish`; the
@@ -162,7 +184,7 @@ path, and each swatch's interior, classes, recipe and grey.
 
 After a successful build and before it writes, `snapshot` removes the finish directory with
 everything in it, so the directory holds exactly the pages of this level. A level whose
-slabs, static objects and overrides name no finish writes the sheets and no page. A blocked build writes nothing and leaves the
+slabs, static objects, seals and overrides name no finish writes the sheets and no page. A blocked build writes nothing and leaves the
 directory as it was. The finish page tests prove the empty and the blocked case.
 
 ## What the tests prove
@@ -180,7 +202,7 @@ committed prepared level and hand-written reports; no test prepares a level.
   reads no description. `validate` and `kinds` write nothing.
 - `build` writes the pair only for an accepted report and names a directory it cannot
   write; a rejected or blocked level writes nothing and says why.
-- `snapshot` writes the finish, box and hall pages as their sections above state.
+- `snapshot` writes the finish, box, seal and hall pages as their sections above state.
 - `snapshot` writes three sheets, and a fourth for a custom view, without judging. Its input
   equals the prepared level's facts, the description's prop points, the game values and the
   hang height of `level-rules`.

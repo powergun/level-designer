@@ -43,34 +43,39 @@ function materialsOf(glb: Uint8Array): readonly WrittenMaterial[] {
   }));
 }
 
-/** The glow names the description's props and static objects state. */
+/** The glow names the description's seals, props and static objects state. */
 function glowsInUse(description: Description): ReadonlySet<string> {
+  const seals = description.seals.map((seal) =>
+    seal.finish === undefined ? undefined : seal.glow,
+  );
   const props = description.props.map((prop) => prop.params.get("glow"));
   const statics = description.statics.map((box) => box.glow);
-  const names = [...props, ...statics];
+  const names = [...seals, ...props, ...statics];
   return new Set(names.filter((name): name is string => typeof name === "string"));
 }
 
-/** Asserts every lamp material names a glow and emits its colour at its strength; returns the glows met. */
-function expectLitLamps(glb: Uint8Array, description: Description): ReadonlySet<string> {
-  const lamps = materialsOf(glb).filter(
+/** Asserts every lamp material names a glow and emits its colour at its strength. */
+function expectLitLamps(materials: readonly WrittenMaterial[], description: Description): void {
+  const lamps = materials.filter(
     (m) => typeof m.finish === "string" && m.finish.startsWith(LAMP_FINISH),
   );
   expect(lamps.length).toBeGreaterThan(0);
-  const met = new Set<string>();
   for (const lamp of lamps) {
-    const name = typeof lamp.glow === "string" ? lamp.glow : "";
-    const glow = description.glows.get(name);
+    const glow = description.glows.get(typeof lamp.glow === "string" ? lamp.glow : "");
     expect(glow).toBeDefined();
     expect(lamp.emissiveFactor).toEqual([...(glow?.color ?? [])]);
     expect(lamp.emissiveStrength).toBe(glow?.strength);
-    met.add(name);
   }
-  return met;
+}
+
+/** The glow names the written materials carry, on any finish path. */
+function glowsMet(materials: readonly WrittenMaterial[]): ReadonlySet<string> {
+  const names = materials.map((material) => material.glow);
+  return new Set(names.filter((name): name is string => typeof name === "string"));
 }
 
 test(
-  "the committed description builds and is accepted, and every lamp emits at its glow's strength",
+  "the committed description builds and is accepted, every lamp emits at its strength, and every glow in use is met",
   async () => {
     const before = preparations.mock.calls.length;
     const read = await readInputs(COMMITTED_DESCRIPTION);
@@ -85,7 +90,9 @@ test(
     expect(count).toBeLessThan(limit);
     expect(preparations.mock.calls.length - before).toBe(1);
     const { description, glb } = outcome.built;
-    expect(expectLitLamps(glb, description)).toEqual(glowsInUse(description));
+    const materials = materialsOf(glb);
+    expectLitLamps(materials, description);
+    expect(glowsMet(materials)).toEqual(glowsInUse(description));
   },
   PREPARATION_TIMEOUT,
 );

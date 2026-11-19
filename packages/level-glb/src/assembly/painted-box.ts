@@ -52,16 +52,17 @@ function frameAt(vertex: BoxVertex, halfExtents: Vec3): FaceFrame {
 }
 
 /**
- * A painted box's mesh in level coordinates: the box's 24 vertices and 12 triangles, its linear
- * tint on every vertex, and per vertex its face's frame and the box's number, seed and wear.
+ * A painted box's mesh in level coordinates from its corners and its half extents along its
+ * own axes: the 24 vertices and 12 triangles, the linear tint on every vertex, and per vertex
+ * its face's frame and the box's number, seed and wear.
  */
-export function paintedBoxGeometry(
-  box: PlacedBox,
+export function paintedGeometry(
+  corners: BoxCorners,
+  halfExtents: Vec3,
   color: string,
   paint: BoxPaint,
 ): PrimitiveGeometry {
-  const corners = placedCorners(box);
-  const frames = boxVertices(corners).map((vertex) => frameAt(vertex, box.halfExtents));
+  const frames = boxVertices(corners).map((vertex) => frameAt(vertex, halfExtents));
   const tint = linearColor(color);
   return {
     ...boxGeometry(corners),
@@ -74,4 +75,13 @@ export function paintedBoxGeometry(
       ),
     },
   };
+}
+
+/** A placed static object's painted mesh, its corners from the centre and the half extents. */
+export function paintedBoxGeometry(
+  box: PlacedBox,
+  color: string,
+  paint: BoxPaint,
+): PrimitiveGeometry {
+  return paintedGeometry(placedCorners(box), box.halfExtents, color, paint);
 }

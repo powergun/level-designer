@@ -11,8 +11,9 @@ Every body has shade 1 and metalness 0 unless stated.
 
 ### 4.1 Corrugated: container steel and cladding
 
-Cut: metal, bare metal. Roles of the kit: `side`, `end`, `door`, `roof`. Roles for seals:
-`cladding`, `shutter`, `gate`.
+Cut: metal, bare metal. Roles of the kit: `side`, `end`, `door`, `roof`. The finish also holds
+the seals' roles, `cladding`, `gate`, `slats`, `shutter` and `roller`; the seals brief beside
+this note, `look-dev-seals-brief.md`, owns their recipes, their values and the seals' records.
 
 `corrugated/end`, the blind end and the base of `side`. Body: roughness 0.6.
 
@@ -53,35 +54,13 @@ Cut: metal, bare metal. Roles of the kit: `side`, `end`, `door`, `roof`. Roles f
 
 `corrugated/roof`. Body: shade 1.1, roughness 0.8. No layer.
 
-`corrugated/cladding`, on wall seals. Body: roughness 0.7.
-
-1. bands: along across, period 0.25, width 0.05, ramp 0.05 -> shade 0.78. Ribs.
-2. bands: along up, period 3.0, width 0.03 -> shade 0.7. Sheet laps.
-
-`corrugated/shutter`, on the door and window seals. Body: roughness 0.7.
-
-1. bands: along up, period 0.10, width 0.03 -> shade 0.7. Slats.
-2. border: ends 0.15 -> shade 0.5. Guides.
-
-`corrugated/gate`, on the end wall, extends `cladding`. The seal's base lies 0.5 under the
-floor, so the gate stands from 0.5 to 5.2.
-
-1. rectangle: from [-3.0, 0.5] to [3.0, 5.2] -> paint 0.9. Gate leaf.
-2. bands: along up, period 0.10, width 0.03; clip [-3.0, 0.5] to [3.0, 5.2] -> shade 0.7. Slats.
-3. rectangle: from [-3.0, 0.5] to [3.0, 0.75] -> color worn yellow.
-4. bands: along diagonal, period 0.30, width 0.15; clip [-3.0, 0.5] to [3.0, 0.75] -> color
-   black. Warning bars at the gate's foot.
-5. rectangle: across out; from [3.0, 0.5] to [3.15, 5.2] -> shade 0.5. Guides.
-6. glyphs: at [0, 5.6], height 1.0, text "#", align centre -> color white. The seal's number.
-
-- Parameters the author sets: the tint; `door`, the end a player comes close to; `number`; `wear`;
-  on a seal its `finish` and its `number`.
+- Parameters the author sets: the tint; `door`, the end a player comes close to; `number`; `wear`.
 - Tints: blue `#2c4764` (0.060), green `#3c4a33` (0.061), red `#6d3f31` (0.070), grey `#4a4e52`
   (0.075), ochre `#6a5a2a` (0.105). A side prints 0.93 of its tint and a door about 1.1 times it.
 - Ladder: dark. Body 0.05 to 0.12 (side 0.012 to 0.03); numerals 0.5; rods 0.25.
 - Lit: none. Wear needs the rust runs, the scuff band and the dirt.
 - Layers: 10 on `side`, with one `noise` and one legend; 12 on `door`.
-- From: Known for containers; the crane shop's cladding for the wall language.
+- From: Known for containers.
 
 ### 4.2 Housing: painted sheet steel
 

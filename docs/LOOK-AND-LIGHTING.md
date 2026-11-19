@@ -85,8 +85,10 @@ light of the level casts a shadow.
   light its surroundings needs a point light near it, above its top or a metre under it,
   never level with its underside, where the point skims it.
 - The LEDs are the level's glows: 21 light strips in `strip`, `gate` and `alert`, the lit
-  marks of the 7 enclosures and the 6 conveyors in `line`, those of the 16 arms in `eye`,
-  and the 17 emergency lamps in `emergency`.
+  marks of the 7 enclosures and the 6 conveyors in `line`, those of the 16 arms and the
+  lamp pairs of the 3 hanging signs in `eye`, and the 17 emergency lamps in `emergency`.
+  The boards on the piers, the sign on the front deck, the pipe runs and the seals carry
+  no lit part.
 
 A finish page prints each face's mean albedo as linear luminance. The environment returns
 it times (1 - metalness) in full on a top, 0.55 of that on a side and 0.22 on an
@@ -220,7 +222,10 @@ A role's `body.roughness` trades its highlights against glare:
   more; at 0.65, about one in a hundred; from 0.7, none.
 - The paints stand at metalness 0: the housings at roughness 0.7 and their top at 0.8,
   the `corrugated` walls and doors at 0.6 and their roof at 0.8, and every role of
-  `beam`, `bed` and `casting` at 0.5, a gloss paint. The glare of `corrugated`, `beam`,
+  `beam`, `bed` and `casting` at 0.5, a gloss paint. The seals stand at 0.9, the flat ones
+  by their own keys and the painted ones by the bodies of `corrugated/cladding` and
+  `corrugated/slats`, so a point's highlight on a seal is the same either way. The signs'
+  boards stand at 0.8, their rods and the pipe runs at 0.7. The glare of `corrugated`, `beam`,
   the bed and the arms is computed, not measured. Where one of them glares, the cure is
   its role's roughness, toward 0.7.
 - Concrete, block and timber stand at metalness 0 and roughness 0.8 to 0.9.

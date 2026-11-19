@@ -29,6 +29,7 @@ function staticScene(): Uint8Array {
     syntheticBase(true),
     { scale: 2, materials: new Map(), doubleSided: [] },
     [SEAL],
+    LOOKS,
   );
   if (!built.ok) throw new Error("the synthetic look names nothing");
   return built.glb;

@@ -18,7 +18,8 @@ sec-111 install and throws. `COMMITTED_DESCRIPTION` is the path of
 
 1. admit the description text with `level-format`;
 2. assemble the static scene with `level-glb`: the base stage under the scaled root, the
-   base look and the seals;
+   base look and the seals, a flat seal with its own look and a painted seal with its paint
+   keys, the body of its finish path and the description's glows;
 3. prepare the static scene with sec-111's `prepareLevel` and the empty wall list
    `{"walls":[]}`;
 4. place and expand every prop with `prop-kit` on the floor under its `at`, read with
@@ -31,8 +32,10 @@ sec-111 install and throws. `COMMITTED_DESCRIPTION` is the path of
    box drawn with the material of its finish path and glow; then encode the level `.json`,
    finish table included, with `level-format`.
 
-Step 7 gives `level-glb` the body of every finish path a slab or a static object names, read
-with `level-format`'s `recipeAt`. The pipeline holds no finish default and no `extends` rule.
+Step 2 gives `level-glb` the body of every finish path a painted seal names, and step 7 that of
+every path a slab or a static object names, both read with `level-format`'s `recipeAt` by one
+reader. The level scene learns a painted seal's material from the static scene. The pipeline
+holds no finish default and no `extends` rule.
 
 A given prepared static level replaces step 3; it must be the preparation of the same
 static scene. The tests of one file share one preparation this way.
@@ -117,12 +120,16 @@ level, and each such build asserts that the count did not change.
 
 ### The fixture build
 
-- The fixture, one crate on each floor level with a floor litter, a hung sign and a litter
-  over the raised slab's crate's side, builds: the preparation measures scale 1, the
-  crates stand at 0 and 0.3241 m, every slab lies on the grid, the `.json` decodes to the
-  same level, and today's `prepareLevel` admits the whole level GLB, static nodes included.
-- The static objects stand between the seals and the props. The crate's litter lies on the
-  lid, the higher of the two tops under it, and names the lid's mesh node; the others carry
+- The fixture builds: a flat end-wall seal and a painted, glowing door seal, one crate on
+  each floor level, a floor litter, a hung sign and a litter over the raised slab's crate's
+  side. sec-111 prepares its static scene with the painted seal, the preparation measures
+  scale 1, the crates stand at 0 and 0.3241 m, every slab lies on the grid, the `.json`
+  decodes to the same level, and today's `prepareLevel` admits the whole level GLB, static
+  nodes included.
+- The painted seal draws with the body that its path's role extends, read through the table,
+  and emits its glow at the glow's strength times the body's `lit`.
+- The static objects stand between the two seals and the props. The crate's litter lies on
+  the lid, the higher of the two tops under it, and names the lid's mesh node; the others carry
   no support. The floor litter and the sign stand over the floor under `at` plus the lift.
 
 ### Blocked builds
@@ -147,7 +154,8 @@ level, and each such build asserts that the count did not change.
 
 ### Fixtures and the other tests
 
-The fixture's finish table holds the paths of a crate, a light strip and the litter. A test
+The fixture's finish table holds the paths of a crate, a light strip, the litter and the
+door seal, and its glows the one glow that the strips and the seal name. A test
 that replaces the props also clears the static objects.
 
 The top rule's unit test reads hand-built slabs: a level face of any facing, none on a
@@ -156,7 +164,8 @@ tie that keeps the first.
 
 The committed test builds `levels/dark-factory.json` with one preparation. The level is
 accepted, and every material of a `luminaire/` path names a glow and emits its colour at
-its strength; the glows met are those the props and the static objects name.
+its strength. The glows that the written materials carry, on any path, are those the seals,
+the props and the static objects name.
 
 The read test writes a description into a temporary folder, reads it back, names a
 missing file and removes the folder.

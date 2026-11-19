@@ -58,18 +58,18 @@ hold its formats and its finishes:
 
 - [level-format](../packages/level-format/docs/KNOWLEDGE.md): the level
   description and the level `.json`. It admits a description with its static
-  objects, encodes and decodes the level `.json`, admits the finish table, rounds
-  a slab to the format's grid and reads a slab or a static object as an oriented
-  box.
+  objects and its painted seals, encodes and decodes the level `.json`, admits the
+  finish table, rounds a slab to the format's grid and reads a slab or a static
+  object as an oriented box.
 - [finish-paint](../packages/finish-paint/docs/KNOWLEDGE.md): the finishes'
   arithmetic interface, layer kinds, painter, slab and hall frame rules and
   swatch, browser-safe. Its layer kinds and painter run on the number back end under Bun
   and on level-view's node back end.
 - [level-glb](../packages/level-glb/docs/KNOWLEDGE.md): the GLB contract. It
   assembles the static scene and the level scene, with one painted box per static
-  object and one material per finish path and glow, inspects a GLB and returns
-  world triangles. Its tests read the base stage through sec111-gateway's stage
-  entry, a test-only dependency.
+  object and per painted seal and one material per finish path and glow, inspects
+  a GLB and returns world triangles. Its tests read the base stage through
+  sec111-gateway's stage entry, a test-only dependency.
 
 Three turn props into slabs and judge the built level:
 
@@ -106,13 +106,13 @@ The other tools in `tools/` run under Bun:
   finish's, into its page of the finish sheet.
 - [level-pipeline](../tools/level-pipeline/docs/KNOWLEDGE.md): the one build
   sequence. It reads the description and the base stage, builds a level with its
-  finish data and its static objects, which it alone places, or returns its build
-  errors, and validates a built level into a report. It is the only test home
-  that prepares a level.
+  finish data, its painted seals and its static objects, which it alone places, or
+  returns its build errors, and validates a built level into a report. It is the
+  only test home that prepares a level.
 - [level-cli](../tools/level-cli/docs/KNOWLEDGE.md): the command-line tool. It
   owns the argument parsing, the file writes under the work directory, the printed
   text and the exit statuses, and fills the finish pages' swatches: a slab's, a
-  static object's and a hall finish's.
+  static object's, a painted seal's and a hall finish's.
 
 ## The sibling repositories
 
@@ -273,9 +273,10 @@ The owner accepts these limits of the QA app and the snapshots:
 
 The kit cannot express props standing on props, stock lower than 0.5 m, racks,
 strips under 0.5 m, round columns and joints, glass, or single lit ceiling
-fixtures. These wait for the owner's feedback. Litter, flat stock and wall lamps enter as
-static objects, which are only drawn: a litter is 0.15 m high or lower and lies on the
-floor or on a prop's top, and a lamp is an overhead object with a glow.
+fixtures. These wait for the owner's feedback. Litter, flat stock, wall lamps, signs and
+pipe runs enter as static objects, which are only drawn: a litter is 0.15 m high or lower
+and lies on the floor or on a prop's top, and the others are overhead objects; a lamp
+carries a glow.
 
 ## Hosts
 

@@ -35,7 +35,9 @@ entries are written as `0`.
 
 ## The static scene
 
-`assembleStaticScene` takes the base stage bytes, the base look and the seals:
+`assembleStaticScene` takes the base stage bytes, the base look, the seals and the looks.
+The looks hold one body per finish path that a painted seal names, and the glows. It
+writes:
 
 - the base nodes, accessors, buffer views, images, textures and samplers keep their
   indices and values, and the base buffer bytes open the new buffer unchanged, so the
@@ -48,8 +50,16 @@ entries are written as `0`.
 - base nodes carry no role.
 
 A seal is a box of 24 vertices and 12 triangles in level coordinates: four vertices per
-face with the face's outward unit normal, wound counter-clockwise seen from outside. Seals
-are single-sided, and a player inside the hall sees their outer faces.
+face with the face's outward unit normal, wound counter-clockwise seen from outside. Its
+corners are its own `min` and `max`, exactly, because sec-111 surveys a seal as a blocker.
+Seals are single-sided, and a player inside the hall sees their outer faces.
+
+A seal is flat or painted. A flat seal carries its own metalness and roughness, and its
+primitive holds `POSITION` and `NORMAL` alone. A painted seal names a finish: it carries
+the paint keys of a static object in place of the two values, because the recipe's body
+owns them. It is a painted box, as "Static objects" states, on the level's axes: the box's
+X is the level's X, its width, the box's Z is the level's Z, its length, and its base is
+`min`'s Y.
 
 A base material or mesh name that the base stage does not hold blocks the assembly with
 the `base` build error. Every such name returns an error with its path and a message, in
@@ -115,8 +125,9 @@ box's X from the face's centre and `y` the box's Z from the face's low edge; the
 measures the box's width by its length, and the classes are 2, top, and 3, bottom. A box's
 outside, top and bottom faces therefore read as a slab's, and a path draws alike on both.
 
-A seal and a static object share one box mesher: a seal is a box on the level's axes whose
-corners are its own min and max.
+A seal and a static object share one box mesher and one painted box: a seal is a box on
+the level's axes whose corners are its own min and max, and a painted seal carries the six
+attributes and the frames of a static object.
 
 ## Materials
 
@@ -137,13 +148,19 @@ only in sidedness. One twin exists per base material that a double-sided mesh us
 Appended materials follow in this order:
 
 - the twins, in base mesh order of first need;
-- one per seal, named `seal/<id>`, its colour decoded from `#rrggbb` sRGB to linear;
-- one per finish path used without a glow, named `finish/<path>`, in order of first use;
-- one per pair of finish path and glow, named `finish/<path>/glow/<glow>`, in order of
-  first use.
+- one per flat seal, named `seal/<id>`, its colour decoded from `#rrggbb` sRGB to linear;
+- the finish materials of the painted seals;
+- in the level scene, the finish materials of the static objects and the slabs that the
+  static scene lacks.
 
-First use runs in node order: the static objects, then the slabs. Every slab and every
-static object of a path and glow shares that one material. Its `extras` carry
+Each scene appends its finish materials in two runs: one per finish path used without a
+glow, named `finish/<path>`, then one per pair of finish path and glow, named
+`finish/<path>/glow/<glow>`, each in order of first use. First use runs in node order: the
+seals in the static scene, then the static objects and the slabs in the level scene. The
+level scene learns the painted seals' materials from the seal roots, by their role and
+their material's `extras`, never by a name. It therefore never takes a stage material,
+which can carry the same path. Every seal, static object and slab of a path and glow
+shares that one material. Its `extras` carry
 `finish`, the path, and with a glow `glow`, the glow's name, and `glowStrength`, its
 strength as the description states it: a painter joins a mesh to its recipe by them and
 emits the glow's colour at that strength times its emission. The name is a label for
@@ -201,8 +218,8 @@ primitive without a material takes glTF's default white.
   are maps, and a seal's and a static object's colour is the description's `#rrggbb`
   text. The bodies are a map by finish path, each the drawn body of its recipe, which
   `level-pipeline` resolves.
-- A slab and a static object name a finish path and a glow that the build has admitted; a
-  missing body or glow is a programming error and throws. A base override's finish path is
+- A slab, a static object and a painted seal name a finish path and a glow that the build
+  has admitted; a missing body or glow is a programming error and throws. A base override's finish path is
   admitted by `level-format` too, and a litter's support names a slab the build has
   admitted; the assembly writes both and judges nothing.
 - The written files stay inside the glTF subset that sec-111's level preparation admits:
@@ -256,6 +273,28 @@ path, and a floor litter on a glowing slab's path and glow. It proves:
   missing body;
 - the file's form and the inspection count.
 
+### The painted seals test
+
+It runs on the real base stage, with three painted seals beside a flat one: a gate on a
+path only a seal names, a shutter on a glowing slab's path and glow, and a sill on the
+path of a stage material's hall finish. Their extents differ on every axis. It proves:
+
+- the seal roots in input order, and the box at the seal's exact corners, wound outward;
+- the frame of each of the gate's six faces at its four corners, against a table computed
+  by hand, and the shutter's face sizes, so a swap of X and Z shows;
+- the six attributes, the linear tint, and the constants at the ends of their ranges with
+  each face's class;
+- the flat seal's own material and its primitive without paint data;
+- the materials' order, the fallback of a half-lit glow, and the throw on a missing body
+  or glow;
+- in a level scene on that static scene, one material shared by a seal, a static object
+  and slabs of one path and glow, a second material for that path without the glow, the
+  sill's material, never the stage material, on a slab of the sill's path, and no finish
+  material appended twice;
+- on a hand-built base whose first node under `stage` draws a stage material with a hall
+  path, a slab of that path taking a new finish material when no seal names the path;
+- the file's form and the inspection count.
+
 ### The reader subset check
 
 It reads the index values from the BIN chunk on its own. It proves that every accessor ends
@@ -264,10 +303,10 @@ inside its buffer view, every buffer view inside the buffer, every attribute has
 
 ### The appended views check
 
-The static scene, level scene and static objects tests each run it on the accessors that
-their assembly appends: the seals' over the base stage, the slabs' and the boxes' over the
-static scene. It
-proves that each appended accessor has a buffer view of its own, starting on four bytes.
+The static scene, level scene, static objects and painted seals tests each run it on the
+accessors that their assembly appends: the seals' over the base stage, the slabs' and the
+boxes' over the static scene. It proves that each appended accessor has a buffer view of
+its own, starting on four bytes.
 
 ### The inspection test
 

@@ -16,7 +16,7 @@ export interface FixtureLevel {
 
 /** Assemble the fixture seals and props, with the given static objects, on the real base stage. */
 export async function assembleFixtureLevel(statics: readonly StaticBox[]): Promise<FixtureLevel> {
-  const built = assembleStaticScene(await readBaseStage(), LOOK, SEALS);
+  const built = assembleStaticScene(await readBaseStage(), LOOK, SEALS, LOOKS);
   if (!built.ok) throw new Error("the fixture look names only real base names");
   const glb = assembleLevelScene(built.glb, PROPS, LOOKS, statics);
   return { staticGlb: built.glb, staticScene: readGlb(built.glb), glb, level: readGlb(glb) };

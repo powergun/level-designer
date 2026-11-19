@@ -23,7 +23,7 @@ const PAGE_SOURCES = {
   pixelRatioCap: ["engine/view/src/render/start.ts", /pixelRatioCap: ([\d.]+)/],
   signatureSlots: ["engine/view/src/render/presenter.ts", /const SIGNATURE_CAPACITY = (\d+);/],
   frameClampRate: ["games/arena/src/frame/page-clock.ts", /const MAX_FRAME_SECONDS = 1 \/ (\d+);/],
-  warmUpFrames: ["games/arena/src/boot/start.ts", /const WARM_UP_FRAMES = (\d+);/],
+  warmUpFrames: ["games/arena/src/boot/startup-progress.ts", /const WARM_UP_FRAMES = (\d+);/],
 } as const;
 
 /** The private clear colour: its source file and the text that holds its three channels. */

@@ -1,6 +1,6 @@
 import type { GltfMaterial } from "../container/index.js";
 import { EMISSIVE_STRENGTH } from "../container/index.js";
-import type { Glow, Rgb, SealBox, SlabLooks } from "./inputs.js";
+import type { FlatSeal, Glow, Rgb, SlabLooks } from "./inputs.js";
 
 /** What picks a finish material: a slab's or a box's finish path and optional glow. */
 export interface FinishUse {
@@ -29,7 +29,7 @@ export function emission(glow: Glow): Pick<GltfMaterial, "emissiveFactor" | "ext
 }
 
 /** A seal's single-sided flat material, named `seal/<id>`. */
-export function sealMaterial(seal: SealBox): GltfMaterial {
+export function sealMaterial(seal: FlatSeal): GltfMaterial {
   return {
     name: `seal/${seal.id}`,
     pbrMetallicRoughness: {
@@ -40,9 +40,9 @@ export function sealMaterial(seal: SealBox): GltfMaterial {
   };
 }
 
-/** Look up a named entry the prop expansion has admitted; a miss is a programming error. */
+/** Look up a named entry the build has admitted; a miss is a programming error. */
 function admitted<T>(entry: T | undefined, name: string, kind: string): T {
-  if (entry === undefined) throw new Error(`level scene: no ${kind} named "${name}"`);
+  if (entry === undefined) throw new Error(`assembly: no ${kind} named "${name}"`);
   return entry;
 }
 

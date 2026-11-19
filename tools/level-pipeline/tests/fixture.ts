@@ -1,6 +1,7 @@
 /**
- * The build fixture: the real base stage at its scale under one end-wall seal, with one crate
- * on each floor level, a floor litter, a hung sign, a litter on a crate and one point light. Tests vary it by replacing root keys.
+ * The build fixture: the real base stage at its scale under a flat end-wall seal and a painted
+ * door seal, with one crate on each floor level, a floor litter, a hung sign, a litter on a crate
+ * and one point light. Tests vary it by replacing root keys.
  */
 
 /** One prop record of a description. */
@@ -70,6 +71,25 @@ export const CRATE_SHEET: StaticRecord = {
   finish: "litter/sheet",
 };
 
+/** The one glow the light strips and the door seal name. */
+const CYAN_GLOWS = { cyan: { color: [0, 0.8, 1], strength: 4 } } as const;
+
+/**
+ * A painted seal in the committed door's box, glowing `cyan`, its constants left to their
+ * defaults. Its role extends another, so only the table's reading yields its body.
+ */
+export const DOOR_SEAL = {
+  id: "door-plus-x",
+  min: [16.06, -0.1, -15.25],
+  max: [16.36, 7.35, -7.8],
+  color: "#55595d",
+  finish: "shutter/door",
+  glow: "cyan",
+} as const;
+
+/** The body the door seal's role extends: neither the default nor any other role's. */
+export const SHUTTER_BODY = { metalness: 0.5, roughness: 0.45, lit: 0.5 } as const;
+
 /** The fixture description as a JSON value. */
 export const FIXTURE = {
   schema: "level-designer-description/1",
@@ -84,6 +104,7 @@ export const FIXTURE = {
       metalness: 0.2,
       roughness: 0.8,
     },
+    DOOR_SEAL,
   ],
   finishes: {
     timber: {
@@ -105,8 +126,13 @@ export const FIXTURE = {
       light: "#7ccbd6",
       roles: { strip: { body: { metalness: 0.8, roughness: 0.4, lit: 1 } } },
     },
+    shutter: {
+      cut: { family: "metal", color: "#5a5d61" },
+      light: "#7ccbd6",
+      roles: { panel: { body: SHUTTER_BODY }, door: { extends: "panel" } },
+    },
   },
-  glows: {},
+  glows: CYAN_GLOWS,
   props: [FRONT_CRATE, SLAB_CRATE],
   statics: [FLOOR_SHEET, HUNG_SIGN, CRATE_SHEET],
   lighting: {
@@ -156,6 +182,3 @@ export function lightStrip(id: string, at: readonly [number, number]): PropRecor
     params: { length: 0.5, width: 0.1, height: 8, glow: "cyan", color: "#20262c" },
   };
 }
-
-/** The one glow the light strips name. */
-export const CYAN_GLOWS = { cyan: { color: [0, 0.8, 1], strength: 4 } } as const;
