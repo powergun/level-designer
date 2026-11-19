@@ -119,12 +119,18 @@ export function corridor(width: number): RoomSpec {
   };
 }
 
-/** The prepared static level of a hand-built hall, in the shape sec-111 returns. */
+/**
+ * The prepared static level of a hand-built hall, in the shape sec-111 returns. Its main floor
+ * heights ascend as sec-111 lists them: the base floor and, when given, the raised slab, the
+ * first extra floor.
+ */
 export function room(spec: RoomSpec): PreparedLevel {
   const { min, max } = spec.interior;
   const base: Box = { min: [min[0] - 1, -1, min[2] - 1], max: [max[0] + 1, min[1], max[2] + 1] };
+  const raised = spec.floors[0];
+  const floorHeights = raised === undefined ? [min[1]] : [min[1], raised.max[1]];
   return {
-    metrics: { scale: spec.scale, floorHeights: [min[1]], interior: spec.interior },
+    metrics: { scale: spec.scale, floorHeights, interior: spec.interior },
     world: { shell: [], prop: [], closure: [], endWall: base },
     bodies: { floors: [base, ...spec.floors], obstacles: spec.obstacles, enclosure: [] },
     spawns: { player: spec.player, minions: spec.minions },
@@ -144,9 +150,13 @@ export interface TestProp {
   readonly slabs: readonly Slab[];
 }
 
+/** A static object of a test with the box where the test places it, as the pipeline would. */
+export type TestStatic = LevelFacts["placed"][number];
+
 /** What a test puts into the level beside the hall; every part has a passing default. */
 export interface Scene {
   readonly props?: readonly TestProp[];
+  readonly statics?: readonly TestStatic[];
   readonly seals?: readonly Seal[];
   readonly points?: readonly PointLight[];
   readonly inspection?: GlbInspection;
@@ -164,13 +174,14 @@ function lighting(points: readonly PointLight[]): Lighting {
   };
 }
 
-/** The five facts of a built level from a hall and a scene. */
+/** The six facts of a built level from a hall and a scene. */
 export function factsOf(prepared: PreparedLevel, scene: Scene = {}): LevelFacts {
   const props = scene.props ?? [];
   const description = {
     name: "test",
     base: { scale: scene.baseScale ?? 1, materials: new Map(), doubleSided: [] },
     seals: scene.seals ?? [],
+    statics: (scene.statics ?? []).map((placed) => placed.object),
     finishes: FINISHES,
     glows: new Map(),
     props: props.map((p) => ({ id: p.id, kind: "crate", at: p.at, yaw: 0, params: new Map() })),
@@ -186,6 +197,7 @@ export function factsOf(prepared: PreparedLevel, scene: Scene = {}): LevelFacts 
     inspection: scene.inspection ?? { triangles: 0, primitivesWithoutMaterial: [], images: 11 },
     baseImages: scene.baseImages ?? 11,
     prepared,
+    placed: scene.statics ?? [],
   };
 }
 

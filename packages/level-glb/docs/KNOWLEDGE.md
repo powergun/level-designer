@@ -11,8 +11,10 @@ is browser-safe.
 - The container unit reads a GLB into its JSON document and its binary chunk, and writes a
   document and one buffer back as GLB bytes. It also holds the glTF fields the component
   touches.
+- The builder unit appends nodes, materials and geometry to a read document and writes it
+  back with one buffer.
 - The assembly unit builds the static scene and the level scene, and owns their input
-  types.
+  types, the box mesher and the box's frame rule.
 - The inspection unit returns the three inspection facts and the world triangles.
 
 ## The container
@@ -59,12 +61,14 @@ spelled as the base stage's GLB spells them.
 
 ## The level scene
 
-`assembleLevelScene` takes the static scene bytes, the props with their slab meshes, and
-the looks: one body per finish path in use and the glows. It keeps every record of the
-static scene and appends:
+`assembleLevelScene` takes the static scene bytes, the props with their slab meshes, the
+looks and the static objects. The looks hold one body per finish path that a slab or a
+static object names, and the glows. It keeps every record of the static scene and appends:
 
-- one object node per prop, in input order, after the seals; it is named by the prop id
-  and carries `extras.role` `destructible` and `extras.prop`, the prop id;
+- one object node per static object, in input order, after the seals; the next section
+  states it;
+- one object node per prop, in input order, after the static objects; it is named by the
+  prop id and carries `extras.role` `destructible` and `extras.prop`, the prop id;
 - one mesh node per slab, in slab order, named `<id>/<index>` from 0, each with a mesh of
   one primitive; a slab keeps its own node because sec-111 hides one slab at that slab's
   first damage;
@@ -82,9 +86,37 @@ The six attributes of a slab primitive:
 The slab meshes arrive intact, in level coordinates, with their colours and pattern data
 per vertex; the assembly stores them unchanged. `slab-model` computes them by the slab's
 frame rule. A renderer reads the face's size and the four constants as flat values. No new
-node carries a transform, so every reader sees new geometry where it stands. Each appended accessor has its own buffer view, aligned to four
-bytes. Typed arrays are written in host byte order, which is little-endian on every
-supported host.
+node carries a transform, so every reader sees new geometry where it stands. Each appended
+accessor has its own buffer view, aligned to four bytes. Typed arrays are written in host
+byte order, which is little-endian on every supported host.
+
+## Static objects
+
+A static object arrives placed: its id, its box where it stands, its `#rrggbb` tint, its
+paint and, for a litter on a prop, its support as the prop's id and the slab's index. The
+placed box is `level-format`'s oriented box: a centre, the box's X (width), Y (height) and Z
+(length) as unit vectors, and the half extents along them. `level-pipeline` places it once;
+the assembly draws it and computes no placement.
+
+- Its object node is named by its id and carries `extras.role` `static`. A litter on a prop
+  also carries `extras.support`, the name of its slab's mesh node, `<prop id>/<index>`:
+  sec-111 hides that node at the slab's first damage, and the litter with it.
+- Its one child is the mesh node `<id>/0`: the placed box, 24 vertices and 12 triangles in
+  level coordinates, four vertices per face with the face's outward unit normal, wound
+  counter-clockwise seen from outside.
+- Its primitive carries the six attributes of a slab primitive. `COLOR_0` is the tint
+  decoded to linear on every vertex, and `_SLAB` holds the box's number, seed and wear.
+
+The assembly writes the frame of each face by the box's frame rule, so no renderer holds
+it. On each of the four sides `x` runs along the face from its centre, toward the right of
+a viewer who faces it, and `y` runs up from the box's base; the face measures its width by
+the box's height, and its class is 0, outside. On the upper and the lower face `x` is the
+box's X from the face's centre and `y` the box's Z from the face's low edge; the face
+measures the box's width by its length, and the classes are 2, top, and 3, bottom. A box's
+outside, top and bottom faces therefore read as a slab's, and a path draws alike on both.
+
+A seal and a static object share one box mesher: a seal is a box on the level's axes whose
+corners are its own min and max.
 
 ## Materials
 
@@ -106,18 +138,19 @@ Appended materials follow in this order:
 
 - the twins, in base mesh order of first need;
 - one per seal, named `seal/<id>`, its colour decoded from `#rrggbb` sRGB to linear;
-- one per finish path used by a slab without a glow, named `finish/<path>`, in order of
-  first use;
+- one per finish path used without a glow, named `finish/<path>`, in order of first use;
 - one per pair of finish path and glow, named `finish/<path>/glow/<glow>`, in order of
   first use.
 
-Every slab of a path and glow shares that one material, across props. Its `extras` carry
+First use runs in node order: the static objects, then the slabs. Every slab and every
+static object of a path and glow shares that one material. Its `extras` carry
 `finish`, the path, and with a glow `glow`, the glow's name, and `glowStrength`, its
 strength as the description states it: a painter joins a mesh to its recipe by them and
 emits the glow's colour at that strength times its emission. The name is a label for
 people. The unscaled strength sits beside the glow's colour, which the emissive factor
-already holds, so a painter reads the whole glow from the material and joins no other file. The material is the flat fallback
-that the snapshot sheets and a viewer without painters draw:
+already holds, so a painter reads the whole glow from the material and joins no other
+file. The material is the flat fallback that the snapshot sheets and a viewer without
+painters draw:
 
 - a white base colour, so the slab's vertex colours show unchanged;
 - the body's metalness and roughness;
@@ -125,8 +158,9 @@ that the snapshot sheets and a viewer without painters draw:
   body's `lit` through `KHR_materials_emissive_strength`, also at a strength of 0. A lit
   body therefore emits at the glow's strength, and an unlit one shows its colour.
 
-A material without a glow has no emission, whatever its body's `lit`. The file lists the extension as used
-whenever a material carries it, and holds no image beyond the base stage's.
+A material without a glow has no emission, whatever its body's `lit`. The file lists the
+extension as used whenever a material carries it, and holds no image beyond the base
+stage's.
 
 ## Inspection
 
@@ -139,7 +173,8 @@ whenever a material carries it, and holds no image beyond the base stage's.
   entry per primitive;
 - `images`: the number of images, which a validator compares with the base stage's count.
 
-On the base stage it counts 113,697 triangles and 11 images; each seal adds 12 triangles.
+On the base stage it counts 113,697 triangles and 11 images; each seal and each
+static object adds 12 triangles.
 
 ## World triangles
 
@@ -163,11 +198,13 @@ primitive without a material takes glTF's default white.
 
 - The component owns the GLB contract above and the `base` build error.
 - The assembly inputs match the level description's shapes: the base look and the glows
-  are maps, and the seal colour is the description's `#rrggbb` text. The bodies are a map
-  by finish path, each the drawn body of its recipe, which `level-pipeline` resolves.
-- A slab names a finish path and a glow that the build has admitted; a missing body or
-  glow is a programming error and throws. A base override's finish path is admitted by
-  `level-format` too; the assembly writes it and judges nothing.
+  are maps, and a seal's and a static object's colour is the description's `#rrggbb`
+  text. The bodies are a map by finish path, each the drawn body of its recipe, which
+  `level-pipeline` resolves.
+- A slab and a static object name a finish path and a glow that the build has admitted; a
+  missing body or glow is a programming error and throws. A base override's finish path is
+  admitted by `level-format` too, and a litter's support names a slab the build has
+  admitted; the assembly writes both and judges nothing.
 - The written files stay inside the glTF subset that sec-111's level preparation admits:
   one buffer, no required extension, matrices only, indexed triangle lists, every accessor
   dense on a buffer view of buffer 0 and inside it, and every index below its vertex
@@ -201,6 +238,24 @@ It proves the materials:
 - the fallback with its `extras` and its emission at a `lit` of 0, one half and 1;
 - the throw on a missing body or glow.
 
+### The static objects test
+
+It runs on the static scene of the real base stage, with three static objects: a floor
+litter yawed 30 degrees on a path no slab names, a litter on a crate's slab on the crate's
+path, and a floor litter on a glowing slab's path and glow. It proves:
+
+- the object roots in order, the role and the support, and that the support names the
+  slab's mesh node of the file while floor litter carries none;
+- the box's 24 vertices at hand-computed corners, its 12 triangles wound outward and the
+  bounds of `POSITION`;
+- the frame of each of the yawed box's six faces at its four corners, against a table
+  computed by hand;
+- the six attributes, the linear tint, and the constants at the ends of their ranges with
+  each face's class;
+- the materials a box shares with the slabs, the order of first use, and the throw on a
+  missing body;
+- the file's form and the inspection count.
+
 ### The reader subset check
 
 It reads the index values from the BIN chunk on its own. It proves that every accessor ends
@@ -209,8 +264,9 @@ inside its buffer view, every buffer view inside the buffer, every attribute has
 
 ### The appended views check
 
-The static scene test and the level scene test each run it on the accessors that their
-assembly appends: the seals' over the base stage, the slabs' over the static scene. It
+The static scene, level scene and static objects tests each run it on the accessors that
+their assembly appends: the seals' over the base stage, the slabs' and the boxes' over the
+static scene. It
 proves that each appended accessor has a buffer view of its own, starting on four bytes.
 
 ### The inspection test

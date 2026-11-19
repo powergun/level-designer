@@ -24,6 +24,7 @@ export async function validateLevel(built: BuiltLevel): Promise<Report> {
     inspection,
     baseImages: built.baseImages,
     prepared,
+    placed: built.placed,
   });
   const { floors, obstacles, enclosure } = prepared.bodies;
   const slabs = built.level.props.reduce((sum, prop) => sum + prop.slabs.length, 0);

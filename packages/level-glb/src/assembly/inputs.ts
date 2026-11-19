@@ -51,7 +51,38 @@ interface SlabBody {
   readonly lit: number;
 }
 
-/** The body of every finish path in use, by path, and the glows by name. */
+/**
+ * A placed box in the level frame: its centre, its X (width), Y (height) and Z (length) axes
+ * as unit vectors, and its half extents along them. `level-format`'s oriented box fits it.
+ */
+export interface PlacedBox {
+  readonly center: Vec3;
+  readonly axes: readonly [Vec3, Vec3, Vec3];
+  readonly halfExtents: Vec3;
+}
+
+/** A box's paint keys as the admission fills them: its finish path, optional glow and constants. */
+export interface BoxPaint {
+  readonly finish: string;
+  readonly glow?: string;
+  readonly number: number;
+  readonly seed: number;
+  readonly wear: number;
+}
+
+/**
+ * A static object: its id, its placed box, its `#rrggbb` tint and its paint. A litter on a prop
+ * names its support: the prop's id and the index of the slab it lies on.
+ */
+export interface StaticBox {
+  readonly id: string;
+  readonly box: PlacedBox;
+  readonly color: string;
+  readonly paint: BoxPaint;
+  readonly support?: { readonly prop: string; readonly slab: number };
+}
+
+/** The body of every finish path a slab or a static object names, by path, and the glows. */
 export interface SlabLooks {
   readonly bodies: ReadonlyMap<string, SlabBody>;
   readonly glows: ReadonlyMap<string, Glow>;

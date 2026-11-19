@@ -6,6 +6,7 @@ import type { BuildError, BuildInputs, BuildOutcome, PreparedStatic } from "./bu
 import { prepareStatic } from "./prepare.js";
 import { expandProps } from "./props.js";
 import { levelScene } from "./scene.js";
+import { placeStatics } from "./statics.js";
 
 /** The hex digits of the description hash: the head of the file's SHA-256. */
 const HASH_DIGITS = 12;
@@ -25,7 +26,10 @@ function staticScene(
   return { ok: false, errors: scene.errors.map((error) => ({ rule: "base", ...error })) };
 }
 
-/** The props, the slab admission and the pair, on the given prepared static level. */
+/**
+ * The props, the slab admission, the static objects' placement and the pair, on the given
+ * prepared static level.
+ */
 function dress(
   inputs: BuildInputs,
   description: Description,
@@ -40,23 +44,26 @@ function dress(
   }));
   const slabErrors = admitSlabs(props);
   if (slabErrors.length > 0) return blocked(slabErrors);
+  const statics = placeStatics(description, step.props, prepared);
+  if (!statics.ok) return blocked(statics.errors);
   const level: Level = { finishes: description.finishes, props, lighting: description.lighting };
   const hash = createHash("sha256").update(inputs.description).digest("hex");
   const built = {
     description,
     hash: hash.slice(0, HASH_DIGITS),
-    glb: levelScene(staticGlb, step.props, description),
+    glb: levelScene(staticGlb, step.props, statics.placements, description),
     json: encodeLevel(level),
     level,
     baseImages: inspectGlb(inputs.baseStage).images,
     prepared,
+    placed: statics.placements.map(({ object, box }) => ({ object, box })),
   };
   return { ok: true, built };
 }
 
 /**
- * Builds a level in six steps: admit the description, assemble the static scene, prepare it,
- * expand and round the props, mesh the slabs and write the pair. The build stops at the first
+ * Builds a level in seven steps: admit the description, assemble the static scene, prepare it,
+ * expand and round the props, place the static objects, mesh the slabs and write the pair. The build stops at the first
  * step with errors and returns all of them. A given prepared static level replaces the
  * preparation; it must be the preparation of the same static scene.
  */

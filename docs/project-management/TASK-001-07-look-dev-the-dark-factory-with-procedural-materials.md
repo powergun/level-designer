@@ -127,6 +127,68 @@ Rule from the owner's direction of 2026-11-18, given during the build of milesto
 - The task is additive. The level is proved for layout: keep it and add to it. Do not
   throw away or redo what the owner has passed, and do not overcomplicate.
 
+Rules from the owner's direction of 2026-11-18, given at the start of milestone 5:
+
+- Milestone 5 spends effort on the static objects, the space fillers.
+- Dress the factory as a place in total chaos, which the rebel robots have messed up.
+  Floor litter lies everywhere: papers, metal sheets and broken tools. All sorts of
+  litter and broken tools lie on the production lines and on the table tops.
+- Litter therefore lies on the floor and on the tops of the lines and the tables, which
+  widens the ruling on static objects above.
+- Keep the static objects cheap, and add little geometry with them.
+
+Rules from the owner's QA of milestone 5, given on 2026-11-19:
+
+- The layout and the litter are approved. Change neither.
+- Focus on the lighting. The wanted mood is a dark factory like the set of Alien:
+  `docs/art-direction/references/mood/alien.jpg`.
+- Reduce the lighting to fill light, which gives the silhouettes only.
+- The LEDs are emissive lights with a limited radius, there so that the interior is not
+  pitch black. They read like wolf eyes in a dark cave:
+  `docs/art-direction/references/mood/jin-roh.jpg`.
+- Work by subtraction, then by addition. First remove all the ambient lighting, which
+  destroys the mood, and leave only the LED lights. Then turn the LED lights down
+  aggressively, to almost pitch black. Then add lighting back selectively, and compare it
+  with the references.
+- No agent sees the lighting: the team derives the mood from the parameters. It may stop
+  after the first step, and after any later one, for a quick test by the owner.
+
+Rules from the owner's quick test of the subtraction, given on 2026-11-19:
+
+- The subtraction is right: the interior is close to pitch black, and sparks of LED light
+  give orientation. Keep that base.
+- Add fill light carefully. It lights the silhouettes of the objects and never the entire
+  interior.
+- A fill light has a falloff and a limited reach.
+
+Rules from the owner's quick test of the first fill, given on 2026-11-19:
+
+- The fills are good progress and aligned with the art direction.
+- Stop the subtraction. From here the work is additive alone.
+- Add a subtle ambient light that lights the entire interior slightly. Choose a
+  conservative value; the owner's QA iterates it.
+
+Rules from the owner's quick test of the ambient, given on 2026-11-19:
+
+- Fourteen places are too dark, and the owner marked each: the lanes along both side
+  walls, on the front floor and on the raised slab, and the back of the hall.
+- Light these passways with emergency wall lights, as a submarine has them, or a plant
+  that handles hazardous materials: dim lights that give a passway or a tunnel just enough
+  light in a total power outage.
+- Their light may be blue or cold in place of red, to follow the level's theme.
+- The point is to light the passways so that the player can navigate through them.
+
+Rules from the owner's quick test of the emergency wall lights, given on 2026-11-19:
+
+- The emergency wall lights are much better.
+- Three more places need a wall light, and the owner marked each.
+- Find the precise wall surface for each lamp from the owner's logged location: where
+  the owner stood and where the owner looked.
+
+Rule from the owner's approval of milestone 5, given on 2026-11-19:
+
+- The ambient stands at 3.3, the owner's own value. Leave it there.
+
 ## Status update
 
 (2026-11-17 19:46:54)
@@ -275,3 +337,123 @@ milestone done: the art is aligned, and the owner sees no performance drop with 
 painted. The owner asked for a handoff note for the next team lead. Status stays WIP.
 Remaining: milestones 5 to 7 with the owner's test after each, and the owner's QA of the
 look. Milestone 5 adds a prop only where the owner asks for it.
+
+(2026-11-18 18:52:00)
+A new team lead took over; the handoff note is consumed and removed from the repository
+root. The owner opened milestone 5 with a direction: spend effort on the static objects,
+the space fillers, as the litter of a factory in chaos, on the floor and on the tops of
+the lines and the tables, cheap and with little geometry. The rules above and the
+decisions of TASK-001 hold it. The lead ruled on the scope: milestone 5 builds the static
+objects that the design held for milestone 6, beside its floor lines, and the seals'
+finishes and the overhead objects stay in milestone 6. The lead reads the table tops as
+the bench-high tops of the level's props, because the level holds no table. The art
+study's two offers, cabinets beside the housings and stock in the yard, stay out without
+the owner's word. No source is built yet. Status stays WIP. Remaining: milestone 5 with
+the owner's test, then milestones 6 and 7 with the owner's test after each, and the
+owner's QA of the look.
+
+(2026-11-18 20:52:46)
+Milestone 5, the floor lines and the litter, is built, reviewed and accepted, and waits
+for the owner's test. The owner confirmed in writing the lead's reading of the table
+tops. The milestone adds static objects to the format, the `.glb`, the validator, the
+build and the finish sheet, in five components; the view and the QA page did not change.
+The level gains seven floor lines, a box around each assembly line and side lines at four
+slots of the yard, and 200 static objects in five new finish paths: papers, cartons, metal
+sheets, pallets, broken tools and trays, 146 on the floors and 54 on the conveyors' decks,
+crate lids and stack tops. It keeps its 127 props in place, its 616 slabs and its lights,
+and holds 136,289 triangles. Litter on a prop is a third place for a static object: the
+`.glb` names the slab it lies on, so that sec-111 hides the litter with that slab at
+adoption. Each engineering subtask passed its own review, the art work one light pass on
+rules and the acceptance review one short pass, and the root gates pass. Nobody has seen
+the litter or the new lines under the level's lights, and the view compiles five more
+programs at its start. Status stays WIP. Remaining: the owner's test of milestone 5, then
+milestones 6 and 7 with the owner's test after each, and the owner's QA of the look.
+
+(2026-11-19 08:57:00)
+The owner committed milestone 5 and tested it: the layout and the litter are good and
+approved. The owner found a mismatch of mood in the lighting, added two reference images,
+the set of Alien and the wolf eyes of Jin-Roh, and directed a darker factory: fill light
+for the silhouettes alone, and LEDs of a limited radius that read like wolf eyes in a
+cave. The rules above and the decisions of TASK-001 hold the direction. The team adjusts
+the lighting alone, and the owner tests again. Status stays WIP. Remaining: the lighting
+pass with the owner's test, then milestones 6 and 7 with the owner's test after each, and
+the owner's QA of the look.
+
+(2026-11-19 09:07:40)
+The owner confirmed the lead's reading of the mood and gave the method: subtract, then
+add, with a quick test by the owner after a step; the rules above hold it. Step one, the
+subtraction, is in the level as two values: the environment's intensity and the key's
+intensity stand at 0, so only the eight points and the glows light the hall. The validator
+accepts the level and the root gates pass. Nobody has seen it. Steps two and three are
+being prepared and wait for the owner's feedback on step one. Status stays WIP.
+Remaining: the owner's quick test of step one, the rest of the lighting pass with the
+owner's test, then milestones 6 and 7 with the owner's test after each, and the owner's QA
+of the look.
+
+(2026-11-19 10:06:22)
+The owner tested the subtraction and passed it as the base, skipped the turning down of
+the LEDs, and asked for fill light with a falloff and a limited reach, for the silhouettes
+alone; the rules above hold it. The first fill is in the level as three point lights: the
+three lamps of the old hall that lit no LED's surroundings, the bay light and the two
+aisle pools, became low, cool fills of a short range at the ramp top and at one enclosure
+end of each assembly line. The format admits eight points and the level uses all eight,
+so this step adds no point: the warm light on two cranes and the two pools over the aisle
+are gone with it. The validator accepts the level and the root gates pass. Nobody has
+seen it. Status stays WIP. Remaining: the owner's quick test of the first fill and a
+ruling on the cap of eight points, the rest of the lighting pass with the owner's test,
+then milestones 6 and 7 with the owner's test after each, and the owner's QA of the look.
+
+(2026-11-19 10:20:33)
+The owner tested the first fill and passed it as aligned with the art direction, ended
+the subtraction and asked for a subtle ambient light over the entire interior, at a
+conservative value that the owner's QA iterates; the rules above hold it. The ambient is
+in the level as one value: the environment's intensity stands at 2, where it stood at 7
+in the first art pass. By the model it is the lowest value at which the front floor
+leaves the display's black, while the raised slab and the walls stand at the black
+point. The validator accepts the level and the root gates pass. Nobody has seen it. The
+owner gave no ruling on the cap of eight points, and no further fill is planned until
+the owner asks for one. Status stays WIP. Remaining: the owner's quick test of the
+ambient, the rest of the lighting pass with the owner's test, then milestones 6 and 7
+with the owner's test after each, and the owner's QA of the look.
+
+(2026-11-19 11:55:35)
+The owner tested the ambient, marked fourteen places along the passways as too dark and
+asked for emergency wall lights there; the rules above hold it. The level gains fourteen
+of them, one for each marked place: a small lamp on a wall or a pier, a static object
+with the new cold blue glow `emergency`, and a point light of a limited reach that stands
+between the lamp and the lane. The format's cap of point lights rises from 8 to 24 for
+it, a change of `level-format` with its own review, and the level now holds 22 points and
+214 static objects. The key, at intensity 0 since the subtraction, is removed from the
+level, which changes no pixel and saves a shadowed light. A first placement lit the walls
+and left the floors at five marks dark; the lead changed its ruling and the points moved
+out toward the lanes. One test of `level-pipeline` counted the glows of props alone and
+now counts those of static objects too. The validator accepts the level and the root
+gates pass. Nobody has seen it, and the frame rate with 22 points is the owner's to read.
+The look and lighting document follows when the owner has passed the lighting. Status
+stays WIP. Remaining: the owner's quick test of the emergency lights, the rest of the
+lighting pass with the owner's test, then milestones 6 and 7 with the owner's test after
+each, and the owner's QA of the look.
+
+(2026-11-19 12:05:00)
+The owner tested the fourteen emergency lights, found them much better and marked three
+more places that need one; the rules above hold it. The level gains the three. For each,
+the owner's logged view was cast against the stage of the built level: two lamps hang
+where that view meets a side wall, and the third hangs on the wall beside the owner,
+behind a row of tubes, because the tank ahead is curved and carries no lamp. The cap of
+point lights rises once more, from 24 to 32, and the level now holds 25 points and 217
+static objects. The validator accepts the level and the root gates pass. Nobody has seen
+it. Status stays WIP. Remaining: the owner's quick test of the three lights, the rest of
+the lighting pass with the owner's test, then milestones 6 and 7 with the owner's test
+after each, and the owner's QA of the look.
+
+(2026-11-19 12:50:00)
+The owner tested the three further lights, raised the ambient by hand from 2 to 3.3 and
+approved milestone 5 in writing: the layout, the litter and the lighting. Milestone 5 is
+done. The level holds 127 props, 616 slabs, 217 static objects, 200 pieces of litter and
+17 emergency lamps, 25 point lights and no key, at an ambient of 3.3; the rule above
+holds that value. The look and lighting document states the lighting as the owner passed
+it, with the display's black point, the three kinds of point and the way to add an
+emergency wall light from a mark; the guide, the project knowledge, the design and the
+art notes are in line with it. The root gates pass. The lead wrote a handoff note for the
+next team lead. Status stays WIP. Remaining: milestones 6 and 7 with the owner's test
+after each, and the owner's QA of the look.

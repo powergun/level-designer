@@ -7,14 +7,15 @@ written in the words of `finish-format.md` of
 are those of `research-dark-factory-surfaces.md` beside it.
 
 Every size is in metres, every position is a level coordinate and every luminance is linear.
-Hall luminances are computed from the figures of `docs/LOOK-AND-LIGHTING.md`. The art team reads
-a hall recipe on its page of the finish sheet, which shows the marks on a grey ground; the
-owner's browser shows them on the stage.
+Hall luminances are computed at the lights of the first art pass, an environment of intensity 7;
+`docs/LOOK-AND-LIGHTING.md` gives the level's present levels. The art team reads a hall recipe on
+its page of the finish sheet, which shows the marks on a grey ground; the owner's browser shows
+them on the stage.
 
 ## 1. What a hall finish adds
 
-A hall finish draws layers over a stage material's own look. Away from its marks the hall looks
-as the owner passed it: the texture keeps its tone and its stains, and the lights stay.
+A hall finish draws layers over a stage material's own look. Away from its marks a surface
+keeps the stage's look: the texture keeps its tone and its stains.
 
 "More interesting and detailed" means here what a texture of 1,024 px cannot hold on a surface
 120 m long, and nothing else:
@@ -23,11 +24,13 @@ as the owner passed it: the texture keeps its tone and its stains, and the light
   lines with a clean edge;
 - on a wall, one edge: the top of a darker base, a level line down the whole hall.
 
-The brief holds five marks, each one judged at a glance in the browser:
+The brief holds seven marks, each one judged at a glance in the browser:
 
 - the joints and the bays of both floors: look down at the player spawn;
 - the two aisle lines: look down the aisle from the player spawn;
+- the box around each assembly line: walk the outer side of a line;
 - the band at the ramp's foot and the line on the slab's edge: stand at the ramp;
+- the side lines of the yard's four slots: walk the court between the containers;
 - the walls' darker base: walk along either side wall.
 
 No recipe states a stain, a crack or a `noise` layer: the stage's textures carry the wear. The
@@ -59,6 +62,9 @@ plan rectangle:
   at x -10.0 clips the east edge of two tanks.
 - The line on the slab's edge leaves out the stretch of the two pipe stacks that stand on the
   ramp, so no pipe and no platform takes yellow paint.
+- The side lines of `yard-box-north` end 0.25 short of the container's east end. A ceiling
+  fixture of the same material spans x 0.31 to 0.75 above their run, at y 17.1, and no line
+  passes under it.
 - Measured on the built level: under each floor line its material has one up-facing surface,
   the floor itself.
 
@@ -78,18 +84,36 @@ effects. Worn yellow is `#9c7618` (0.20).
    at x -10.0, -3.33, 3.33 and 10.0 and none down the aisle; along the hall a joint lies on
    every multiple of 6.48 from z 0. Each bay takes one tone, a tenth lighter or darker at most.
 
-`hall/front`, extends `floor`. 4 layers.
+`hall/front`, extends `floor`. 7 layers. Layers 4 to 6 draw the box around each assembly line,
+0.1 wide. Their `across: "out"` measures from x 0, so one layer draws its line on both sides
+of the aisle, where the two lines mirror each other.
 
 1. rectangle: on top; from [-2.65, -27.94] to [-2.55, 26.8] -> color worn yellow. Aisle line,
    west.
 2. rectangle: on top; from [2.55, -27.94] to [2.65, 26.8] -> color worn yellow. Aisle line, east.
 3. rectangle: on top; from [-12.6, -28.14] to [12.0, -27.94] -> color worn yellow. The band at
    the ramp's foot, 0.2 wide.
+4. rectangle: on top; across out; from [7.3, -14.95] to [7.4, 19.95] -> color worn yellow. The
+   boxes' outer sides.
+5. rectangle: on top; across out; from [2.55, -14.95] to [7.4, -14.85] -> color worn yellow.
+   Their north ends, from the aisle line outward.
+6. rectangle: on top; across out; from [2.55, 19.85] to [7.4, 19.95] -> color worn yellow.
+   Their south ends.
 
-`hall/slab`, extends `floor`. 3 layers. The line on the slab's edge, 0.1 wide, in two parts:
+`hall/slab`, extends `floor`. 7 layers. Layers 1 and 2 draw the line on the slab's edge, 0.1
+wide, in two parts. Layers 3 to 6 draw the side lines of the yard's four slots, 0.1 wide: one
+`bands` layer of period 2.94 draws both side lines of a slot, and its clip ends them.
 
 1. rectangle: on top; from [-13.3, -29.5] to [5.2, -29.4] -> color worn yellow.
 2. rectangle: on top; from [12.5, -29.5] to [15.0, -29.4] -> color worn yellow.
+3. bands: on top; along across, period 2.94, width 0.1, phase 0, offset -5.97; clip [-6.1,
+   -56.83] to [-2.9, -50.17] -> color worn yellow. The slot of `yard-box-west`.
+4. bands: on top; along across, period 2.94, width 0.1, phase 0, offset 5.03; clip [4.9,
+   -61.83] to [8.1, -55.17] -> color worn yellow. The slot of `yard-box-east`.
+5. bands: on top; along up, period 2.94, width 0.1, phase 0, offset -62.27; clip [-5.83, -62.4]
+   to [0.28, -59.2] -> color worn yellow. The slot of `yard-box-north`.
+6. bands: on top; along up, period 2.94, width 0.1, phase 0, offset -52.67; clip [0.17, -52.8]
+   to [6.83, -49.6] -> color worn yellow. The slot of `yard-box-south`.
 
 `hall/wall`. 1 layer.
 
@@ -103,6 +127,9 @@ wide needs none.
 ## 4. Where the floor lines stand
 
 The points follow the committed level and the hall in numbers of `docs/AUTHORING-GUIDE.md`.
+A prop that moves near a line takes the line with it.
+
+The aisle, the ramp and the joints:
 
 - The aisle lines run from the band at the ramp's foot to 0.58 before the dock box. The arms'
   pedestals stand 0.2 outside them, and the player spawn lies between them.
@@ -115,12 +142,23 @@ The points follow the committed level and the hall in numbers of `docs/AUTHORING
 - The joints pass under every prop. The joints at x -3.33 and 3.33 run under the arms'
   pedestals.
 
-A prop that moves near a line takes the line with it.
+The boxes around the assembly lines and the slots of the yard:
+
+- Each assembly line stands in a closed box of 4.85 by 34.9, whose inner side is its aisle
+  line. The outer side, |x| 7.3 to 7.4, runs 0.3 outside `line-w-cab` and `line-e-cab`, 0.45
+  outside the plinths of `jib-line-w` and `jib-line-e` and 1.15 outside the arms' pedestals.
+- The boxes' ends lie 0.85 beyond the lines' last props: `line-w-enc-1` and `line-e-conv-1`
+  end at z -14, `line-w-conv-3` and `line-e-conv-3` at z 19. The south ends lie 0.4 beyond
+  the joint at z 19.44.
+- A slot's two side lines lie 0.2 off its container's long sides and run 0.3 past its ends.
+  The court's four containers have them: `yard-box-west`, `yard-box-east`, `yard-box-north`
+  and `yard-box-south`. The lines of `yard-box-north` stop 0.25 before its east end, and
+  `yard-box-wall`, against the east wall, has none.
 
 ## 5. Values
 
-Computed, as albedo with the luminance in the hall in brackets; a floor's luminance holds its
-sheen, 0.019:
+Computed at the first art pass's lights, as albedo with the luminance in the hall in brackets; a
+floor's luminance holds its sheen, 0.019:
 
 - Front floor: 0.079 (0.054). Joints 0.043 (0.038); bays 0.071 to 0.087 (0.050 to 0.057).
 - Raised slab: 0.049 (0.041). Joints 0.027 (0.031); bays 0.044 to 0.054 (0.038 to 0.043).
@@ -135,6 +173,8 @@ From:
   sealed floor;
 - bays: crane shop, floor slabs of unequal tone;
 - lines: crane shop, yellow lines 0.1 wide along a walkway; assembly hall, one yellow lane line;
+- boxes and slots: Known, yellow lines 0.1 wide around every cell and beside a set-down place;
+  machine bay, a yellow line on the floor beside the machine;
 - band and edge line: Known, paint at a change of level;
 - darker base: double girder, the end wall's lowest band; crane shop, the base wall under the
   cladding, grimy at its foot; pillar jib for the pale wall above.
@@ -143,14 +183,21 @@ From:
 
 The hall covers most of every frame, so each role holds few layers, all arithmetic:
 
-- `hall/front`: 4 layers, 1 hash, on a third or more of the frame.
-- `hall/slab`: 3 layers, 1 hash. They run on every pixel of `Material.003`, the back wall and
+- `hall/front`: 7 layers, 1 hash, on a third or more of the frame: the cells and six
+  rectangles.
+- `hall/slab`: 7 layers, 1 hash: the cells, two rectangles and four clipped bands, each band
+  about a rectangle and a half. They run on every pixel of `Material.003`, the back wall and
   the pipes among them.
 - `hall/wall`: 1 layer, no hash.
 - No role holds a `noise` or a legend; the caps are 24 layers and two `noise` layers.
 
-If the frame rate drops under milestone 2's, the slab's edge line goes first, two layers, then
-the bays' `jitter`, then the joints.
+If the frame rate drops under milestone 2's, the layers go in this order:
+
+1. the slots of `yard-box-north` and `yard-box-south`, whose lines lie across the hall;
+2. the slots of `yard-box-west` and `yard-box-east`;
+3. the ends of the boxes around the assembly lines, then their outer sides;
+4. the slab's edge line, two layers;
+5. the bays' `jitter`, then the joints.
 
 ## 7. Not checked
 
@@ -161,4 +208,7 @@ the bays' `jitter`, then the joints.
   level by each triangle's own normal, where the view takes the mesh's shading normal.
 - How far the joints carry. Computed: 0.025 is about a pixel across at 12 m, and at eye height
   the footprint along the view passes it from about 5 m.
+- How far a line across the hall carries. Computed: seen edge-on from the eye, 1.72 above the
+  floor, a line 0.1 wide drops under a pixel beyond about 9 m, so the lines of `yard-box-north`
+  and `yard-box-south` read only inside the court.
 - The sheen of a line and of a joint: the stage's roughness stays 0.55 under both.

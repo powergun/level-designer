@@ -33,24 +33,31 @@ The owner's decisions on materials and cost:
   owner finds that the shaders cost too much. The owner decides that by eye: the choice
   needs no comparison and no profile.
 
-The owner's decisions on references, on objects and on the work:
+The owner's decisions on references and on the work:
 
 - From Wall Lab, only the walls, the pillars and the spheres are references. Nothing is
   taken from its statues.
 - The look development is additive. The level the owner passed is proved for layout and
   stays: no passed prop moves, turns or leaves.
-- The dressed destructible objects are for gameplay. Static, indestructible objects are
-  allowed, for mood and to fill gaps, and stay clearly apart from them.
-- A static object is floor litter, thin and small, or an overhead object on a wall, a
-  deck or the ceiling. It has no collision and takes part in no simulation, and it blocks
-  no player's path and no player's sight.
-- Non-destructible objects get the same look development. They never break and players
-  see them close up, so their materials are more interesting and detailed, in a balance
-  of quality and performance.
 - The team pauses at the end of each milestone, and the owner tests the build for art
   direction and overall performance.
 - The owner judges the look in a browser. No agent launches a server or a browser, and
   none uses a headless browser, in the foreground or in the background.
+
+The owner's decisions on objects:
+
+- The dressed destructible objects are for gameplay. Static, indestructible objects are
+  allowed, for mood and to fill gaps, and stay clearly apart from them.
+- A static object is litter, thin and small, or an overhead object on a wall, a deck or
+  the ceiling. It has no collision and takes part in no simulation, and it blocks no
+  player's path and no player's sight.
+- The static objects show a factory in total chaos, which the rebel robots have messed
+  up. Litter lies everywhere, papers, metal sheets and broken tools, on the floor and on
+  the tops of the production lines and the tables.
+- The static objects are cheap and add little geometry.
+- Non-destructible objects get the same look development. They never break and players
+  see them close up, so their materials are more interesting and detailed, in a balance
+  of quality and performance.
 
 The rules of the design, for a finish:
 
@@ -73,9 +80,13 @@ The rules of the design, for a finish:
 The rules of the design, for what a finish is drawn on:
 
 - A mark sits on an existing slab through per-slab parameters. No plate slab is added.
-- A static object is a box with a finish, in its own section of the description and with
-  its own role in the `.glb`. It joins the build after sec-111's preparation and is only
-  drawn; the build holds it to its limits with numbers.
+- A static object is one box of 12 triangles with a finish, in its own section of the
+  description and with its own role in the `.glb`; its richness is paint. It joins the
+  build after sec-111's preparation and is only drawn; the build holds it to its limits
+  with numbers.
+- The level holds no table, so a table top is the bench-high top of a prop.
+- `level-pipeline` places every static object once, on a floor or on its prop, and every
+  consumer reads that placement.
 - The hall's surfaces take finishes too: a recipe's layers, drawn over a stage material's
   own look. Floor lines are layers of the floors' recipes.
 - Lettering is drawn as glyphs by the painter and is built last. If glyphs read badly,
@@ -86,7 +97,8 @@ The rules of the design, for what a finish is drawn on:
 The art direction's rulings:
 
 - Props may rise in value so that a finish shows: housings up to the floor's level, crane
-  yellow up to about twice it, arms stay black. The lights stay as the owner passed them.
+  yellow up to about twice it, arms stay black. The lights stand as the owner passed them
+  for the mood of a dark factory, and the look and lighting document states them.
 - Finishes ship with their marks: placed marks, bands anchored to the floor or to a prop's
   top, a second hue inside a finish, and lit parts.
 - The 13 seals, the static objects, the two floors and the side walls take finishes of
@@ -127,8 +139,9 @@ What a finish is drawn on:
 
 - Prop: a dressed destructible object, built from slabs by one of the kit's nine kinds.
 - Seal: a static box that closes the hall.
-- Static object: a box that is only drawn, to fill a gap: floor litter, or an overhead
-  object on a wall, a deck or the ceiling.
+- Static object: a box that is only drawn, to fill a gap: litter on the floor or on a
+  prop's top, or an overhead object on a wall, a deck or the ceiling.
+- Placed box: a static object's box where the build stands it, in level coordinates.
 - Box: a seal or a static object, as a shape that carries a finish.
 - Hall surface: a surface of the base stage. A hall finish is a role that a stage
   material names.
@@ -260,7 +273,7 @@ The painter takes a recipe as it draws and resolves nothing. `recipeAt` of
 body, and returns the body, the layers and the finish's `light`. The kit, the pipeline
 and the view call it, so none of them holds a default and the view parses no path. The
 unit also exports the decode of a finish's `#rrggbb` text to linear RGB, for a layer's
-`color` and for a caller's `light`. `level-glb` keeps a decode of its own for a seal's
+`color` and for a caller's `light`. `level-glb` keeps a decode of its own for a box's
 colour, by its rule of no workspace dependency.
 
 Three more parts stand beside the painter:
@@ -362,40 +375,45 @@ The other components change inside their duties:
 - `level-format` admits the finish table with its caps, a slab's finish data, the static
   objects, a box's paint keys and a base override's finish, in its units `length`,
   `layer`, `finish` and `description`. It writes the finish data in the level `.json`,
-  and owns `recipeAt` and the hash of an id into a seed.
+  and owns `recipeAt`, the hash of an id into a seed, and a static object's class and its
+  reading as an oriented box.
 - `prop-kit` names a finish path for every slab, with the glows and the finish table as
   its context, takes the new parameters, composes a slab's number and deepens the girder.
 - `slab-model` gives every vertex of a slab its pattern data and the slab's colour, which
   it takes from the destruction lib model: destruction lib stays the one decoder of a
   slab's colour.
 - `level-glb` writes that data, one fallback material per finish path and glow, the
-  static objects' nodes, a painted box's data and a stage material's finish path. It
-  takes one drawn body per finish path in use beside the glows.
+  static objects' nodes with a litter's support, a painted box's data by the box's frame
+  rule and a stage material's finish path. It takes one drawn body per finish path in
+  use beside the glows.
 
 The components that judge, build and show the level:
 
-- `level-rules` judges a static object by `interior` and `static`.
-- `level-pipeline` carries the finish data to the pair, reads each path's body with
-  `recipeAt` for `level-glb`, and stands the static objects on the prepared floors for
-  the level scene.
-- `level-cli` fills the finish sheet's swatches from the built level.
+- `level-rules` judges a static object by `interior` and `static`, on its placed box.
+  The sixth fact of a built level pairs each static object with that box.
+- `level-pipeline` carries the finish data to the pair and reads each path's body with
+  `recipeAt` for `level-glb`. It places every static object once, on the prepared floor
+  or on its prop, and hands the placed boxes to `level-glb` and to the validation.
+- `level-cli` fills the finish sheet's swatches from the built level, a box's as a slab.
 - `qa-client` passes the level's recipes to the view and raises the console alarm for a
   console error.
 
-No gateway changes: no sibling's surface is needed.
+A static object changes neither `level-view`, `qa-client` nor `snapshot-render`: a
+painted box draws by the twin rule, the QA walk installs blockers for slabs alone, and a
+box's page is a slab's page. No gateway changes: no sibling's surface is needed.
 
 ## What agents see
 
 An agent never sees a shader's output. The same templates, filled with plain numbers,
 give it a preview in its smallest form, the finish sheet. Its consumer is the art team's
 author and its reviewer, who change a finish and judge it before the owner spends a look
-on it:
+on it. The sheet gives each finish path one page, because an image reader shrinks a large
+picture until its marks are lost. A page shows albedo only.
 
-- The sheet gives each finish path one page, because an image reader shrinks a large
-  picture until its marks are lost. A page shows albedo only.
+### A slab's page
+
 - A prop's finish path shows on its largest outside face of the level, between its two
-  end edges, with its inside face and its top and bottom edges. A box's path shows on its
-  largest face.
+  end edges, with its inside face and its top and bottom edges.
 - The sheet draws these faces at 5 mm per pixel, or at 20 mm when the outside face is
   longer than 8 m, and the outside face again at 40 mm, what survives 20 m. The sheet owns
   these scales; a swatch states only its slab.
@@ -403,6 +421,9 @@ on it:
   luminance. The author holds the mean against the value ladder, and the facing ratios of
   the look and lighting document turn it into the luminance of a top, a side and an
   underside.
+
+### A hall finish's page
+
 - A hall finish that an override names gets one page, with one tile for each class its
   layers draw on, over a plain grey ground: the sheet reads no texture, so it shows the
   marks and not the surface's value. A wall or a ceiling shows as a window of 16 by 8 m
@@ -412,11 +433,41 @@ on it:
   a joint shows only as a tone. The author reads a floor line against the layout with the
   plan sheet beside it.
 
-The level sheets stay as they are, with every slab in its tint. The plan sheet draws no
-floor line: that would take the recipes into a second component, and the floor's swatch
-already places the lines. No agent can judge the response to the level's lights, bloom,
-haze, or shimmer in motion. The owner judges those in the browser, and nobody sees a
-damaged finish before adoption.
+### A box's page
+
+A box's page is a slab's page. `level-cli` hands the sheet a box as a slab, and
+`snapshot-render` does not change. A static object gives its width, its height and its
+length as the thickness, with its colour, its seed and its wear. The page of a path
+stands on the static object with the largest shown face, its width times the larger of
+its height and its length. A path that a slab or an override also names keeps that page.
+
+The slab's frame and the box's are equal on three faces, so three tiles are true:
+
+- `top` is the box's upper face and `bottom` its lower face, each in the box's own frame.
+- `outside` is the box's side along its width; the opposite side draws alike.
+
+A reader of the page knows its three limits:
+
+- The `top` tile draws +X to the right and +Z on top. A player who looks down on a
+  litter with its +X to the right sees its +Z at the bottom, so the tile is that view
+  flipped top to bottom. Every mark keeps its coordinates.
+- The `inside`, `end-` and `end+` tiles stand for no face of a box. A box has no inside,
+  and its two sides along the length are outside faces that no tile shows. An author
+  therefore types the side that carries a mark as the width.
+- At 5 mm per pixel a sheet of paper 0.3 m wide is 60 px wide, and a mark under 5 mm
+  shows as a tone.
+
+A seal has no yaw, so its page reads its longer plan extent as the width and the shorter
+as the thickness. The `outside` tile is then the seal's large side. The `top` and
+`bottom` tiles are its faces only where that extent runs along X.
+
+### Beyond the finish sheet
+
+The level sheets stay as they are, with every slab in its tint and every static object in
+its colour. The plan sheet draws no floor line: that would take the recipes into a second
+component, and the floor's swatch already places the lines. No agent can judge the
+response to the level's lights, bloom, haze, or shimmer in motion. The owner judges those
+in the browser, and nobody sees a damaged finish before adoption.
 
 ## Changing a finish
 

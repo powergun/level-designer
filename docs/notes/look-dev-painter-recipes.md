@@ -2,7 +2,8 @@
 
 The recipes of every role of the ten finishes, and the floor lines, as the art team types them
 in the art passes of TASK-001.07. The painter briefs beside this note explain how to read them
-and rank the finishes.
+and rank the finishes. A hall luminance in brackets is computed at the lights of the first art
+pass, an environment of intensity 7; `docs/LOOK-AND-LIGHTING.md` gives the level's present levels.
 
 ## 4. The recipes
 
@@ -86,8 +87,8 @@ floor, so the gate stands from 0.5 to 5.2.
 
 Cut: metal, bare metal. Light: pale cyan. Roles of the kit: `machine`, `machine-plate`,
 `cabinet`, `skirt`, `pedestal`, `hoist`, `top`. Every body but the top's has roughness 0.7: by
-`docs/LOOK-AND-LIGHTING.md`, the points' highlights pass the bloom threshold on a fifth of the
-standing places at 0.6 and on none from 0.7.
+`docs/LOOK-AND-LIGHTING.md`, the first art pass's points pass the bloom threshold with a
+highlight on a fifth of the standing places at 0.6 and on none from 0.7.
 
 `housing/machine`. Bays fitted at 1.25: a window, three points and a handle in each.
 
@@ -482,8 +483,8 @@ and accents glow whole.
 
 ### 4.11 Floor lines
 
-Floor lines are layers of the two floors' hall finishes: rectangles on `top` between two plan
-points, x then z, each `-> color` worn yellow. The hall brief beside this note,
-`look-dev-hall-brief.md`, holds them with the hall's other marks: the two aisle lines, the band
-at the ramp's foot and the line on the slab's edge. The lines around the cells and the yard's
-slots are given up: the hall keeps few marks.
+Floor lines are layers of the two floors' hall finishes, on `top` in plan coordinates, x then z,
+each `-> color` worn yellow: a rectangle between two points, or clipped bands for a pair of lines.
+The hall brief beside this note, `look-dev-hall-brief.md`, holds them with the hall's other marks:
+the two aisle lines, the band at the ramp's foot, the line on the slab's edge, the box around
+each assembly line and the side lines of the yard's four slots.

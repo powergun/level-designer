@@ -1,8 +1,9 @@
-import { formatLength, keyPath, LENGTH_SLACK, roundSlab } from "@level-designer/level-format";
-import type { Description, Prop, Slab } from "@level-designer/level-format";
+import { keyPath, roundSlab } from "@level-designer/level-format";
+import type { Description, Slab } from "@level-designer/level-format";
 import { expandProp } from "@level-designer/prop-kit";
 import { floorHeightAt } from "@level-designer/sec111-gateway";
 import type { BuildError, PreparedStatic } from "./built.js";
+import { insideInterior, OUTSIDE, placeError } from "./place.js";
 
 /** One rounded slab of a prop, with the glow name of a glowing slab. */
 interface RoundedSlab {
@@ -21,25 +22,6 @@ export type PropsStep =
   | { readonly ok: true; readonly props: readonly ExpandedProp[] }
   | { readonly ok: false; readonly errors: readonly BuildError[] };
 
-/** Whether `value` lies from `low` to `high`, with the format's length slack. */
-function within(value: number, low: number, high: number): boolean {
-  return value >= low - LENGTH_SLACK && value <= high + LENGTH_SLACK;
-}
-
-/** Whether the plan point lies inside the interior's plan, with the format's slack. */
-function insideInterior(prepared: PreparedStatic, [x, z]: Prop["at"]): boolean {
-  const { min, max } = prepared.level.metrics.interior;
-  return within(x, min[0], max[0]) && within(z, min[2], max[2]);
-}
-
-/** The `place` error of the prop at `path`, whose `at` lies outside the interior. */
-function outsideError(prop: Prop, path: string): BuildError {
-  const atPath = keyPath(path, "at");
-  const [x, z] = prop.at;
-  const message = `${atPath}: (${formatLength(x)}, ${formatLength(z)}) lies outside the interior`;
-  return { rule: "place", path: atPath, message };
-}
-
 /**
  * Places and expands every prop on the floor under its `at` with the description's glows and
  * finish table, then rounds each slab once with the format's rounding. A prop outside the
@@ -53,7 +35,7 @@ export function expandProps(description: Description, prepared: PreparedStatic):
   description.props.forEach((prop, index) => {
     const path = `${keyPath("", "props")}[${index}]`;
     if (!insideInterior(prepared, prop.at)) {
-      errors.push(outsideError(prop, path));
+      errors.push(placeError(keyPath(path, "at"), prop.at, OUTSIDE));
       return;
     }
     const floor = floorHeightAt(prepared.level, prop.at[0], prop.at[1]);

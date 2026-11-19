@@ -12,8 +12,9 @@ also expand real prop kinds through `@level-designer/prop-kit`, a test-only depe
 
 The facade offers:
 
-- `judgeLevel`: the asynchronous judgement of the five facts of a built level into the
-  findings, the ramp zone and each minion spawn's main lane;
+- `judgeLevel`: the asynchronous judgement of the six facts of a built level, the placed
+  static objects among them, into the findings, the ramp zone and each minion spawn's main
+  lane;
 - `namedSpawns`: the spawns of a prepared level by name, `player` then the minions in
   sec-111's order, each with its feet position, for the report's spawn lines;
 - `HANG_HEIGHT`: the 2.17 m top of the standing band, which `level-cli` draws on the section

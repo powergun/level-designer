@@ -1,9 +1,12 @@
 # level-rules knowledge
 
 `@level-designer/level-rules` owns the validator's checks of the level format. It judges a
-built level from five facts: the typed description, the typed level, the inspection of the
-level GLB, the base stage's image count and the prepared static level. From the description
-it reads only `base.scale`, the seals and each prop's `at`. `level-pipeline` is its consumer.
+built level from six facts: the typed description, the typed level, the inspection of the
+level GLB, the base stage's image count, the prepared static level and the placed static
+objects. The sixth lists, in description order, each static object of the description with
+the oriented box where `level-pipeline` placed it; the rules judge that box and place none.
+From the description they read only `base.scale`, the seals and each prop's `at`.
+`level-pipeline` is its consumer.
 
 The component runs under Bun only. It reaches destruction lib's Rapier copy, so no page
 imports it and `just lint` does not bundle it for the browser.
@@ -33,7 +36,7 @@ named spawns with their feet positions for the report's spawn lines.
   overlap tests of convex shapes, and the shortest crossing with a free lane.
 - `footing`: how each prop meets the prepared floors, and its standing footprint.
 - `owner`: the owner's checks.
-- `placement`: the placement rules.
+- `placement`: the placement rules, of the props and of the static objects.
 - `clearance`: the clearance rules and the lane measurement.
 - `proof`: the destructibility proof and the debris proxies.
 
@@ -79,6 +82,25 @@ The placement rules:
   candidates. A finding names the deepest pair; contact up to 1 mm passes.
 - `seal` fails when the part of a seal inside the interior box is thinner than 0.02 m on an
   axis.
+- `interior` also names, per placed static object after the props, its corner farthest
+  outside the interior box.
+- `static`, after `seal`, judges each placed static object by the limits of its class, which
+  `level-format`'s `staticClass` reads from `on` and `lift`.
+
+## The static rule
+
+The rule owns three numbers: a litter's height of 0.15 m, a litter's plan length of 1.5 m and
+the hang height of 2.17 m that `support` uses too. Per object it reports, in this order:
+
+- litter, on the floor or on a prop: a box higher than 0.15 m, and a longer plan side, width
+  or length, over 1.5 m; the box's size is read, so a yaw changes nothing;
+- floor litter: the floors under its plan corners, read as a slab's are, on two levels, and
+  a plan outline that enters the ramp zone, by the test of `ramp`;
+- an overhead object: an underside less than 2.17 m above the hall's highest floor, the last
+  of sec-111's ascending main floor heights, wherever the object hangs.
+
+Litter on a prop is judged for neither floor nor ramp: its prop passes them. No rule limits
+the height of the top it lies on; the art team's brief holds that limit.
 
 The clearance rules measure plan distances from standing footprints. A static standing
 obstacle is an obstacle or enclosure box of the body world that starts less than 2.17 m above
@@ -174,6 +196,18 @@ The rule limits on box rooms:
 - Two tall enclosures of `prop-kit` without a glow, typed 0.68 m apart, measure 0.74 m.
 - A corridor of exactly 3.0 m measures 3.0 m, and a ring of 0.05 m walls under a roof at
   2.17 m, across a lane at a yaw of 23 degrees, closes it.
+
+The static objects on box rooms:
+
+- `static` passes a litter 0.15 m high and 1.5 m long, also at a yaw of 30 degrees, on the
+  floor and on a prop, and fails each 0.1 mm beyond; an edge-biased sample of sizes at yaws
+  0, 15, 45 and 90 degrees holds both limits.
+- An overhead object 2.17 m above the raised slab passes over either floor, and 0.1 mm lower
+  fails.
+- Floor litter 0.1 mm onto another floor level or into the ramp zone fails, and the same box
+  on a prop passes.
+- `interior` passes a static object on the interior's edge, fails it 0.1 mm beyond and names
+  it after the props.
 
 The filled gap on box rooms:
 

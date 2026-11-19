@@ -265,11 +265,12 @@ three accessors, and its colour changes:
   outside, 1 inside, 2 top, 3 bottom, 4 the high end, 5 the low end.
 
 A static object is an object node named by its id, with the role `static` in its
-`extras`, after the seals and before the props. Its one child is the mesh node `<id>/0`:
-a box of 24 vertices and 12 triangles in level coordinates, turned by its yaw. A painted
-box, a static object or a seal with a finish, carries `NORMAL`, its colour as a linear
-`COLOR_0` and the three accessors, with class 0 on its four sides, 2 on its upper face
-and 3 on its lower one.
+`extras`, after the seals and before the props. A litter on a prop also carries `support`
+there: the name of the mesh node of the slab it lies on, `<prop id>/<index>`. The node's
+one child is the mesh node `<id>/0`: the placed box, 24 vertices and 12 triangles in level
+coordinates. A painted box, a static object or a seal with a finish, carries `NORMAL`,
+its colour as a linear `COLOR_0` and the three accessors, with class 0 on its four sides,
+2 on its upper face and 3 on its lower one.
 
 One material serves each finish path and glow in use, for slabs and boxes alike. Its
 `extras` carry `finish`, the path, and with a glow `glow`, the glow's name, and
@@ -315,8 +316,11 @@ The materials and the nodes:
   `lit`, so the unscaled strength needs a home. The material holds the glow's colour as
   its emissive factor, so the strength beside it keeps the whole glow in one record, and
   no renderer joins a second file: the level `.json` holds no glow.
-- A static object's node. It is drawn geometry and holds no gameplay fact, and the
-  `.glb` is where a renderer reads geometry.
+- A static object's node. It is drawn geometry without a gameplay fact, and a renderer
+  reads geometry from the `.glb`.
+- A litter's support. sec-111 hides a slab's mesh node at the slab's first damage, and
+  without the datum the litter would float there. The level `.json` holds no static
+  object.
 
 The recipes stay in the level `.json`: they are in-house data, and a changed number
 needs no new mesh.
@@ -347,7 +351,7 @@ its yaw; a seal has none. On each of its four sides `x` runs along the face from
 centre, toward the right of a viewer who faces it, and `y` runs up from the box's base;
 the class is `outside`. On its upper and its lower face `x` is the box's X from the
 face's centre and `y` the box's Z from the face's low edge; the classes are `top` and
-`bottom`.
+`bottom`. `level-glb` writes a box's frame as vertex data, so no renderer holds this rule.
 
 The hall's frame rule. A surface's normal in the level frame decides, per pixel and as
 the mesh states it, without a normal map. With a Y of 0.7 or more the class is `top`, and with -0.7 or
@@ -406,9 +410,10 @@ Build errors, each with the path of the value to change. `level-format` owns `sh
 - For a hall finish: a body, a `lit` effect, a `glyphs` layer, and a layer on a face
   other than `top`, `bottom` and `outside`, also through `extends`. Each is reported at
   the offending value, with the hall path in its message.
-- For a box: more than 256 static objects, a side of a static object under 0.02 m, a
-  paint key out of its range, a `glow` that `glows` does not name, and a seal that states
-  `metalness` or `roughness` beside a finish, or lacks one without it.
+- For a box: a paint key out of its range, a `glow` that `glows` does not name, and a
+  seal that states `metalness` or `roughness` beside a finish, or lacks one without it.
+- For a static object: more than 256, a side under 0.02 m, a negative `lift` or one
+  beside an `on`, and an `on` that names no prop, at `statics[<i>].on`.
 
 The other build errors:
 
@@ -419,58 +424,57 @@ The other build errors:
   of a slab in a decoded level: `<path>: no finish "<finish>/<role>"`. A slab's path
   reads `props[<i>].slabs[<k>].finish`.
 - `param`, owned by `prop-kit`: the new parameters, each with its range.
-
-`place`, the build error of `level-pipeline`, also judges a static object:
-`statics[<i>].at: (<x>, <z>) lies outside the interior`.
+- `place`, owned by `level-pipeline`, where it places the static objects, after the slab
+  admission: `statics[<i>].at: (<x>, <z>) lies outside the interior`, and for litter on a
+  prop `statics[<i>].at: (<x>, <z>) lies over no top of prop <id>`.
 
 The validator gains one rule, `static`, after `seal`, and one more message of `interior`,
-where the static objects follow the props. Both take the static object's id as the
-subject:
+where the static objects follow the props. Both judge the placed box and take the static
+object's id as the subject:
 
 - `interior`: `static <id> leaves the interior by <d> m at (<x>, <y>, <z>)`.
-- `static`, litter's top: `static <id> is <h> m high; floor litter tops out at 0.15 m or
+- `static`, a litter's height: `static <id> is <h> m high; litter is 0.15 m high or
   lower`.
-- `static`, litter's length: `static <id> measures <l> m in plan; floor litter measures
-  1.5 m or less`.
-- `static`, litter's floor: `static <id> spans the floor levels <a> and <b>; keep floor
-  litter on one level`.
-- `static`, litter on the ramp: `static <id> stands on the ramp, z <z0> to <z1>`, the
-  ramp zone that its plan outline enters, as `ramp` words it for a prop.
+- `static`, a litter's length: `static <id> measures <l> m in plan; litter measures 1.5 m
+  or less`.
+- `static`, floor litter's floor: `static <id> spans the floor levels <a> and <b>; keep
+  floor litter on one level`.
+- `static`, floor litter on the ramp: `static <id> stands on the ramp, z <z0> to <z1>`,
+  the ramp zone that its plan outline enters, as `ramp` words it for a prop.
 - `static`, the hang height: `static <id> starts <h> m above the hall's highest floor; an
   overhead object starts 2.17 m or higher`.
 
-A litter's floors are those under its plan corners. An overhead object counts from the
-highest floor of the prepared level, the raised slab, wherever it hangs. `level-rules`
-owns the two litter limits beside the hang height of `support`. The `texture` rule and
-the report stay as they are.
+Floor litter's floors are those under its plan corners; litter on a prop is judged for
+neither floor nor ramp. An overhead object counts from the highest floor of the prepared
+level, the raised slab, wherever it hangs. `level-rules` owns the two litter limits
+beside the hang height of `support`. The `texture` rule and the report stay as they are.
 
 ## What this replaces in the level format
 
-The foundation's level format stays as written. Where the two differ, this document
-holds:
+The foundation's level format stays as written. Where they differ, this document holds:
 
 - "Finishes and glows": `finishes` is the finish table, in place of a metalness and a
   roughness for each of the four materials.
-- "The level description": the root keys gain `statics`, a base override gains `finish`,
-  a seal gains the paint keys, and ids are unique among seals, static objects and props.
-- "The GLB", the scene: an object node per static object stands between the seals and
-  the props.
+- "The level description": the root keys gain the optional `statics`, a base override
+  gains `finish`, a seal gains the paint keys, and ids are unique among seals, static
+  objects and props.
+- "The GLB", the scene: an object node per static object, between the seals and the props.
 - "The GLB", meshes and materials: a slab primitive carries two texture coordinates and
   `_SLAB`, and the slab's colour on every face. The appended materials are one per
   unpainted seal and one per finish path and glow.
 - "The level `.json`": the root keys gain `finishes`, a slab has nine keys, and the
   decoder gains the rule `finish`.
-- "Validator checks": the checks also read the static objects, `place` and `interior`
-  also judge them, and `static` joins the placement rules.
+- "Validator checks": the checks judge six facts: the sixth lists each static object of
+  the description with its placed box, from `level-pipeline`. `interior` also judges a
+  static object, and `static` joins the placement rules.
+- "Build errors": the step that places the static objects follows the slab admission.
 
 ## What sec-111 changes at adoption
 
 These changes join the adoption list of the level format:
 
-- Level contract: the finish table and a slab's four finish keys are admitted with their
-  caps.
-- Level preparation: it skips a `static` node, as it skips a `destructible` one. No
-  structure, ray, debris or navigation meets a static object.
+- Level contract: it admits the finish table and a slab's four finish keys, caps included.
+- Level preparation: it skips a `static` node, as it skips a `destructible` one.
 - Wall view: it takes a copy of the files of the interface, both back ends, the layer
   kinds, the painter and the slab's frame rule, which the owner allowed. Nothing themed
   crosses. It keys a look by finish path and glow, draws the intact GLB node and its own
@@ -482,6 +486,7 @@ These changes join the adoption list of the level format:
   added after Wall Lab's metal sphere: bright iron at full metalness.
 - Stage view: it draws every `static` node, the painter on every box whose material
   carries a finish path, and the hall finish on every stage material that carries one.
+  It hides a `static` node when the wall view hides the mesh node its `support` names.
 
 The mapping rules above are the one normative text for both renderers. sec-111 owns its
 copy from the day it takes it. What keeps the two copies in step is decided at adoption,

@@ -4,6 +4,7 @@ import type { FinishSwatch } from "@level-designer/snapshot-render";
 import type { CustomView } from "../command-line/index.js";
 import { kindLines } from "../text/index.js";
 import type { OutputFile } from "./files.js";
+import { boxSwatches } from "./box-swatches.js";
 import { clearDirectory, writeFiles } from "./files.js";
 import { finishSwatches } from "./finish-swatches.js";
 import { hallSwatches } from "./hall-swatches.js";
@@ -66,21 +67,24 @@ export async function build(
 const FINISH_PAGES = ["snapshots", "finish"] as const;
 
 /**
- * The swatch of every finish page: the slab pages, then the hall pages. A path that both a
- * slab and a base override name gets its hall page only, so each file is written once.
+ * The swatch of every finish page: the slab pages, the box pages, then the hall pages. A path
+ * that a base override names gets its hall page only, and a path that a slab and a static
+ * object name gets its slab page only, so each file is written once.
  */
 function pageSwatches(built: BuiltLevel): readonly FinishSwatch[] {
   const hall = hallSwatches(built);
   const hallPaths = new Set(hall.map((swatch) => swatch.label));
   const slabs = finishSwatches(built.level).filter((swatch) => !hallPaths.has(swatch.label));
-  return [...slabs, ...hall];
+  const taken = new Set([...hallPaths, ...slabs.map((swatch) => swatch.label)]);
+  const boxes = boxSwatches(built).filter((swatch) => !taken.has(swatch.label));
+  return [...slabs, ...boxes, ...hall];
 }
 
 /**
  * `snapshot`: builds without judging and writes `snapshots/plan.png`, `section.png` and
  * `view.png` under the work directory, `custom.png` for a custom view, and one page per
- * finish path in use, a slab's or a hall finish's, as `snapshots/finish/<finish>.<role>.png`,
- * into a directory it first empties.
+ * finish path in use, a slab's, a box's or a hall finish's, as
+ * `snapshots/finish/<finish>.<role>.png`, into a directory it first empties.
  */
 export async function snapshot(
   description: string,

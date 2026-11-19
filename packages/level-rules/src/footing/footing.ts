@@ -49,8 +49,8 @@ function floorUnder(prepared: PreparedLevel, corner: Vec3, center: Vec3): number
   return floorHeightAt(prepared, corner[0] + dx * step, corner[2] + dz * step);
 }
 
-/** The lowest and highest floor under a box's corners. */
-function floorsUnder(prepared: PreparedLevel, box: SlabBox): readonly [number, number] {
+/** The lowest and highest floor under a box's corners, each read 0.05 mm toward its centre. */
+export function floorsUnder(prepared: PreparedLevel, box: SlabBox): readonly [number, number] {
   const floors = box.corners.map((corner) => floorUnder(prepared, corner, box.center));
   return [Math.min(...floors), Math.max(...floors)];
 }

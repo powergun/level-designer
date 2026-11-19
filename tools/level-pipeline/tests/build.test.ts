@@ -1,17 +1,22 @@
 import { beforeAll, describe, expect, spyOn, test } from "bun:test";
 import { decodeLevel, roundSlab, slabBox } from "@level-designer/level-format";
+import type { SlabBox } from "@level-designer/level-format";
 import { namedSpawns } from "@level-designer/level-rules";
 import type { BuildError, BuildOutcome, BuiltLevel } from "@level-designer/level-pipeline";
 import { buildLevel, validateLevel } from "@level-designer/level-pipeline";
-import { BODY_BOX_LIMIT } from "@level-designer/sec111-gateway";
+import { BODY_BOX_LIMIT, floorHeightAt } from "@level-designer/sec111-gateway";
 import * as stage from "@level-designer/sec111-gateway/stage";
+import { field, glbDocument, listAt } from "./glb-json.js";
 import {
+  CRATE_SHEET,
   CYAN_GLOWS,
   crate,
   emptyStage,
   FIXTURE,
+  FLOOR_SHEET,
   FRONT_CRATE,
   fixtureBytes,
+  HUNG_SIGN,
   lightStrip,
   SLAB_CRATE,
 } from "./fixture.js";
@@ -117,7 +122,7 @@ describe("a build blocked up to the preparation announces every error", () => {
     );
     const id = errorsOf(
       await buildLevel({
-        description: fixtureBytes({ props: [FRONT_CRATE, duplicate] }),
+        description: fixtureBytes({ props: [FRONT_CRATE, duplicate], statics: [] }),
         baseStage,
       }),
     );
@@ -159,7 +164,9 @@ describe("a build blocked on the prepared static level announces every error", (
     const outside = { ...crate("outside", [100, -3.25]), kind: "no-such-kind" };
     const unknown = { ...crate("unknown", [0, 0]), kind: "no-such-kind" };
     const badSize = { ...crate("bad-size", [2, 0]), params: { color: "#000000", size: 9 } };
-    const errors = errorsOf(await buildOnFixture({ props: [outside, unknown, badSize] }));
+    const errors = errorsOf(
+      await buildOnFixture({ props: [outside, unknown, badSize], statics: [] }),
+    );
     expect(errors.map((error) => [error.rule, error.path])).toEqual([
       ["place", "props[0].at"],
       ["kind", "props[1].kind"],
@@ -171,8 +178,10 @@ describe("a build blocked on the prepared static level announces every error", (
 
   test("place passes at the interior's edge and blocks one grid step beyond", async () => {
     const { max } = built.prepared.level.metrics.interior;
-    const atEdge = await buildOnFixture({ props: [crate("edge", [max[0], 0])] });
-    const beyond = errorsOf(await buildOnFixture({ props: [crate("edge", [max[0] + 0.0001, 0])] }));
+    const atEdge = await buildOnFixture({ props: [crate("edge", [max[0], 0])], statics: [] });
+    const beyond = errorsOf(
+      await buildOnFixture({ props: [crate("edge", [max[0] + 0.0001, 0])], statics: [] }),
+    );
     expect(atEdge.ok).toBe(true);
     expect(beyond.map((error) => error.rule)).toEqual(["place"]);
   });
@@ -181,7 +190,7 @@ describe("a build blocked on the prepared static level announces every error", (
     const props = Array.from({ length: 205 }, (_, k) =>
       crate(`crate-${k}`, [-14 + 2 * (k % 15), 2 * Math.floor(k / 15)]),
     );
-    const errors = errorsOf(await buildOnFixture({ props }));
+    const errors = errorsOf(await buildOnFixture({ props, statics: [] }));
     expect(errors).toEqual([
       {
         rule: "slab",
@@ -232,5 +241,112 @@ describe("the validation of a built level", () => {
     expect(report.summary.props).toEqual({ count: 203, limit: 200 });
     expect(report.summary.slabs).toEqual({ count: 211, limit: 800 });
     expect(report.summary.points.count).toBe(1);
+  });
+});
+
+/** The lowest and the highest corner height of a box. */
+function heightsOf(box: SlabBox): { readonly low: number; readonly high: number } {
+  const heights = box.corners.map((corner) => corner[1]);
+  return { low: Math.min(...heights), high: Math.max(...heights) };
+}
+
+/** The placed box of the static object `id`. */
+function placedBox(level: BuiltLevel, id: string): SlabBox {
+  const entry = level.placed.find(({ object }) => object.id === id);
+  if (entry === undefined) throw new Error(`no placed static object "${id}"`);
+  return entry.box;
+}
+
+/** The rounded slabs of the prop `id`. */
+function slabsOf(level: BuiltLevel, id: string): BuiltLevel["level"]["props"][number]["slabs"] {
+  return level.level.props.find((prop) => prop.id === id)?.slabs ?? [];
+}
+
+/** The name of a written node. */
+function nameOf(node: unknown): string {
+  return String(field(node, "name"));
+}
+
+/** The written scene's root nodes and every node, each with its name and its extras. */
+function writtenNodes(glb: Uint8Array): {
+  readonly roots: readonly string[];
+  readonly extras: ReadonlyMap<string, unknown>;
+} {
+  const document = glbDocument(glb);
+  const nodes = listAt(document, "nodes");
+  const scene = listAt(document, "scenes")[Number(field(document, "scene") ?? 0)];
+  const roots = listAt(scene, "nodes").map((index) => nameOf(nodes[Number(index)]));
+  return { roots, extras: new Map(nodes.map((node) => [nameOf(node), field(node, "extras")])) };
+}
+
+describe("the static objects of a built level", () => {
+  test("they stand between the seals and the props, and the litter names the lid it lies on", () => {
+    const { roots, extras } = writtenNodes(built.glb);
+    const ids = [FLOOR_SHEET.id, HUNG_SIGN.id, CRATE_SHEET.id];
+    expect(roots.slice(-6)).toEqual(["end-wall", ...ids, FRONT_CRATE.id, SLAB_CRATE.id]);
+    const lid = slabsOf(built, SLAB_CRATE.id).findIndex((slab) => slab.finish === "timber/lid");
+    const support = `${SLAB_CRATE.id}/${lid}`;
+    expect(extras.get(CRATE_SHEET.id)).toEqual({ role: "static", support });
+    expect(extras.has(support)).toBe(true);
+    expect(extras.get(FLOOR_SHEET.id)).toEqual({ role: "static" });
+    expect(extras.get(HUNG_SIGN.id)).toEqual({ role: "static" });
+  });
+
+  test("the litter on the crate lies on the lid, the higher of the two tops under it", () => {
+    const slabs = slabsOf(built, SLAB_CRATE.id);
+    const lid = slabs.find((slab) => slab.finish === "timber/lid");
+    const side = slabs.find((slab) => slab.finish === "timber/crate-stencil");
+    if (lid === undefined || side === undefined) throw new Error("the crate lacks a lid or side");
+    const { low } = heightsOf(placedBox(built, CRATE_SHEET.id));
+    expect(low).toBeCloseTo(heightsOf(slabBox(lid)).high, 9);
+    expect(heightsOf(slabBox(side)).high).toBeLessThan(low - 0.01);
+  });
+
+  test("floor litter and an overhead object stand over the floor under at, raised by the lift", () => {
+    const prepared = built.prepared.level;
+    const floorOf = ({ at: [x, z] }: { readonly at: readonly [number, number] }): number =>
+      floorHeightAt(prepared, x, z);
+    expect(built.placed.map(({ object }) => object.id)).toEqual([
+      FLOOR_SHEET.id,
+      HUNG_SIGN.id,
+      CRATE_SHEET.id,
+    ]);
+    expect(heightsOf(placedBox(built, FLOOR_SHEET.id)).low).toBeCloseTo(floorOf(FLOOR_SHEET), 9);
+    expect(heightsOf(placedBox(built, HUNG_SIGN.id)).low).toBeCloseTo(floorOf(HUNG_SIGN) + 4, 9);
+  });
+
+  test("a static object outside the interior is blocked with place", async () => {
+    const outside = { ...FLOOR_SHEET, at: [100, -3.25] };
+    const errors = errorsOf(await buildOnFixture({ statics: [outside] }));
+    expect(errors).toEqual([
+      {
+        rule: "place",
+        path: "statics[0].at",
+        message: "statics[0].at: (100, -3.25) lies outside the interior",
+      },
+    ]);
+  });
+
+  test("a litter on a top's edge builds, and 0.1 mm beyond its prop's tops it blocks", async () => {
+    const atEdge = await buildOnFixture({ statics: [{ ...CRATE_SHEET, at: [0.6, -55] }] });
+    const beyond = errorsOf(
+      await buildOnFixture({ statics: [{ ...CRATE_SHEET, at: [0.6001, -55] }] }),
+    );
+    expect(atEdge.ok).toBe(true);
+    expect(beyond).toEqual([
+      {
+        rule: "place",
+        path: "statics[0].at",
+        message: "statics[0].at: (0.6001, -55) lies over no top of prop slab-crate",
+      },
+    ]);
+  });
+
+  test("a floor litter 0.16 m high is rejected with static alone", async () => {
+    const tall = { ...FLOOR_SHEET, size: [0.6, 0.16, 0.4] };
+    const report = await validateLevel(builtOf(await buildOnFixture({ statics: [tall] })));
+    expect(report.findings.map((finding) => [finding.rule, finding.subject])).toEqual([
+      ["static", FLOOR_SHEET.id],
+    ]);
   });
 });

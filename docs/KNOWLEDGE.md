@@ -7,6 +7,13 @@ result as a level pair: a `.glb` file for meshes, materials and textures, and a
 `.json` file for the in-house gameplay, lighting and finish data. sec-111 consumes the
 level pair; it never imports the designer's code.
 
+The pair holds two kinds of dressing. A prop is a destructible object for gameplay,
+built from slabs: the `.json` lists its slabs, and the `.glb` holds their meshes. A
+static object is one box that is only drawn, litter or an overhead object: the `.glb`
+alone holds it, and nothing collides with it. The `.glb` names the slab that a litter
+lies on, so that the game can hide the litter with that slab at its first damage. The
+QA app shows no damage, so a litter stays on its prop there.
+
 ## Workspace
 
 This is a Bun workspace run through `just`. Its components are the workspace
@@ -46,20 +53,26 @@ The gateways bridge the sibling repositories:
 - [render-gateway](../packages/render-gateway/docs/KNOWLEDGE.md): the bridge to
   the rendering-poc library.
 
-The library components in `packages/` carry the level's data and judgement:
+The library components in `packages/` carry the level's data and judgement. Three
+hold its formats and its finishes:
 
 - [level-format](../packages/level-format/docs/KNOWLEDGE.md): the level
-  description and the level `.json`. It admits a description, encodes and
-  decodes the level `.json`, admits the finish table, rounds a slab to the
-  format's grid and reads a slab as an oriented box.
+  description and the level `.json`. It admits a description with its static
+  objects, encodes and decodes the level `.json`, admits the finish table, rounds
+  a slab to the format's grid and reads a slab or a static object as an oriented
+  box.
 - [finish-paint](../packages/finish-paint/docs/KNOWLEDGE.md): the finishes'
   arithmetic interface, layer kinds, painter, slab and hall frame rules and
   swatch, browser-safe. Its layer kinds and painter run on the number back end under Bun
   and on level-view's node back end.
 - [level-glb](../packages/level-glb/docs/KNOWLEDGE.md): the GLB contract. It
-  assembles the static scene and the level scene, with one material per finish
-  path and glow, inspects a GLB and returns world triangles. Its tests read the
-  base stage through sec111-gateway's stage entry, a test-only dependency.
+  assembles the static scene and the level scene, with one painted box per static
+  object and one material per finish path and glow, inspects a GLB and returns
+  world triangles. Its tests read the base stage through sec111-gateway's stage
+  entry, a test-only dependency.
+
+Three turn props into slabs and judge the built level:
+
 - [slab-model](../packages/slab-model/docs/KNOWLEDGE.md): the only place where a
   slab becomes a destruction lib model. It gives every vertex the slab's colour
   and its pattern data, and runs under Bun only.
@@ -67,9 +80,9 @@ The library components in `packages/` carry the level's data and judgement:
   prop into slabs by its kind's parameter table, names each slab's finish path and
   places them.
 - [level-rules](../packages/level-rules/docs/KNOWLEDGE.md): the validator's
-  checks. It judges a built level from its facts by every rule the build does not
-  own, the destructibility proof included. Like slab-model, it reaches destruction
-  lib and runs under Bun only.
+  checks. It judges a built level from its facts, the placed static objects among
+  them, by every rule the build does not own, the destructibility proof included.
+  Like slab-model, it reaches destruction lib and runs under Bun only.
 
 The QA app lets the human walk and fly through the level in a browser:
 
@@ -93,11 +106,13 @@ The other tools in `tools/` run under Bun:
   finish's, into its page of the finish sheet.
 - [level-pipeline](../tools/level-pipeline/docs/KNOWLEDGE.md): the one build
   sequence. It reads the description and the base stage, builds a level with its
-  finish data or returns its build errors, and validates a built level into a
-  report. It is the only test home that prepares a level.
+  finish data and its static objects, which it alone places, or returns its build
+  errors, and validates a built level into a report. It is the only test home
+  that prepares a level.
 - [level-cli](../tools/level-cli/docs/KNOWLEDGE.md): the command-line tool. It
   owns the argument parsing, the file writes under the work directory, the printed
-  text and the exit statuses.
+  text and the exit statuses, and fills the finish pages' swatches: a slab's, a
+  static object's and a hall finish's.
 
 ## The sibling repositories
 
@@ -199,11 +214,12 @@ server or a browser, and the tests start their own servers on temporary ports.
 ## Authoring
 
 The art team dresses the hall by editing the level description and running the four tool
-recipes. The [authoring guide](AUTHORING-GUIDE.md) gives the hall in numbers, the placement
-rules in the validator's words, the budgets, the finish table, the accepted limits of the
-clearance rules and the authoring loop. The [look and lighting](LOOK-AND-LIGHTING.md)
-document gives the stage's materials, how the hall is lit, the bloom threshold, the tuning
-handles and the reference levels.
+recipes. The [authoring guide](AUTHORING-GUIDE.md) gives the hall in numbers, the rules of
+props and static objects in the validator's words, the budgets, the finish table, the
+accepted limits of the clearance rules and the authoring loop. The
+[look and lighting](LOOK-AND-LIGHTING.md) document gives the mood, the stage's materials,
+how the hall is lit, the display's black point, the bloom threshold, the tuning handles,
+how to add an emergency wall light and the reference levels.
 
 ## File locations
 
@@ -229,7 +245,7 @@ The owner accepts these limits of the first pass in the level and the game:
 
 - SMG rounds do nothing on a slab's thin edges, a shot-through prop never
   collapses, settled debris does not rest on slabs, and a destroyed object keeps
-  its shadow.
+  its shadow in a level that states a key.
 - A damaged glowing slab loses its glow in the game, while a point light beside it
   stays.
 - A hollow prop wider than about 1 m can become a hiding spot once destroyed,
@@ -255,9 +271,11 @@ The owner accepts these limits of the QA app and the snapshots:
   WebGPU validation warnings and failed resource loads, reach neither.
 - Snapshots show no mood, and the QA frame rate overstates the game's.
 
-The first pass cannot express props standing on props, stock lower than 0.5 m,
-racks, strips under 0.5 m, round columns and joints, glass, or single lit ceiling
-fixtures. These wait for the owner's feedback.
+The kit cannot express props standing on props, stock lower than 0.5 m, racks,
+strips under 0.5 m, round columns and joints, glass, or single lit ceiling
+fixtures. These wait for the owner's feedback. Litter, flat stock and wall lamps enter as
+static objects, which are only drawn: a litter is 0.15 m high or lower and lies on the
+floor or on a prop's top, and a lamp is an overhead object with a glow.
 
 ## Hosts
 

@@ -209,6 +209,30 @@ Decided on 2026-11-18, when the build of the look development started:
 - The look development is additive and must not be overcomplicated. The level is proved
   for layout: it stays, and nothing the owner has passed is thrown away or redone.
 
+Decided on 2026-11-18, when milestone 5 of the look development started:
+
+- Milestone 5 spends effort on the static objects, the space fillers.
+- Their art direction: the dark factory is in total chaos, and the rebel robots have
+  messed up the interior. Floor litter lies everywhere: papers, metal sheets and broken
+  tools. All sorts of litter and broken tools lie on the production lines and on the
+  table tops.
+- This widens the ruling on static objects above: litter lies on the floor and on the
+  tops of the lines and the tables.
+- The static objects are cheap and add little geometry.
+
+Decided on 2026-11-19, after the owner's QA of milestone 5 of the look development:
+
+- The layout and the litter are good and approved.
+- The mood is a dark factory like the set of Alien, as the reference image
+  `docs/art-direction/references/mood/alien.jpg` shows it. The lighting is much reduced: it
+  is fill light that gives the silhouettes and nothing more.
+- The LEDs are emissive lights with a limited radius. They are there so that the interior
+  is not pitch black.
+- The LEDs read like wolf eyes in a dark cave, as the reference image
+  `docs/art-direction/references/mood/jin-roh.jpg` shows them.
+- The lighting changes to this mood. The layout, the props, the litter and the finishes
+  stay as the owner passed them.
+
 ## What to read
 
 The design in `docs/researches/2026-11-16-level-designer-foundation/` is the technical

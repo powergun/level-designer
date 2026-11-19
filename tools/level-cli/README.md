@@ -2,8 +2,9 @@
 
 `@level-designer/level-cli` is the command-line tool of the level designer. Its commands
 list the prop kinds, validate a description, build the level pair and draw the snapshot
-sheets with one finish page per finish path in use, a slab's or a hall finish's. It owns the argument parsing, the file writes under the work directory, the printed
-text and the exit statuses. The art team's agents and the root recipes are its users.
+sheets with one finish page per finish path in use, a slab's, a static object's or a hall
+finish's. It owns the argument parsing, the file writes under the work directory, the
+printed text and the exit statuses. The art team's agents and the root recipes are its users.
 
 It depends on `@level-designer/level-pipeline`, `@level-designer/snapshot-render`,
 `@level-designer/prop-kit`, `@level-designer/level-format`, `@level-designer/level-rules`

@@ -1,9 +1,10 @@
 import { formatLength } from "@level-designer/level-format";
-import type { Seal, Vec3 } from "@level-designer/level-format";
+import type { Seal, SlabBox, Vec3 } from "@level-designer/level-format";
 import type { PreparedLevel } from "@level-designer/sec111-gateway";
 import type { Finding } from "../finding/index.js";
 import { over, point, under } from "../finding/index.js";
 import type { PropFooting } from "../footing/index.js";
+import type { PlacedStatic } from "./static.js";
 
 /** The least depth a seal reaches into the interior on every axis, so sec-111 sees it. */
 const SEAL_REACH = 0.02;
@@ -14,21 +15,53 @@ function outside(p: Vec3, min: Vec3, max: Vec3): number {
   return Math.hypot(...excess);
 }
 
-/** `interior`: no slab leaves the interior box; a finding names the corner farthest outside. */
-export function interior(footing: readonly PropFooting[], prepared: PreparedLevel): Finding[] {
+/** How a box leaves the interior: `by ... m at (...)` for its farthest corner, or null inside. */
+function leaving(box: SlabBox, prepared: PreparedLevel): string | null {
   const { min, max } = prepared.metrics.interior;
-  return footing.flatMap((prop) =>
+  const reaches = box.corners.map((corner) => outside(corner, min, max));
+  const far = Math.max(...reaches);
+  if (!over(far, 0)) {
+    return null;
+  }
+  return `by ${formatLength(far)} m at ${point(box.corners[reaches.indexOf(far)]!)}`;
+}
+
+/**
+ * `interior`: no slab and no placed static object leaves the interior box; a finding names
+ * the corner farthest outside. The static objects follow the props.
+ */
+export function interior(
+  footing: readonly PropFooting[],
+  placed: readonly PlacedStatic[],
+  prepared: PreparedLevel,
+): Finding[] {
+  const slabs = footing.flatMap((prop) =>
     prop.boxes.flatMap((box, k): Finding[] => {
-      const reaches = box.corners.map((corner) => outside(corner, min, max));
-      const far = Math.max(...reaches);
-      if (!over(far, 0)) {
-        return [];
-      }
-      const corner = box.corners[reaches.indexOf(far)]!;
-      const message = `prop ${prop.id} slab ${k} leaves the interior by ${formatLength(far)} m at ${point(corner)}`;
-      return [{ rule: "interior", subject: prop.id, message }];
+      const away = leaving(box, prepared);
+      return away === null
+        ? []
+        : [
+            {
+              rule: "interior",
+              subject: prop.id,
+              message: `prop ${prop.id} slab ${k} leaves the interior ${away}`,
+            },
+          ];
     }),
   );
+  const statics = placed.flatMap(({ object, box }): Finding[] => {
+    const away = leaving(box, prepared);
+    return away === null
+      ? []
+      : [
+          {
+            rule: "interior",
+            subject: object.id,
+            message: `static ${object.id} leaves the interior ${away}`,
+          },
+        ];
+  });
+  return [...slabs, ...statics];
 }
 
 /** `seal`: the part of every seal inside the interior box is at least 0.02 m thick on each axis. */

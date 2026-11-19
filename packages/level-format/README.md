@@ -7,8 +7,8 @@ browser-safe.
 
 ## Admission and encoding
 
-- `parseDescription`: admits the description text into a typed description, or returns
-  every problem with its path;
+- `parseDescription`: admits the description text into a typed description, its static
+  objects with every default filled, or returns every problem with its path;
 - `decodeLevel` and `encodeLevel`: read and write the level `.json` in its one canonical
   text;
 - `admitSlabs`: the one slab admission with the format caps, which the decoder runs on
@@ -28,6 +28,13 @@ browser-safe.
 - `LENGTH_SLACK` and `MAX_POINT_LIGHTS`: the slack of every length limit and the cap of
   point lights, for components that judge or report against the same limits.
 
+## Static objects
+
+- `staticClass`: the class a static object's keys name: `prop` for litter on a prop,
+  `overhead` for an object with a positive lift, `floor` for floor litter;
+- `staticBox`: reads a static object's `at`, `yaw` and `size` as an oriented box whose
+  underside lies at a given height, the box type a slab has.
+
 ## Finishes
 
 - `recipeAt`: the drawn recipe of a finish path: its body and its layers, with `extends`
@@ -41,8 +48,8 @@ browser-safe.
 
 ## Types
 
-The facade exports the types of the description, the level, the slab, the lighting
-section and the finish table: the table, a finish, a recipe, a layer with its pattern and
-effects, a length, and a slab's four finish keys.
+The facade exports the types of the description, a static object with its class, the
+level, the slab, the lighting section and the finish table: the table, a finish, a
+recipe, a layer with its pattern and effects, a length, and a slab's four finish keys.
 
 Read the [component knowledge](docs/KNOWLEDGE.md) next.

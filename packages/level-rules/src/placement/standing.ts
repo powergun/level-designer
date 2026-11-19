@@ -5,6 +5,7 @@ import { over, under } from "../finding/index.js";
 import type { PropFooting } from "../footing/index.js";
 import { HANG_HEIGHT } from "../footing/index.js";
 import { bounds } from "../plan/index.js";
+import type { Polygon } from "../plan/index.js";
 
 /** The least top height of a standing slab above the floor, 0.5 m; the capsule climbs 0.30 m. */
 const LEAST_TOP = 0.5;
@@ -61,16 +62,19 @@ export function floor(footing: readonly PropFooting[]): Finding[] {
   });
 }
 
+/** True when a plan outline reaches into the ramp zone by more than the length slack. */
+export function entersZone(shape: Polygon, zone: RampZone): boolean {
+  const extent = bounds(shape);
+  return over(extent.maxZ, zone.from) && under(extent.minZ, zone.to);
+}
+
 /** `ramp`: no standing footprint reaches into the ramp zone. */
 export function ramp(footing: readonly PropFooting[], zone: RampZone | null): Finding[] {
   if (zone === null) {
     return [];
   }
   return footing.flatMap((prop): Finding[] => {
-    const reaches = prop.standing.some((slab) => {
-      const extent = bounds(slab.outline);
-      return over(extent.maxZ, zone.from) && under(extent.minZ, zone.to);
-    });
+    const reaches = prop.standing.some((slab) => entersZone(slab.outline, zone));
     if (!reaches) {
       return [];
     }

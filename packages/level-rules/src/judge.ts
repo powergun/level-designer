@@ -14,16 +14,18 @@ import {
   ramp,
   rampZone,
   seal,
+  staticLimits,
   support,
 } from "./placement/index.js";
-import type { RampZone } from "./placement/index.js";
+import type { PlacedStatic, RampZone } from "./placement/index.js";
 import { destructible, proxies } from "./proof/index.js";
 import { scale } from "./scale.js";
 
 /**
- * The five facts of a built level that the rules judge: the typed description, the typed
- * level, the inspection of the level GLB, the base stage's image count and the prepared static
- * level. From the description the rules read only `base.scale`, the seals and each prop's `at`.
+ * The six facts of a built level that the rules judge: the typed description, the typed level,
+ * the inspection of the level GLB, the base stage's image count, the prepared static level and
+ * the placed static objects in description order. From the description the rules read only
+ * `base.scale`, the seals and each prop's `at`; a static object comes with its placed box.
  */
 export interface LevelFacts {
   readonly description: Description;
@@ -31,6 +33,7 @@ export interface LevelFacts {
   readonly inspection: GlbInspection;
   readonly baseImages: number;
   readonly prepared: PreparedLevel;
+  readonly placed: readonly PlacedStatic[];
 }
 
 /**
@@ -48,7 +51,7 @@ export interface Judgement {
  * destruction lib's Rapier backend loads that way; see @packages/level-rules/docs/KNOWLEDGE.md.
  */
 export async function judgeLevel(facts: LevelFacts): Promise<Judgement> {
-  const { description, level, inspection, prepared } = facts;
+  const { description, level, inspection, prepared, placed } = facts;
   const footing = footings(description, level, prepared);
   const zone = rampZone(prepared);
   const obstacles = staticObstacles(prepared);
@@ -63,13 +66,14 @@ export async function judgeLevel(facts: LevelFacts): Promise<Judgement> {
     ...lightFloor(points, prepared),
     ...material(inspection),
     ...texture(inspection, facts.baseImages),
-    ...interior(footing, prepared),
+    ...interior(footing, placed, prepared),
     ...support(footing),
     ...floor(footing),
     ...ramp(footing, zone),
     ...lowTop(footing),
     ...overlap(footing),
     ...seal(description.seals, prepared),
+    ...staticLimits(placed, prepared, zone),
     ...gap(standing, obstacles),
     ...spawn(standing, spawns),
     ...lanes.findings,

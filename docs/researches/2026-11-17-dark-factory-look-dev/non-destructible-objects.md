@@ -16,10 +16,10 @@ The level keeps two families apart, in the description, in the pair and in the r
   `props`, is built from slabs by one of the kit's nine kinds, is listed in the level
   `.json`, carries the role `destructible` in the `.glb` and passes the destructibility
   proof.
-- A static object fills a gap, for realism and for nothing else. It is floor litter, or
-  an overhead object on a wall, a deck or the ceiling. It lives in `statics`, has no kind
-  and no slab, appears nowhere in the level `.json` and carries the role `static` in the
-  `.glb`.
+- A static object fills a gap, for realism and for nothing else. It is litter, on the
+  floor or on a prop's top, or an overhead object on a wall, a deck or the ceiling. It
+  lives in `statics`, has no kind and no slab, appears nowhere in the level `.json` and
+  carries the role `static` in the `.glb`.
 
 A static object is only drawn. It has no collision and takes part in no simulation: no
 body, ray or piece of debris meets it, no navigation counts it and no proof runs on it. A
@@ -27,10 +27,11 @@ player walks through it and shoots through it. Three limits follow, and the buil
 enforces each with a number:
 
 - It gives no cover. Whatever a body can stand behind is a prop, so all cover stays
-  destructible.
+  destructible. Litter on a prop goes with the slab it lies on, at that slab's first
+  damage.
 - It blocks no path. Nothing in the game and nothing in the QA walk collides with it.
-- It blocks no sight line. Litter lies under the foot, and an overhead object starts
-  above every body's head.
+- It blocks no sight line. Litter is 0.15 m high at most, on the floor or on a prop's
+  top, and an overhead object starts above every body's head.
 
 No static object is therefore a rack, a rail, a bollard, a cart, a column, a cabinet on
 the floor or stock that stands. No object on a wall hangs lower than the hang height,
@@ -39,19 +40,38 @@ its nine kinds; a static object is not a tenth.
 
 ## Static objects
 
-### The two classes and their limits
+### The art direction
 
-A static object is a box. Its `lift`, the height of its underside above the floor, names
-its class: litter has none, and an overhead object has one. Floor litter is thin and
-small:
+The owner directs the static objects: the dark factory is in total chaos, and the rebel
+robots have messed up its interior. Litter lies everywhere, papers, metal sheets and
+broken tools, on the floor and on the tops of the production lines and the tables. The
+level holds no table, so a table top is the bench-high top of a prop: a conveyor's deck
+first, then a top that a player looks down on, such as a crate's lid, a low stack or an
+arm's pedestal.
 
-- It tops out 0.15 m above the floor or lower: the height of a pallet, the tallest thing
-  in the references that lies flat. A body walks through it, so a taller thing would read
-  as an obstacle that gives way.
+The static objects are cheap and add little geometry. Each is one box, and its richness
+is paint.
+
+### The classes and their limits
+
+A static object is a box, and its keys name its class: with `on` it is litter on a prop,
+with a positive `lift` an overhead object, and with neither floor litter. Litter is thin
+and small, wherever it lies:
+
+- It is 0.15 m high or lower: the height of a pallet, the tallest thing in the references
+  that lies flat. A body walks through it, so a taller thing would read as an obstacle
+  that gives way.
 - Its longer plan side measures 1.5 m or less, about a pallet's. A longer flat thing, a
   track, a duct or a line, is a layer of the floor's hall finish.
-- It lies on one floor level, off the ramp and off the slab's edge, where a flat box
-  would float or sink.
+
+Floor litter lies on one floor level, off the ramp and off the slab's edge, where a flat
+box would float or sink.
+
+Litter on a prop lies on one of that prop's tops. A top is the level upper face of a slab;
+a pitched slab, an arm's link or a jib's tie, has none. The build stands the litter on the
+highest top whose plan outline holds its `at`, on a tie the first in slab order, and that
+slab is the litter's support. Such litter lies on no floor, so the floor and the ramp are
+not judged for it.
 
 An overhead object starts at the hang height or higher, 2.17 m, counted from the hall's
 highest floor, the raised slab. `level-rules` owns that height for a hanging prop: every
@@ -61,13 +81,17 @@ eye to a point under that height stays under it. Counted from the highest floor,
 height lies above every body on either floor, so no eye loses any part of a body behind
 an overhead object. A lift that ends lower is refused.
 
-### What the references show
+### What the owner and the references name
 
-Floor litter:
+Litter, the owner's three kinds first:
 
+- papers: loose sheets, drawings and manuals, alone and in drifts;
+- metal sheets: plates, flat sheet stock and offcuts, as on the crane shop's floor;
+- broken tools and parts of tools, each a box whose marks are painted;
 - pallets, as in both jib images and at the machine's foot in the machine bay;
-- plates, flat sheet stock and offcuts, as on the crane shop's floor;
 - a cable or a hose that lies on the floor, common in such plants.
+
+The same kinds lie on the tops, in the sizes a top holds.
 
 Overhead objects:
 
@@ -75,67 +99,111 @@ Overhead objects:
   hangers from a truss, and the boards on its columns;
 - lamps on the walls and under the trusses: the floodlights on the crane shop's columns
   and the high-bay lamps of the three cranes;
+- the lamps of the emergency wall lights, which the owner names: small cold lamps on the
+  walls and the piers beside the passways, each a box with a glow and a point light
+  before it;
 - the dressing of a gallery on a deck: the glazed gallery above the night line, cabinets
   with lit screens as on the teal aisle's cabinet wall, and a handrail as on the double
   girder.
 
 A hanger is a static object too, a thin box from the truss down to its sign. The art
-team's brief settles the list of objects.
+team's briefs settle the lists of objects.
 
 ### The shape and its keys
 
-A box serves every object above, so a static object is one box, and no other shape is
-built. A round part is painted, as a hub disc is on an arm.
+A box serves every object above, so a static object is one box of 12 triangles, and no
+other shape is built. A round part is painted, as a hub disc is on an arm.
 
 The description's `statics` lists the static objects, apart from `seals` and from
-`props`. A static object takes a box's paint keys, which "A box: a seal or a static
-object" lists, and six keys of its own, which follow a prop's pose:
+`props`. The key is optional: a description without it holds no static object. A static
+object takes a box's paint keys, which "A box: a seal or a static object" lists, and
+seven keys of its own, which follow a prop's pose:
 
 - `id`, unique among seals, static objects and props;
 - `at`: `[x, z]`, the plan point of its centre;
 - `yaw`: degrees about +Y, by default 0, for litter that lies askew; a positive yaw turns
-  its length toward +X, as a prop's. A wall, a deck and a truss stand square to the hall,
-  so an overhead object leaves it at 0;
+  its length toward +X, as a prop's;
 - `size`: `[width, height, length]` in metres, each at least 0.02; at yaw 0 the width
   runs along X and the length along Z;
-- `lift`: the height of its underside above the floor under `at`. A lift of 0, the
-  default, makes floor litter, so no author types a floor's height; a positive lift, an
-  overhead object;
+- `lift`: the height of its underside above the floor under `at`, by default 0 and never
+  negative, so no author types a floor's height; a positive lift makes an overhead object;
+- `on`: the id of a prop, for litter that lies on that prop. It comes without `lift`;
 - `color`: its tint, as `#rrggbb` text.
 
-A pallet on the floor and a sign board on a pier's face read like this:
+The admission fills every default, the seed among them, so each reader of the typed
+record finds the same values. The finish sheet shows a box's upper face, its lower face
+and its sides along the width. An author therefore types the side that carries a mark as
+the width and turns the box by its yaw: a board on a wall that faces along X takes a yaw
+of 90.
+
+A pallet on the floor, a metal sheet on a conveyor and a sign board on a pier's face read
+like this:
 
 ```json
 { "id": "pallet-7", "at": [8.4, 12.1], "yaw": 17, "size": [1.0, 0.14, 1.2],
   "color": "#a8743f", "finish": "timber/pallet" },
-{ "id": "sign-pier-3", "at": [15.09, 3.05], "size": [0.06, 0.8, 1.6], "lift": 4.2,
-  "color": "#9a2a1c", "finish": "sign/board", "number": 3 }
+{ "id": "sheet-12", "on": "line-w-conv-1", "at": [-4.3, -2.1], "yaw": 31,
+  "size": [0.6, 0.02, 0.4], "color": "#8b9097", "finish": "litter/sheet" },
+{ "id": "sign-pier-3", "at": [15.09, 3.05], "yaw": 90, "size": [1.6, 0.8, 0.06],
+  "lift": 4.2, "color": "#9a2a1c", "finish": "sign/board", "number": 3 }
 ```
 
-### In the build and the pair
+### One placement
 
-A static object joins the build after sec-111's preparation, with the props. The
-pipeline stands it on the prepared floor under `at`, raised by its lift, and `level-glb`
-appends it to the level scene. The static scene that sec-111 prepares holds the base
-stage and the seals alone, so the body world, the navigation, the spawns and the floors
-never hold a static object.
+A static object joins the build after sec-111's preparation. The static scene that sec-111
+prepares holds the base stage and the seals alone, so the body world, the navigation, the
+spawns and the floors never hold a static object.
 
-In the `.glb` it is an object node with the role `static`, after the seals and before
-the props, with one box mesh. The level `.json` holds none of it: a renderer reads its
-geometry, its look and its role from the `.glb`.
+`level-pipeline` places every static object once, in a step of its own after the props are
+expanded, rounded and admitted:
+
+- floor litter and an overhead object stand over the prepared floor under `at`, raised by
+  the lift;
+- litter on a prop stands on its support's top.
+
+The step yields one placed box per static object, in description order: the box where it
+stands, as an oriented box of `level-format`, the type that a slab's box has. Its three
+axes are the box's X, Y and Z. Each fact of a placement has one owner:
+
+- `level-format` owns the class that a static object's keys name, and the reading of its
+  `at`, `yaw` and `size` as an oriented box at a given height of its underside.
+- `level-pipeline` owns that height, a litter's support, as the prop and the index of the
+  slab, and the `place` error.
+- `level-glb` owns the name of the support's mesh node.
+
+Every consumer reads the one placement, and none computes a second:
+
+- `level-glb` draws the placed box with the object's id and paint, and writes the support.
+- `level-rules` judges the sixth fact of a built level: a list of pairs, each a static
+  object of the description with its placed box. It reads the object's id and class from
+  the pair.
+- `level-cli` reads the description alone: a swatch takes a box's size and paint, not its
+  place.
+
+### In the pair
+
+In the `.glb` a static object is an object node with the role `static`, after the seals
+and before the props, with one box mesh. A litter on a prop names its support there, the
+mesh node of the slab it lies on: sec-111 hides that node at the slab's first damage, and
+the litter goes with it. The level `.json` holds none of it: a renderer reads a static
+object's geometry, its look and its role from the `.glb`.
 
 ### What judges a static object
 
-- `place`, a build error: its `at` lies inside the interior, as a prop's.
-- `interior`: its box stays inside the interior.
+- `shape`, a build error of the admission: its record's form. An `on` names a prop and
+  comes without `lift`.
+- `place`, a build error: its `at` lies inside the interior, as a prop's, and a litter on
+  a prop has a top of that prop under its `at`.
+- `interior`: its placed box stays inside the interior.
 - `static`: the limits of its class. `level-rules` owns all three numbers in this one
-  rule: the litter's top, the litter's length and the hang height it already holds.
+  rule: the litter's height, the litter's length and the hang height it already holds.
 
 No other rule judges it, because no body meets it and no sight line between bodies
 crosses it. `gap`, `spawn`, `lane`, `overlap`, `support`, `floor`, `ramp` and `low-top`
-stay rules for props, and `destructible` and `proxies` prove slabs. Whether a static
-object touches the wall, the deck or the floor it belongs to shows on the sheets and in
-the owner's QA, as it does for a prop against the base stage.
+stay rules for props, and `destructible` and `proxies` prove slabs. The build stands
+litter on its floor or its top. Whether an overhead object touches its wall, its deck or
+its truss, and whether a litter overhangs its top or enters a prop, shows on the sheets
+and in the owner's QA, as it does for a prop against the base stage.
 
 ### Caps
 
@@ -148,17 +216,20 @@ the owner's QA, as it does for a prop against the base stage.
 
 The QA walk installs one blocker for each slab of the level `.json` and none for a static
 object, so the capsule walks through litter as the player will. The view draws a static
-object with its finish. Like every level mesh it casts and receives the key's shadow;
-that is drawing, not simulation.
+object with its finish. Like every level mesh it casts and receives a key's shadow, in a
+level that states a key; that is drawing, not simulation. The QA app shows no damage, so
+there a litter stays on its prop.
 
 The level sheets draw a static object as they draw a seal, in its colour and without a
-number. The finish sheet shows its finish.
+number. The finish sheet shows its finish on a page of its path, as "What agents see" of
+`design.md` states.
 
 ### At adoption
 
 sec-111's level preparation skips a `static` node, as it skips a `destructible` one: no
 structure, ray, debris or navigation meets it. Its stage view draws the node with the
-painter.
+painter. When its wall view hides a slab's mesh node at the slab's first damage, the
+stage view hides every `static` node whose support names that node.
 
 ## How a finish reaches a non-destructible object
 
@@ -264,6 +335,9 @@ finish can hold more than a prop's, because it carries less:
 It stays cheap by the design's own means, and by where it is drawn:
 
 - The templates, the caps and the one static material per finish path are the props'.
+- A static object is one box, and its richness is paint. Every painted path is one more
+  program at the view's start, so the litter shares few paths: a piece differs from the
+  next by its size, its tint, its seed and its wear.
 - A box covers few pixels. From the spawns the seals cover up to 8 % of the frame; litter
   is small, and an overhead object hangs far from the eye.
 - The hall covers most of every frame, the floor alone a third or more. Its marks are
@@ -277,17 +351,20 @@ when it drops.
 
 ## What the art direction paints first
 
-- The seals: the end wall as cladding with a gate, the door and the four windows as
-  shutters. The end wall is the level's largest plain face, 35 by 20 m.
-- The static objects: pallets, plates and offcuts where a line or the yard looks swept,
-  bay signs on their hangers along the centre aisle, and the edge of the front deck,
-  which faces the opening view, with a glazed gallery, cabinets and a handrail.
 - The two floors: the front floor, and the raised slab with its ramp. A floor fills a
   third or more of the frame from every spawn. Every daylight reference marks its floor,
   and the mood images show a sealed floor with joints: the joints, the aisle's lines and
   the lines around the cells and the yard's slots.
 - The side walls with their piers: they stand at eye level beside every lane. The
   references' walls are painted, pale above a darker base.
+- The litter of a factory in chaos: papers, metal sheets and broken tools on the floor
+  and on the tops of the lines and the bench-high props, with pallets and offcuts where a
+  line or the yard looks swept.
+- The seals: the end wall as cladding with a gate, the door and the four windows as
+  shutters. The end wall is the level's largest plain face, 35 by 20 m.
+- The overhead objects: bay signs on their hangers along the centre aisle, and the edge
+  of the front deck, which faces the opening view, with a glazed gallery, cabinets and a
+  handrail.
 
 The raised slab's role holds layers on `top` alone: its stage material also covers the
 back wall, the partitions under the decks and most pipes and tanks. Those, the ceiling,

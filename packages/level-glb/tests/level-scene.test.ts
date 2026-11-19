@@ -1,9 +1,7 @@
-import { beforeAll, expect, test } from "bun:test";
-import { readBaseStage } from "@level-designer/sec111-gateway/stage";
-import type { GlbContainer, GltfPrimitive } from "../src/container/index.js";
-import { readGlb } from "../src/container/index.js";
+import { expect, test } from "bun:test";
+import type { GltfPrimitive } from "../src/container/index.js";
 import type { PropMeshes, SlabMesh } from "@level-designer/level-glb";
-import { assembleLevelScene, assembleStaticScene, inspectGlb } from "@level-designer/level-glb";
+import { assembleLevelScene, inspectGlb } from "@level-designer/level-glb";
 import { accessorValues } from "./bin-data.js";
 import {
   expectIndexedMaterialTriangles,
@@ -17,22 +15,11 @@ import {
   objectPrimitives,
   rootsOf,
 } from "./contract.js";
-import { BASE_NODES, BASE_TRIANGLES, LOOK, LOOKS, PROPS, SEALS } from "./fixtures.js";
+import { BASE_NODES, BASE_TRIANGLES, LOOKS, PROPS, SEALS } from "./fixtures.js";
+import { assembleFixtureLevel, PROP_OBJECTS, SEAL_OBJECTS } from "./level-fixture.js";
 
 // Owner: level-glb's level scene assembly, appended to the static scene of the real base stage.
-let staticGlb: Uint8Array;
-let staticScene: GlbContainer;
-let glb: Uint8Array;
-let level: GlbContainer;
-
-beforeAll(async () => {
-  const built = assembleStaticScene(await readBaseStage(), LOOK, SEALS);
-  if (!built.ok) throw new Error("the fixture look names only real base names");
-  staticGlb = built.glb;
-  staticScene = readGlb(built.glb);
-  glb = assembleLevelScene(built.glb, PROPS, LOOKS);
-  level = readGlb(glb);
-});
+const { staticGlb, staticScene, glb, level } = await assembleFixtureLevel([]);
 
 /**
  * A slab primitive's attributes as the contract states them: each semantic, its FLOAT
@@ -129,13 +116,7 @@ test("the level scene keeps the static scene's nodes, materials, accessors, imag
 
 test("the level scene keeps `stage` first, then one seal object per seal, then one object per prop", () => {
   expect(entryAt(level.document.nodes, rootsOf(level.document)[0]).name).toBe("stage");
-  const seals = SEALS.map((seal) => ({ id: seal.id, extras: { role: "seal" }, meshes: 1 }));
-  const props = PROPS.map((prop) => ({
-    id: prop.id,
-    extras: { role: "destructible", prop: prop.id },
-    meshes: prop.slabs.length,
-  }));
-  expectObjectRoots(level.document, [...seals, ...props]);
+  expectObjectRoots(level.document, [...SEAL_OBJECTS, ...PROP_OBJECTS]);
 });
 
 test("the level scene stores every primitive as an indexed triangle list with a position and a material", () => {
@@ -208,11 +189,11 @@ test("a glowing fallback carries its path, glow and unscaled strength and emits 
 test("a slab naming a finish path without a body or an unknown glow is a programming error", () => {
   const slab = entryAt(PROPS[0]?.slabs, 0);
   expect(() =>
-    assembleLevelScene(staticGlb, withSlab({ ...slab, finish: "timber/lid" }), LOOKS),
+    assembleLevelScene(staticGlb, withSlab({ ...slab, finish: "timber/lid" }), LOOKS, []),
   ).toThrow('no finish path named "timber/lid"');
-  expect(() => assembleLevelScene(staticGlb, withSlab({ ...slab, glow: "amber" }), LOOKS)).toThrow(
-    'no glow named "amber"',
-  );
+  expect(() =>
+    assembleLevelScene(staticGlb, withSlab({ ...slab, glow: "amber" }), LOOKS, []),
+  ).toThrow('no glow named "amber"');
 });
 
 test("inspection of the level scene counts the static scene's triangles plus every slab's, and the base images only", () => {

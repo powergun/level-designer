@@ -7,6 +7,7 @@ import {
   validateLevel,
 } from "@level-designer/level-pipeline";
 import * as stage from "@level-designer/sec111-gateway/stage";
+import { field, glbDocument, listAt } from "./glb-json.js";
 
 // Owner: level-pipeline, on the committed description. This file runs the gate's third and
 // last full preparation, and only that one.
@@ -28,18 +29,9 @@ interface WrittenMaterial {
   readonly emissiveStrength: unknown;
 }
 
-/** The value at `key` of a parsed JSON value, or `undefined`. */
-function field(value: unknown, key: string): unknown {
-  return Reflect.get(Object(value), key);
-}
-
-/** The materials of a GLB, read from its JSON chunk after the 12-byte header and chunk head. */
+/** The materials of a GLB, as far as the lamp check reads them. */
 function materialsOf(glb: Uint8Array): readonly WrittenMaterial[] {
-  const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
-  const length = view.getUint32(12, true);
-  const document: unknown = JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + length)));
-  const materials: unknown = field(document, "materials");
-  const list: readonly unknown[] = Array.isArray(materials) ? materials : [];
+  const list = listAt(glbDocument(glb), "materials");
   return list.map((material) => ({
     finish: field(field(material, "extras"), "finish"),
     glow: field(field(material, "extras"), "glow"),
@@ -51,9 +43,11 @@ function materialsOf(glb: Uint8Array): readonly WrittenMaterial[] {
   }));
 }
 
-/** The glow names the description's props state. */
+/** The glow names the description's props and static objects state. */
 function glowsInUse(description: Description): ReadonlySet<string> {
-  const names = description.props.map((prop) => prop.params.get("glow"));
+  const props = description.props.map((prop) => prop.params.get("glow"));
+  const statics = description.statics.map((box) => box.glow);
+  const names = [...props, ...statics];
   return new Set(names.filter((name): name is string => typeof name === "string"));
 }
 

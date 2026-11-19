@@ -158,8 +158,8 @@ const rejections: readonly [string, unknown, string, string][] = [
   ["a reused prop id", changed(base, "props[1].id", "crate-a"), "id", "props[1].id"],
   ["a bad prop id", changed(base, "props[1].id", "Crate B"), "shape", "props[1].id"],
   [
-    "a ninth point light",
-    changed(base, "lighting.points", Array.from({ length: 9 }, validPoint)),
+    "a 33rd point light",
+    changed(base, "lighting.points", Array.from({ length: 33 }, validPoint)),
     "shape",
     "lighting.points",
   ],

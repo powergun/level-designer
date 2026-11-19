@@ -2,7 +2,7 @@ import { readGlb } from "../container/index.js";
 import { applyBaseLook, baseNameErrors } from "./base-look.js";
 import type { BaseLook, SealBox, StaticScene } from "./inputs.js";
 import { sealMaterial } from "./materials.js";
-import { SceneBuilder } from "./scene-builder.js";
+import { SceneBuilder } from "../builder/index.js";
 import { sealGeometry } from "./seal-box.js";
 
 /** The column-major matrix of a uniform scale. */

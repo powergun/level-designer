@@ -5,6 +5,7 @@ import {
   changed,
   closedRange,
   expectLimit,
+  problemsOf,
   rulePaths,
   validDescription,
   validPoint,
@@ -23,7 +24,7 @@ function direction(scale: number): number[] {
 // The section has one admission for both shapes; the level tests hold its decoder wiring.
 describe("lighting caps and ranges, through the description parser", () => {
   const probes: readonly LimitCase[] = [
-    ["lighting.points", points(8), points(9)],
+    ["lighting.points", points(32), points(33)],
     ["lighting.key.shadow.mapSize", 4096, 8192],
     ["lighting.key.shadow.mapSize", 1024, 1000],
     ["lighting.key.direction", direction(1 + 0.9e-6), direction(1 + 1.1e-6)],
@@ -50,6 +51,13 @@ describe("lighting caps and ranges, through the description parser", () => {
       expectLimit(parseDescription, validDescription(), probe);
     });
   }
+
+  test("a 33rd point light is refused with the cap in the message", () => {
+    const crowded = changed(validDescription(), "lighting.points", points(33));
+    expect(problemsOf(parseDescription(JSON.stringify(crowded))).map((p) => p.message)).toEqual([
+      "lighting.points: expected a list of at most 32 items, got an array of 33 items",
+    ]);
+  });
 
   test("the key light is optional, and an unknown lighting key is refused", () => {
     const keyless = changed(validDescription(), "lighting.key");

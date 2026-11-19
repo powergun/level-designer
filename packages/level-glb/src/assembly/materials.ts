@@ -1,6 +1,12 @@
 import type { GltfMaterial } from "../container/index.js";
 import { EMISSIVE_STRENGTH } from "../container/index.js";
-import type { Glow, Rgb, SealBox, SlabLooks, SlabMesh } from "./inputs.js";
+import type { Glow, Rgb, SealBox, SlabLooks } from "./inputs.js";
+
+/** What picks a finish material: a slab's or a box's finish path and optional glow. */
+export interface FinishUse {
+  readonly finish: string;
+  readonly glow?: string;
+}
 
 /** One sRGB channel from 0 to 1 decoded to linear, as glTF colour factors store it. */
 function linearChannel(value: number): number {
@@ -8,7 +14,7 @@ function linearChannel(value: number): number {
 }
 
 /** A `#rrggbb` sRGB colour as a linear RGB triple. */
-function linearColor(hex: string): Rgb {
+export function linearColor(hex: string): Rgb {
   const channel = (at: number): number =>
     linearChannel(Number.parseInt(hex.slice(at, at + 2), 16) / 255);
   return [channel(1), channel(3), channel(5)];
@@ -41,31 +47,28 @@ function admitted<T>(entry: T | undefined, name: string, kind: string): T {
 }
 
 /**
- * The flat fallback of a finish path and its optional glow, named `finish/<path>` with
- * `/glow/<glow>` after it; its `extras` join it to its recipe and keep a glow's unscaled
- * strength for the painter. Its base colour is white, so the vertex colours show unchanged,
- * and a glow emits at its strength times the body's `lit`.
+ * The flat fallback of a finish path and its optional glow, shared by slabs and boxes, named
+ * `finish/<path>` with `/glow/<glow>` after it; its `extras` join it to its recipe and keep a
+ * glow's unscaled strength for the painter. Its base colour is white, so the vertex colours
+ * show unchanged, and a glow emits at its strength times the body's `lit`.
  */
-export function slabMaterial(
-  slab: Pick<SlabMesh, "finish" | "glow">,
-  looks: SlabLooks,
-): GltfMaterial {
-  const body = admitted(looks.bodies.get(slab.finish), slab.finish, "finish path");
+export function finishMaterial(painted: FinishUse, looks: SlabLooks): GltfMaterial {
+  const body = admitted(looks.bodies.get(painted.finish), painted.finish, "finish path");
   const look: GltfMaterial = {
-    name: `finish/${slab.finish}`,
-    extras: { finish: slab.finish },
+    name: `finish/${painted.finish}`,
+    extras: { finish: painted.finish },
     pbrMetallicRoughness: {
       baseColorFactor: [1, 1, 1, 1],
       metallicFactor: body.metalness,
       roughnessFactor: body.roughness,
     },
   };
-  if (slab.glow === undefined) return look;
-  const glow = admitted(looks.glows.get(slab.glow), slab.glow, "glow");
+  if (painted.glow === undefined) return look;
+  const glow = admitted(looks.glows.get(painted.glow), painted.glow, "glow");
   return {
     ...look,
-    name: `${look.name}/glow/${slab.glow}`,
-    extras: { finish: slab.finish, glow: slab.glow, glowStrength: glow.strength },
+    name: `${look.name}/glow/${painted.glow}`,
+    extras: { finish: painted.finish, glow: painted.glow, glowStrength: glow.strength },
     ...emission({ color: glow.color, strength: glow.strength * body.lit }),
   };
 }

@@ -67,6 +67,22 @@ export function validDescription(): Record<string, unknown> {
   };
 }
 
+/** A floor litter record with the given id that states only its required keys. */
+export function validStatic(id = "sheet-12"): Record<string, unknown> {
+  return {
+    id,
+    at: [-4.3, -2.1],
+    size: [0.6, 0.02, 0.4],
+    color: "#8b9097",
+    finish: SLAB_FINISH.finish,
+  };
+}
+
+/** The valid description with the given static objects. */
+export function staticsDescription(statics: readonly unknown[]): Record<string, unknown> {
+  return { ...validDescription(), statics };
+}
+
 /** A slab on the grid: a metal panel of `size`, yawed by a 3-4-5 turn, lifted 0.3241 m. */
 export function gridSlab(size: Vec3 = [2, 1.2, 0.3]): Slab {
   return {

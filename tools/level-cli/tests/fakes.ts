@@ -124,6 +124,7 @@ export async function fakeBuilt(): Promise<BuiltLevel> {
       name: "fixture-hall",
       base: { scale: 3.89956, materials: new Map(), doubleSided: [] },
       seals: [],
+      statics: [],
       finishes: new Map(),
       glows: new Map(),
       props: [crate("front", [-5, 10]), crate("back", [0, -55])],
@@ -135,6 +136,7 @@ export async function fakeBuilt(): Promise<BuiltLevel> {
     level: { finishes: new Map(), props: [], lighting },
     baseImages: 11,
     prepared: { level: prepared, files: { document: "{}", navMesh: new Uint8Array() } },
+    placed: [],
   };
 }
 

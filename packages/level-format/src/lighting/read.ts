@@ -3,7 +3,7 @@ import type { ShapeNode, Vec3 } from "../shape/index.js";
 import type { Environment, Haze, KeyLight, Lighting, PointLight, Shadow } from "./lighting.js";
 
 /** The most point lights a level holds. */
-export const MAX_POINT_LIGHTS = 8;
+export const MAX_POINT_LIGHTS = 32;
 
 /** A direction from the hall toward the key: a unit vector with positive y. */
 function readDirection(node: ShapeNode): Vec3 {

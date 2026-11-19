@@ -132,7 +132,7 @@ describe("world triangles", () => {
   });
 
   test("give a slab its vertex colour, a lit glowing slab its glow colour and an unlit one its vertex colour", () => {
-    const triangles = readWorldTriangles(assembleLevelScene(staticScene(), PROPS, LOOKS));
+    const triangles = readWorldTriangles(assembleLevelScene(staticScene(), PROPS, LOOKS, []));
     expect(triangles.positions).toHaveLength((1 + 12 + 14) * 9);
     // After the floor and the seal: two crate slabs, then the lamp's lit glowing strip, its
     // unlit glowing housing and its plain lit strip, then the sign's unlit glowing housing.

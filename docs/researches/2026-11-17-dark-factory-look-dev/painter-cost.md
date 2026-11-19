@@ -21,8 +21,8 @@ a painter's dearest operation. Counted in the source, per pixel and per branch t
 formed concrete spends 24 hashes, brick 32, the metal sphere 44 and fractured concrete
 56. One value-noise lookup in three axes is eight hashes. Each painter adds a bump from
 screen derivatives and specular anti-aliasing. sec-111 pays this on six walls of about 7
-by 3.2 m under one key and four points. The level has one key and eight points, and every
-lit pixel evaluates every light.
+by 3.2 m under one key and four points. The level has 25 points and no key, and every lit
+pixel evaluates every light.
 
 On the committed level, at the game's lens, from the five spawns and the centre aisle:
 the props cover 0 to 14 % of the frame, the seals up to 8 % and the floor 31 to 44 %. One
@@ -54,7 +54,7 @@ In the scene:
   never a layer of a shared recipe.
 - One material serves each finish path and glow. A box and a slab of one path share it.
 - What is static is computed once. Each graph reads static inputs only, so no draw is
-  refreshed per frame, and the key's shadow renders once.
+  refreshed per frame, and a key's shadow renders once.
 - Every edge is filtered over the footprint, and fine layers fade with it. A painter
   needs no supersampling to stay calm in motion.
 - Only a stage material that names a finish is wrapped. `level-view` paints no interior:
@@ -69,7 +69,7 @@ that with a static material class, whose observer reports no node to refresh unl
 build injects one of four per-draw nodes: the model-view matrix, the model-normal-view
 matrix, ambient occlusion or the shadow. The class is a file of Wall Lab's demo, not of a
 library, and sec-111 holds its own copy. `level-view` holds its own too, in its unit
-`paint`, because the level draws 608 slab meshes.
+`paint`, because the level draws 616 slab meshes and 217 static objects, one draw each.
 
 ## If the owner finds painters too dear
 

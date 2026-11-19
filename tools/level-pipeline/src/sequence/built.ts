@@ -1,4 +1,4 @@
-import type { Description, Level } from "@level-designer/level-format";
+import type { Description, Level, SlabBox, StaticObject } from "@level-designer/level-format";
 import type { prepareLevel } from "@level-designer/sec111-gateway/stage";
 
 /** The two inputs of a build: the description file's bytes and the base stage GLB bytes. */
@@ -13,7 +13,10 @@ type Prepared = Extract<Awaited<ReturnType<typeof prepareLevel>>, { readonly kin
 /** The prepared static level as sec-111 returns it: typed, and as its two persisted files. */
 export type PreparedStatic = Pick<Prepared, "level" | "files">;
 
-/** The build error rules, in the order of the build steps that raise them. */
+/**
+ * The build error rules, in the order of the build steps that raise them; `place` comes from
+ * the props step and again from the statics step after the slab admission.
+ */
 type BuildRule =
   | "shape"
   | "id"
@@ -35,9 +38,16 @@ export interface BuildError {
   readonly message: string;
 }
 
+/** A static object of the description with the oriented box where the build placed it. */
+export interface PlacedStatic {
+  readonly object: StaticObject;
+  readonly box: SlabBox;
+}
+
 /**
  * A built level: the typed description and its hash, the level pair with its typed level, the
- * base stage's image count and the prepared static level its props stand on.
+ * base stage's image count, the prepared static level its props stand on, and the placed
+ * static objects in description order.
  */
 export interface BuiltLevel {
   readonly description: Description;
@@ -47,6 +57,7 @@ export interface BuiltLevel {
   readonly level: Level;
   readonly baseImages: number;
   readonly prepared: PreparedStatic;
+  readonly placed: readonly PlacedStatic[];
 }
 
 /** The outcome of a build: the built level, or every error of the first step that has errors. */

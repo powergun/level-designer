@@ -6,11 +6,12 @@ as the recipes of its roles, in the words of `finish-format.md` of the same dire
 keys, coordinates, faces and effects. The recipes themselves are in
 [the painter recipes](look-dev-painter-recipes.md).
 
-Every size is in metres and every luminance is linear. Hall luminances are computed from the
-figures of `docs/LOOK-AND-LIGHTING.md`: a non-metal face returns 0.44 of its albedo facing up,
-0.24 as a side and 0.10 as an underside; the floor shows 0.054 and a tube 0.31. The art team reads
-a recipe on its page of the finish sheet, which shows albedo only; the owner's browser shows it
-under the lights.
+Every size is in metres and every luminance is linear. Hall luminances are computed at the
+lights of the first art pass, an environment of intensity 7: a non-metal face returns 0.44 of
+its albedo facing up, 0.24 as a side and 0.10 as an underside; the floor shows 0.054 and a tube
+0.31. `docs/LOOK-AND-LIGHTING.md` gives the level's present levels. The art team reads a recipe
+on its page of the finish sheet, which shows albedo only; the owner's browser shows it under the
+lights.
 
 ## 1. How the recipes are written
 
@@ -190,8 +191,9 @@ is `fit`. Given up, the first three without being asked for:
 - Whether a floor line's plan rectangle catches an up-facing surface of a base part that shares
   the floor's stage material.
 - The glare of the bodies smoother than roughness 0.7: corrugated, beam, bed and casting.
-  `docs/LOOK-AND-LIGHTING.md` gives the figure for the metal roles: the points' highlights pass
-  the bloom threshold on a fifth of the standing places at 0.6 and on none from 0.7.
+  `docs/LOOK-AND-LIGHTING.md` gives the figure for the metal roles under the first art pass's
+  points: highlights pass the bloom threshold on a fifth of the standing places at 0.6 and on
+  none from 0.7.
 - The cost of any recipe and any value in the renderer: every hall luminance is computed, and
   the owner reads the frame rate and the view's start time.
 - The screen shares hold for the sheet's two spawn views only, at 640 by 360 px.

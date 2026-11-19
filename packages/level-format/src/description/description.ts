@@ -52,6 +52,37 @@ export interface Prop {
   readonly params: ReadonlyMap<string, unknown>;
 }
 
+/**
+ * A box's five paint keys: its finish path, a legend's number, its seed and its wear, and
+ * the name of a glow for its lit parts. The admission fills every default.
+ */
+export interface BoxPaint {
+  readonly finish: string;
+  readonly number: number;
+  readonly wear: number;
+  readonly seed: number;
+  readonly glow?: string;
+}
+
+/**
+ * One static object: a box that is only drawn. `at` is the plan point `[x, z]` of its
+ * centre, `yaw` its turn in degrees about +Y, `size` its `[width, height, length]`, `lift`
+ * the height of its underside above the floor under `at`, and `on` the id of the prop it
+ * lies on; `color` is its `#rrggbb` tint.
+ */
+export interface StaticObject extends BoxPaint {
+  readonly id: string;
+  readonly at: readonly [number, number];
+  readonly yaw: number;
+  readonly size: Vec3;
+  readonly lift: number;
+  readonly on?: string;
+  readonly color: string;
+}
+
+/** The class a static object's keys name: litter on a prop, an overhead object, floor litter. */
+export type StaticClass = "prop" | "overhead" | "floor";
+
 /** The level description: every authoring decision, and nothing derived. */
 export interface Description {
   readonly name: string;
@@ -60,5 +91,6 @@ export interface Description {
   readonly finishes: FinishTable;
   readonly glows: ReadonlyMap<string, Glow>;
   readonly props: readonly Prop[];
+  readonly statics: readonly StaticObject[];
   readonly lighting: Lighting;
 }

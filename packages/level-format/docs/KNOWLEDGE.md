@@ -3,7 +3,7 @@
 ## Ownership
 
 The component owns the description shape, the level `.json` shape, the finish table, the
-one slab admission and the reading of a slab as an oriented box. Its problems carry one of
+one slab admission and the reading of a slab or a static object as an oriented box. Its problems carry one of
 four rules: `shape`, `id`, `slab` and `finish`. It judges no kind name, no kind parameter,
 no base material or mesh name and no placement: a prop's `kind` passes on as a string, its
 `params` as a map, and base names as map keys and strings.
@@ -15,8 +15,8 @@ no base material or mesh name and no placement: a prop's `kind` passes on as a s
   and the length slack.
 - `lighting`: the lighting section's one type, its one admission and its canonical key
   order, shared by the description and the level `.json`.
-- `slab`: the slab type with its four finish keys, the seed range, the shape of its
-  record, its key order, the grid rounding, the length formatter and the oriented box.
+- `slab`: the slab type with its four finish keys and their ranges, its record, its key
+  order, the grid rounding, the length formatter and the oriented box.
 - `length`: a length on a face, its reading with the bounds and the floor of its terms,
   and its canonical text.
 - `layer`: one layer of a recipe: its types, the patterns of the eight kinds, its reading
@@ -24,7 +24,7 @@ no base material or mesh name and no placement: a prop's `kind` passes on as a s
 - `finish`: the finish table's types, its one admission with `extends` and the caps of a
   recipe, its canonical text, a path's drawn recipe, a hall finish's limits and the seed
   of an id. The description and the level `.json` share it.
-- `description`: the description type and its admission.
+- `description`: the description type, its admission and a static object's class and box.
 - `level`: the level type, the slab admission, the decoder and the encoder.
 
 Dependencies point down: `shape` sits at the bottom, and `lighting`, `slab` and `length`
@@ -72,8 +72,9 @@ become `ReadonlyMap` values, so no JSON key can reach an object prototype.
 ## The description
 
 The description's root keys are `schema`, `name`, `base`, `seals`, `finishes`, `glows`,
-`props` and `lighting`, and its schema id is `level-designer-description/1`. The typed
-description leaves out the schema id.
+`props`, the optional `statics` and `lighting`, and its schema id is
+`level-designer-description/1`. The typed description leaves out the schema id, and its
+`statics` is empty when the text states none.
 
 - `base` holds `scale`, a positive number; `materials`, a map from base material name to
   an override; and `doubleSided`, a list of base mesh names.
@@ -89,14 +90,48 @@ description leaves out the schema id.
   `params`.
 - `name` names the output files, so it obeys the id rule: lowercase letters, digits and
   hyphens, a letter first, at most 48 characters. It is not part of id uniqueness.
-- Ids are unique among seals and props together. Seals claim their ids before props,
-  each list in order, and the first claimant keeps the id.
-- The caps are 16 seals, 8 glows and 512 props.
+
+Ids are unique among seals, props and static objects together. Seals claim their ids
+first, then props, then static objects, each list in order, and the first claimant keeps
+the id, so a clash stands at the later record. The caps are 16 seals, 8 glows, 512 props
+and 256 static objects.
 
 Every `metalness` and `roughness` lies from 0 to 1. Surface colours, of seals and slabs,
 are `#rrggbb` text in either letter case; a tint, an emissive colour and a glow colour are
 linear RGB triples. `isSurfaceColor` is the one check of the surface colour form: the seal
 and slab reads use it, and so can any component that admits a surface colour.
+
+## Static objects
+
+A static object is one box that is only drawn: litter on the floor or on a prop's top, or
+an overhead object. Its record takes seven keys of its own and a box's five paint keys:
+
+- `id`, under the id rule; `at`, the plan point `[x, z]` of its centre; `yaw`, degrees
+  about +Y, by default 0; `size`, `[width, height, length]` in metres, each side at least
+  0.02 m within the length slack; `lift`, the height of its underside above the floor
+  under `at`, at least 0 and by default 0; `on`, the id of a prop it lies on; and `color`,
+  `#rrggbb` text.
+- The paint keys: `finish`, a finish path, required; `number`, an integer from 0 to
+  999,999, by default 0; `wear`, from 0 to 1, by default 0.3; `seed`, an integer from 0 to
+  4,095, by default `seedOfId` of the id; and `glow`, the name of one of `glows`.
+
+`id`, `at`, `size`, `color` and `finish` are required. The admission fills every default,
+so each reader of the typed record finds the same values; `on` and `glow` stay absent when
+unstated. An `on` that names no prop is a `shape` problem at `statics[<i>].on`; a seal's
+id names no prop. A stated `lift` beside an `on` is a `shape` problem at the `lift`, a
+lift of 0 included, and the typed lift of such litter is 0. A glow name that `glows` lacks
+is a `shape` problem at the `glow`. Once the whole description holds its shape, a static
+object whose finish path the table lacks is a `finish` problem at its `finish`:
+`statics[<i>].finish: no finish "<finish>/<role>"`, one per object.
+
+`staticClass` reads the class from the keys: `prop` with an `on`, `overhead` with a
+positive lift, and `floor` otherwise. The class's limits belong to `level-rules`.
+
+`staticBox` reads a static object at a given height of its underside as an oriented box of
+the slab's type. Its base centre stands at `at` and that height, its frame is the level's
+turned by `yaw` about +Y as a prop's, so a positive yaw turns the length toward +X, and
+its width, height and length lie along its X, Y and Z. The reading does not round. The
+height and the support belong to the build that places the object.
 
 ## The finish table
 
@@ -216,7 +251,7 @@ Colours are linear triples with each channel from 0 to 1. Intensities, ranges, t
 density and the haze glow are not negative, and the exposure is positive. The shadow's map
 size is 1024, 2048 or 4096, its bias lies from -0.01 to 0.01, its normal bias from 0 to 1
 and its radius from 0 to 16. The shadow sits inside the key, and the key is optional, so a
-section holds at most one key; it holds at most eight points. The key's direction is a unit
+section holds at most one key; it holds at most 32 points. The key's direction is a unit
 vector with positive y.
 
 ## The level `.json`
@@ -285,8 +320,9 @@ The facade exports the length slack as `LENGTH_SLACK` and the point-light cap as
 
 ## The oriented box
 
-A slab's frame has its width along local +X, its height along local +Y and its thickness
-along local +Z, toward the +Z face. Its origin is the base centre. `slabBox` returns the
+`slabBox` and `staticBox` share one reading of a box. A slab's frame has its width along
+local +X, its height along local +Y and its thickness along local +Z, toward the +Z face;
+a static object's has its length there. The origin is the base centre. A box holds the
 world centre, the three local axes as world unit vectors, the half extents and the eight
 corners. Corner `k` takes the + side of local X when bit 0 of `k` is set, of Y for bit 1
 and of Z for bit 2.

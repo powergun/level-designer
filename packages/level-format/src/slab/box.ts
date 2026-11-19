@@ -2,9 +2,10 @@ import type { Vec3 } from "../shape/index.js";
 import type { Quaternion, Slab } from "./slab.js";
 
 /**
- * A slab read as an oriented box in the level frame. `axes` are the slab's local +X (width),
- * +Y (height) and +Z (thickness, toward the +Z face) as world unit vectors. Corner `k` takes
- * the + side of local X when bit 0 of `k` is set, of Y for bit 1 and of Z for bit 2.
+ * A slab or a placed static object read as an oriented box in the level frame. `axes` are
+ * its local +X (width), +Y (height) and +Z (thickness or length) as world unit vectors.
+ * Corner `k` takes the + side of local X when bit 0 of `k` is set, of Y for bit 1 and of Z
+ * for bit 2.
  */
 export interface SlabBox {
   readonly center: Vec3;
@@ -38,18 +39,26 @@ function offset(origin: Vec3, axes: readonly [Vec3, Vec3, Vec3], amounts: Vec3):
   ];
 }
 
-/** Reads a slab's stored size and pose as an oriented box with its eight world corners. */
-export function slabBox(slab: Slab): SlabBox {
-  const [width, height, thickness] = slab.size;
+/**
+ * The oriented box of `size` `[width, height, thickness]` whose base centre is `position`
+ * and whose frame `rotation` turns into the level frame; a slab's box and a static object's.
+ */
+export function orientedBox(position: Vec3, rotation: Quaternion, size: Vec3): SlabBox {
+  const [width, height, thickness] = size;
   const [hx, hy, hz] = [width / 2, height / 2, thickness / 2];
   const axes: readonly [Vec3, Vec3, Vec3] = [
-    rotate(slab.rotation, [1, 0, 0]),
-    rotate(slab.rotation, [0, 1, 0]),
-    rotate(slab.rotation, [0, 0, 1]),
+    rotate(rotation, [1, 0, 0]),
+    rotate(rotation, [0, 1, 0]),
+    rotate(rotation, [0, 0, 1]),
   ];
-  const center = offset(slab.position, axes, [0, hy, 0]);
+  const center = offset(position, axes, [0, hy, 0]);
   const corners = Array.from({ length: 8 }, (_, k) =>
     offset(center, axes, [k & 1 ? hx : -hx, k & 2 ? hy : -hy, k & 4 ? hz : -hz]),
   );
   return { center, axes, halfExtents: [hx, hy, hz], corners };
+}
+
+/** Reads a slab's stored size and pose as an oriented box with its eight world corners. */
+export function slabBox(slab: Slab): SlabBox {
+  return orientedBox(slab.position, slab.rotation, slab.size);
 }

@@ -23,7 +23,7 @@ with Bun and pass the scratch directory as `--workdir`, so no source names it.
 - `snapshot` builds without judging, so a rejected level can still be seen. It writes
   `plan.png`, `section.png` and `view.png` to `<workdir>/snapshots/`, and `custom.png` when
   `--eye` and `--look-at` name a view. Then it writes one finish page per finish path in
-  use to `<workdir>/snapshots/finish/`.
+  use to `<workdir>/snapshots/finish/`: the slab pages, the box pages, then the hall pages.
 
 Every command takes `--description <path>` and `--workdir <dir>`. The description defaults
 to the committed one that `level-pipeline` names. `build` and `snapshot` need `--workdir`;
@@ -91,12 +91,12 @@ The tool fills the renderer's input from the built level and the game values:
 ## Finish pages
 
 The art team reads one page per finish path, not one sheet of all paths: an image reader
-scales a large sheet down until its marks are lost. A path is in use when a slab of the
-built level names it. Its page is `<finish>.<role>.png`, the path with its `/` turned into
-a `.`; a finish and a role are ids, so the name holds no other dot. The pages follow the
-paths' first use: props in level order, slabs in slab order.
+scales a large sheet down until its marks are lost. A path is in use when a slab, a static
+object or a base override names it. Its page is `<finish>.<role>.png`, the path with its
+`/` turned into a `.`; a finish and a role are ids, so the name holds no other dot. The
+slab pages follow the paths' first use: props in level order, slabs in slab order.
 
-Each page's swatch stands on the path's largest outside face: the slab whose width times
+Each slab page's swatch stands on the path's largest outside face: the slab whose width times
 height is the largest. On a tie the first slab in level order keeps it, so the same level
 gives the same pages. The swatch takes from the built level only:
 
@@ -112,6 +112,32 @@ The finish page tests run `snapshot` on a hand-built level with a small finish t
 page is written and announced in order of first use. A tie keeps the first slab, a slab one
 0.1 mm grid step wider takes the path, and a thick slab loses to a thinner one with a larger
 face.
+
+## Box pages
+
+A static object is a box, and its finish path gets a box page when neither a slab nor a
+base override names the path: a slab's path keeps its slab page, and an override's path
+keeps its hall page. The box pages come after the slab pages and before the hall pages,
+under the same name rule, in the paths' first use in description order.
+
+A box page is a slab's page, so the snapshot renderer draws it unchanged. The swatch takes
+the description alone, never the placement:
+
+- the path as its label, and the drawn recipe from `recipeAt`;
+- the static object's colour as the description states it, its `#rrggbb` text;
+- a slab subject of the static object's width, height and length as the thickness, with
+  its admitted seed and wear.
+
+The page stands on the static object with the largest shown face, its width times the
+larger of its height and its length: the page shows the box's upper face and its sides
+along the width. On a tie the first static object keeps the path. The page's `top` tile
+is the box's upper face in the box's own frame, and its `outside` tile the side along the
+width.
+
+The box page tests run `snapshot` on the hall fixture with static objects. They prove the
+order of the three kinds of page, the swatch's fields, the tie whether the height or the
+length is the larger, a 0.1 mm grid step wider that takes the path, the length that counts
+where it exceeds the height, and the slab and hall pages that keep a shared path.
 
 ## Hall pages
 
@@ -135,8 +161,8 @@ path, and each swatch's interior, classes, recipe and grey.
 ## Finish directory
 
 After a successful build and before it writes, `snapshot` removes the finish directory with
-everything in it, so the directory holds exactly the pages of this level. A level without
-props writes the sheets and no page. A blocked build writes nothing and leaves the
+everything in it, so the directory holds exactly the pages of this level. A level whose
+slabs, static objects and overrides name no finish writes the sheets and no page. A blocked build writes nothing and leaves the
 directory as it was. The finish page tests prove the empty and the blocked case.
 
 ## What the tests prove
@@ -154,6 +180,7 @@ committed prepared level and hand-written reports; no test prepares a level.
   reads no description. `validate` and `kinds` write nothing.
 - `build` writes the pair only for an accepted report and names a directory it cannot
   write; a rejected or blocked level writes nothing and says why.
+- `snapshot` writes the finish, box and hall pages as their sections above state.
 - `snapshot` writes three sheets, and a fourth for a custom view, without judging. Its input
   equals the prepared level's facts, the description's prop points, the game values and the
   hang height of `level-rules`.

@@ -141,7 +141,7 @@ In the page:
 
 Judge what agents cannot see:
 
-- the mood against the references, the shadows, the haze and the glow;
+- the mood against the references, the haze and the glow;
 - the seals, with `?leak=1` added to the address: no loud magenta shows at the end wall,
   the window and door panels, the back slot, above either side wall or, from fly height,
   down into a pier;

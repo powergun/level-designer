@@ -7,10 +7,13 @@ export { assembleLevelScene, assembleStaticScene } from "./assembly/index.js";
 export type {
   BaseLook,
   BaseNameError,
+  BoxPaint,
+  PlacedBox,
   PropMeshes,
   SealBox,
   SlabLooks,
   SlabMesh,
+  StaticBox,
   StaticScene,
 } from "./assembly/index.js";
 export { inspectGlb, readWorldTriangles } from "./inspection/index.js";

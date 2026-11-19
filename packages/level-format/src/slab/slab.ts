@@ -11,7 +11,7 @@ export type SlabMaterial = (typeof SLAB_MATERIALS)[number];
 export const MAX_SEED = 4095;
 
 /** The highest number a slab carries for a legend's six digits. */
-const MAX_NUMBER = 999_999;
+export const MAX_NUMBER = 999_999;
 
 /** A slab's four finish keys: its finish path, its number, its seed and its wear. */
 export interface SlabFinish {

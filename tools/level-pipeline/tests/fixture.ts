@@ -1,6 +1,6 @@
 /**
  * The build fixture: the real base stage at its scale under one end-wall seal, with one crate
- * on each floor level and one point light. Tests vary it by replacing root keys.
+ * on each floor level, a floor litter, a hung sign, a litter on a crate and one point light. Tests vary it by replacing root keys.
  */
 
 /** One prop record of a description. */
@@ -22,6 +22,53 @@ export const FRONT_CRATE: PropRecord = crate("front-crate", [-5.03217, 10.00001]
 
 /** The raised slab's crate, in the cross lane. */
 export const SLAB_CRATE: PropRecord = crate("slab-crate", [0, -55]);
+
+/** One static object record of a description, its paint keys left to their defaults. */
+export interface StaticRecord {
+  readonly id: string;
+  readonly at: readonly [number, number];
+  readonly yaw: number;
+  readonly size: readonly [number, number, number];
+  readonly lift?: number;
+  readonly on?: string;
+  readonly color: string;
+  readonly finish: string;
+}
+
+/** A sheet of litter on the front floor, off the ramp, turned askew. */
+export const FLOOR_SHEET: StaticRecord = {
+  id: "floor-sheet",
+  at: [3, 5],
+  yaw: 31,
+  size: [0.6, 0.02, 0.4],
+  color: "#8b9097",
+  finish: "litter/sheet",
+};
+
+/** A sign board hung 4 m over the front floor, above the hang height over the raised slab. */
+export const HUNG_SIGN: StaticRecord = {
+  id: "hung-sign",
+  at: [0, 0],
+  yaw: 90,
+  size: [1.6, 0.8, 0.06],
+  lift: 4,
+  color: "#9a2a1c",
+  finish: "litter/board",
+};
+
+/**
+ * A sheet on the raised slab's crate, over its +X side: the side's top (1.15 m) and the lid
+ * (1.2 m) both lie under its `at`, which sits mid-panel, 0.025 m inside the crate's edge.
+ */
+export const CRATE_SHEET: StaticRecord = {
+  id: "crate-sheet",
+  on: SLAB_CRATE.id,
+  at: [0.575, -55],
+  yaw: 20,
+  size: [0.3, 0.02, 0.2],
+  color: "#d8d2c0",
+  finish: "litter/sheet",
+};
 
 /** The fixture description as a JSON value. */
 export const FIXTURE = {
@@ -48,6 +95,11 @@ export const FIXTURE = {
         lid: { body: { roughness: 0.9 } },
       },
     },
+    litter: {
+      cut: { family: "metal", color: "#5a5d61" },
+      light: "#7ccbd6",
+      roles: { sheet: { body: { metalness: 0.6 } }, board: { body: { roughness: 0.7 } } },
+    },
     luminaire: {
       cut: { family: "metal", color: "#5a5d61" },
       light: "#7ccbd6",
@@ -56,6 +108,7 @@ export const FIXTURE = {
   },
   glows: {},
   props: [FRONT_CRATE, SLAB_CRATE],
+  statics: [FLOOR_SHEET, HUNG_SIGN, CRATE_SHEET],
   lighting: {
     environment: { intensity: 0.3, ambient: [0.05, 0.05, 0.06], overhead: [0.1, 0.1, 0.12] },
     points: [{ position: [0, 6, 0], color: [1, 0.8, 0.6], intensity: 40, range: 20 }],

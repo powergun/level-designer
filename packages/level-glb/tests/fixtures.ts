@@ -1,4 +1,11 @@
-import type { BaseLook, PropMeshes, SealBox, SlabLooks, SlabMesh } from "@level-designer/level-glb";
+import type {
+  BaseLook,
+  PropMeshes,
+  SealBox,
+  SlabLooks,
+  SlabMesh,
+  StaticBox,
+} from "@level-designer/level-glb";
 
 /** The base stage's triangle count, measured by the sec-111 contract research. */
 export const BASE_TRIANGLES = 113_697;
@@ -104,13 +111,70 @@ export const PROPS: readonly PropMeshes[] = [
   },
 ];
 
-/** The bodies of the four paths the props name, with `lit` at 0, one half and 1, and a glow. */
+/** The bodies of the four paths the props name and the static-only path, and a glow. */
 export const LOOKS: SlabLooks = {
   bodies: new Map([
     ["timber/crate", { metalness: 0, roughness: 0.8, lit: 0 }],
     ["luminaire/strip", { metalness: 0, roughness: 0.4, lit: 1 }],
     ["housing/machine", { metalness: 0.9, roughness: 0.3, lit: 0 }],
     ["housing/plate", { metalness: 0.5, roughness: 0.5, lit: 0.5 }],
+    ["litter/sheet", { metalness: 0.6, roughness: 0.6, lit: 0 }],
   ]),
   glows: new Map([["cyan", { color: [0, 0.8, 1], strength: 40 }]]),
 };
+
+/** cos 30 degrees: the yawed fixture box's axes. */
+const COS_30 = Math.sqrt(3) / 2;
+
+/**
+ * Three static objects. Their constants reach the ranges' ends (number 0 and 999,999, seed 0
+ * and 4,095, wear 0 and 1).
+ * - `sheet-a`: floor litter 0.4 x 0.12 x 1.0 m at yaw 30 on (2, 3), on a path no slab names.
+ * - `sheet-b`: litter on `crate-a`'s slab 1, on the crates' path.
+ * - `tag-c`: floor litter on the glowing housing's path and glow.
+ */
+export const STATICS: readonly StaticBox[] = [
+  {
+    id: "sheet-a",
+    box: {
+      center: [2, 0.06, 3],
+      axes: [
+        [COS_30, 0, -0.5],
+        [0, 1, 0],
+        [0.5, 0, COS_30],
+      ],
+      halfExtents: [0.2, 0.06, 0.5],
+    },
+    color: "#ff8000",
+    paint: { finish: "litter/sheet", number: 999_999, seed: 4095, wear: 1 },
+  },
+  {
+    id: "sheet-b",
+    box: {
+      center: [0.5, 1.01, 0.5],
+      axes: [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ],
+      halfExtents: [0.3, 0.01, 0.2],
+    },
+    color: "#336699",
+    paint: { finish: "timber/crate", number: 0, seed: 0, wear: 0 },
+    support: { prop: "crate-a", slab: 1 },
+  },
+  {
+    id: "tag-c",
+    box: {
+      center: [-1, 0.05, -2],
+      axes: [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ],
+      halfExtents: [0.1, 0.05, 0.1],
+    },
+    color: "#808080",
+    paint: { finish: "housing/machine", glow: "cyan", number: 42, seed: 7, wear: 0.3 },
+  },
+];

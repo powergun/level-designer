@@ -14,7 +14,7 @@ sec-111 install and throws. `COMMITTED_DESCRIPTION` is the path of
 
 ## The build
 
-`buildLevel` takes the description bytes and the base stage, and runs six steps:
+`buildLevel` takes the description bytes and the base stage, and runs seven steps:
 
 1. admit the description text with `level-format`;
 2. assemble the static scene with `level-glb`: the base stage under the scaled root, the
@@ -25,21 +25,44 @@ sec-111 install and throws. `COMMITTED_DESCRIPTION` is the path of
    `floorHeightAt` from the prepared static level, with the description's glows and
    finish table, so each slab carries its finish path, number, seed and wear; then round
    every slab once with `roundSlab` and admit all slabs with `admitSlabs`;
-5. mesh every rounded slab with `slab-model`, with its colour and pattern data per vertex;
-6. append one object per prop with `level-glb`, each slab drawn with the material of its
-   finish path and glow, and encode the level `.json`, finish table included, with
-   `level-format`.
+5. place every static object once, in description order, as "The placement" states;
+6. mesh every rounded slab with `slab-model`, with its colour and pattern data per vertex;
+7. append with `level-glb` one object per static object, then one per prop, each slab and
+   box drawn with the material of its finish path and glow; then encode the level `.json`,
+   finish table included, with `level-format`.
 
-Step 6 gives `level-glb` the body of every finish path in use, read with `level-format`'s
-`recipeAt`. The pipeline holds no finish default and no `extends` rule.
+Step 7 gives `level-glb` the body of every finish path a slab or a static object names, read
+with `level-format`'s `recipeAt`. The pipeline holds no finish default and no `extends` rule.
 
 A given prepared static level replaces step 3; it must be the preparation of the same
 static scene. The tests of one file share one preparation this way.
 
 A built level holds the typed description and its hash, the first 12 hex digits of the
 SHA-256 of the description bytes; the level GLB, the `.json` text and the typed level;
-the base stage's image count; and the prepared static level as sec-111 returns it, typed
-and as its two files. The pipeline stores none of the hall facts it reads.
+the base stage's image count; the prepared static level as sec-111 returns it, typed and as
+its two files; and the placed static objects. The pipeline stores none of the hall facts it
+reads.
+
+## The placement
+
+The pipeline owns the one placement of the static objects. Each placed static object pairs
+the description's record with its box, `level-format`'s `staticBox` at the height of its
+underside, unrounded. `staticClass` of `level-format` names the class:
+
+- floor litter and an overhead object stand over the floor under `at`, read with
+  `floorHeightAt`, raised by the lift;
+- litter on a prop stands on its support: the highest top of that prop's rounded slabs whose
+  plan outline holds `at`.
+
+A top is the level upper face of a slab: its four highest corners lie within the format's
+length slack of the highest, so a pitched slab has none. Its plan outline holds `at` when the
+offset from the slab's centre, along each of its two flat axes, stays within that half extent
+plus the slack. A top replaces the one held only when it stands higher by more than the slack,
+so a tie keeps the first in slab order.
+
+The built level keeps the pairs for the validation. The support, the prop's id and the slab's
+index, goes only to `level-glb`, which names the slab's mesh node in the static object's
+`extras`.
 
 ## Build errors
 
@@ -53,18 +76,23 @@ count cap's and `prepare`'s. The steps raise these rules:
   failed: ` followed by the message of the error sec-111 throws;
 - the props: `place` from the pipeline and `kind`, `param` and `finish` from `prop-kit`,
   all in description order;
-- the slab admission: `slab`, from `level-format`.
+- the slab admission: `slab`, from `level-format`;
+- the placement: `place` from the pipeline, in description order.
 
 The pipeline owns `place`: a prop whose `at` lies outside the interior's plan, with the
 format's length slack, yields `props[<i>].at: (<x>, <z>) lies outside the interior`, and
 that prop is not expanded. The message shows each length with `level-format`'s
-`formatLength`. sec-111 cannot reject the empty wall list, so a rejected preparation is a
-defect and throws.
+`formatLength`. A static object takes the same interior test first,
+`statics[<i>].at: (<x>, <z>) lies outside the interior`, and a litter on a prop with no top
+under its `at` yields `statics[<i>].at: (<x>, <z>) lies over no top of prop <id>`.
+
+sec-111 cannot reject the empty wall list, so a rejected preparation is a defect and throws.
 
 ## The validation
 
-`validateLevel` inspects the level GLB with `level-glb`, passes the five facts to
-`level-rules`' judgement and shapes the report as a value of four parts:
+`validateLevel` inspects the level GLB with `level-glb`, passes the six facts, the placed
+static objects among them, to `level-rules`' judgement and shapes the report as a value of
+four parts:
 
 - the hall facts: the interior and the floor heights of the prepared static level, the ramp
   zone of the judgement, and the spawns by name from `level-rules`;
@@ -87,25 +115,48 @@ counts the calls, and each step that calls the preparation asserts its own count
 test order changes the proof. Every other build passes the fixture's prepared static
 level, and each such build asserts that the count did not change.
 
-- The fixture, one crate on each floor level, builds: the preparation measures scale 1,
-  the crates stand at 0 and 0.3241 m, every slab lies on the grid, the `.json` decodes to
-  the same level, and today's `prepareLevel` admits the whole level GLB.
+### The fixture build
+
+- The fixture, one crate on each floor level with a floor litter, a hung sign and a litter
+  over the raised slab's crate's side, builds: the preparation measures scale 1, the
+  crates stand at 0 and 0.3241 m, every slab lies on the grid, the `.json` decodes to the
+  same level, and today's `prepareLevel` admits the whole level GLB, static nodes included.
+- The static objects stand between the seals and the props. The crate's litter lies on the
+  lid, the higher of the two tops under it, and names the lid's mesh node; the others carry
+  no support. The floor litter and the sign stand over the floor under `at` plus the lift.
+
+### Blocked builds
+
 - A description error and an unknown base name block the build before any preparation.
 - A hand-built GLB with an empty scene, which sec-111's survey refuses at once, blocks
   with `prepare`.
 - The props step reports `place`, `kind` and `param` in description order, and `place`
   passes at the interior's edge and blocks 0.1 mm beyond.
 - 205 crates block with the slab count cap.
+- A static object outside the interior blocks with `place`. A litter on the lid's edge
+  builds, and 0.1 mm beyond it blocks with `place`.
+
+### The validation
+
 - The fixture is accepted, and its report holds the hall facts and the body boxes beside
-  sec-111's limit. A point light moved under the floor is rejected with `light-floor`
-  alone. 201 light strips beside the crates exceed the prop budget, and the level is still
+  sec-111's limit.
+- A point light moved under the floor is rejected with `light-floor` alone, and a floor
+  litter 0.16 m high with `static` alone.
+- 201 light strips beside the crates exceed the prop budget, and the level is still
   accepted with its counts beside the budget.
 
-The fixture's finish table holds the paths of a crate and a light strip.
+### Fixtures and the other tests
+
+The fixture's finish table holds the paths of a crate, a light strip and the litter. A test
+that replaces the props also clears the static objects.
+
+The top rule's unit test reads hand-built slabs: a level face of any facing, none on a
+pitched slab, the edge and the slack of the outline on a turned slab, the highest top, and a
+tie that keeps the first.
 
 The committed test builds `levels/dark-factory.json` with one preparation. The level is
 accepted, and every material of a `luminaire/` path names a glow and emits its colour at
-its strength; the glows met are those the props name.
+its strength; the glows met are those the props and the static objects name.
 
 The read test writes a description into a temporary folder, reads it back, names a
 missing file and removes the folder.

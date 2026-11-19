@@ -1,9 +1,9 @@
 # Authoring guide
 
 This guide is for the art team that dresses the hall in `levels/dark-factory.json`. It
-gives the hall in numbers, the placement rules in the words of the validator, the budgets,
-the finish table, the accepted limits and the authoring loop. The kinds command prints every
-prop kind with its parameters, ranges and defaults; this guide repeats none of them.
+gives the hall in numbers, the rules of props and static objects in the validator's words,
+the budgets, the finish table, the accepted limits and the authoring loop. The kinds command
+prints every prop kind with its parameters, ranges and defaults; this guide repeats none.
 
 ## Frame and units
 
@@ -13,8 +13,7 @@ prop kind with its parameters, ranges and defaults; this guide repeats none of t
 - The origin is the centre of the plan outline for most kinds. A robot arm's origin is the
   centre of its pedestal and a jib crane's the centre of its mast; both reach along local
   +Z. A bridge crane's origin is the centre of the rectangle between its runways.
-- A container has a fixed section, 2.44 m wide and 2.59 m high; only its length is a
-  parameter.
+- A container's section is fixed, 2.44 m wide and 2.59 m high; only its length is typed.
 - `yaw` is degrees about +Y. At 0 a prop's length runs along +Z; a positive yaw turns it
   toward +X.
 - The validator's report opens with the live interior, floors, ramp zone and spawns. When
@@ -146,8 +145,7 @@ On the +X side:
 
 The +X side of the raised slab carries nothing but its wall and piers, so the free strip
 east of the slab islands reaches the wall: x 13.47 to 16.17 beside island A and x 11.88 to
-16.17 beside island B, narrowed to about 15.0 at the piers. The -X side carries a tank, two
-tubes and three deck posts.
+16.17 beside island B, narrowed to about 15.0 at the piers.
 
 On the hall floor:
 
@@ -158,8 +156,6 @@ On the hall floor:
   at x -2.30 and -2.40, with nubs out to the stated -2.69 and -3.19. A prop laid along an
   island's edge therefore earns `gap` findings; stand it 1.5 m off the outermost corner.
 - The back tower: x 3.69 to 7.88, z -89.87 to -85.07.
-- Deck posts on -X: x -14.17 to -13.37 at z -83.57 to -82.77, z -75.77 to -74.77 and z
-  -67.77 to -67.07.
 - Posts at the ramp top, z -30.58 to -29.88: x -2.00 to -1.20, x 3.79 to 4.49 and x 9.68
   to 10.28.
 - Pipe stacks on the ramp: x 5.79 to 8.58, z -29.58 to -28.18, and x 10.58 to 12.27, z
@@ -240,8 +236,7 @@ upper deck, keep it above y 12.15.
 
 ## What the clearance rules measure
 
-`gap`, `spawn` and `lane` measure a prop's standing footprint, not the outline its
-parameters state:
+`gap`, `spawn` and `lane` measure a prop's standing footprint, not its typed outline:
 
 - A standing slab is a slab of a standing prop that starts less than 2.17 m above the floor
   under `at`. Hanging parts never count: runways, booms, strips and hook blocks.
@@ -262,8 +257,7 @@ The open and the overhead kinds:
 - A jib crane stands on its plinth alone. A bridge crane has no standing footprint.
 
 A lane is measured on 0.1 m cells from the interior's lowest corner. An opening of 3.0 m
-keeps 3 m; one of 2.9 m reads 2.8 or 3.0 m, depending on where it meets the grid. Leave
-3.0 m or more.
+keeps 3 m; one of 2.9 m reads 2.8 or 3.0 m by where it meets the grid. Leave 3.0 m or more.
 
 The [prop-kit knowledge](../packages/prop-kit/docs/KNOWLEDGE.md) holds every kind's
 secondary dimensions and slab counts.
@@ -322,46 +316,83 @@ limit passes at its typed value. The messages below are the validator's own.
   <k>: <step> failed". `proxies` builds the debris proxies of all slabs together.
 
 A blocked build prints its build errors instead of a report: `shape` and `id` for the
-description's form, the finish table included, `kind` and `param` for a prop's kind and
-parameters, `finish` for a finish path the table lacks, `base` for a base name, `place` for
-an origin outside the interior, and `slab` for a slab beyond the caps.
+description's form, the finish table and the static objects included, `kind` and `param`
+for a prop's kind and parameters, `finish` for a path the table lacks, `base` for a base
+name, `place` for an origin outside the interior, and `slab` for a slab beyond the caps.
 Each error starts with the path of the value to change, such as `props[3].params.length`.
+
+## Static objects
+
+A static object is one box of 12 triangles that is only drawn: litter, or an overhead
+object. Nothing collides with it, so the clearance rules, `overlap`, `support` and
+`low-top` pass it by, and flat stock too low for a prop enters as litter. The description's
+optional `statics` lists at most 256. A record takes `id`, `at`, `size`, `color` and
+`finish`, and any of `yaw`, `lift`, `on`, `number`, `wear`, `seed` and `glow`; "Static
+objects" in the [level-format knowledge](../packages/level-format/docs/KNOWLEDGE.md) gives
+each range and default. `at` is the centre's plan point, `size` is `[width, height,
+length]` with sides of 0.02 m or more, and `yaw` turns the length as a prop's. The keys
+name the class:
+
+- floor litter, with neither `on` nor a lift: the build lays it on the floor under `at`;
+- litter on a prop, with `on`, the prop's id, and no `lift`: on the highest level top of
+  that prop under `at`. A pitched slab has no top, and only `at` is tested, so a piece may
+  overhang its top;
+- an overhead object, with a positive `lift`, the height of its underside over the floor.
+
+The validator's own words for a static object:
+
+- `shape`, a build error: an `on` that names no prop, or a `lift` beside an `on`.
+- `place`, a build error: "statics[<i>].at: (<x>, <z>) lies outside the interior", and for
+  litter on a prop "statics[<i>].at: (<x>, <z>) lies over no top of prop <id>".
+- `interior`: "static <id> leaves the interior by <d> m at (<x>, <y>, <z>)".
+- `static`, litter on the floor or on a prop: "static <id> is <h> m high; litter is 0.15 m
+  high or lower", and for its longer plan side "static <id> measures <l> m in plan; litter
+  measures 1.5 m or less".
+- `static`, floor litter: "static <id> spans the floor levels <a> and <b>; keep floor
+  litter on one level" and "static <id> stands on the ramp, z <z0> to <z1>".
+- `static`, an overhead object: "static <id> starts <h> m above the hall's highest floor;
+  an overhead object starts 2.17 m or higher", counted from the raised slab.
+
+No rule limits the height of the top that a litter lies on: the art team's litter brief
+holds that limit, 1.3 m above the floor, and the level's 200 pieces. The QA app shows no
+damage, so a litter stays on its prop there.
 
 ## Budgets and caps
 
 - First-pass budget: 800 slabs in 200 props. The report prints both counts beside the
   budget and never rejects for it; the art team holds itself to it. The committed level
-  holds 616 slabs in 127 props.
-- Caps: 1,024 slabs, 300,000 triangles and eight point lights. Above 1,024 slabs the build
-  is blocked; above 300,000 triangles the level is rejected. The lighting section admits at
-  most eight point lights, and the report prints their count beside that cap.
-- The description admits at most 512 props, 16 seals and eight glows.
-- The stage and the seals hold 113,853 triangles, so the props may add 186,147. The report
-  prints the level's count beside the cap.
+  holds 616 slabs in 127 props, and 217 static objects: 200 litter pieces and 17 lamps.
+- Caps: 1,024 slabs, 300,000 triangles and 32 point lights. Above 1,024 slabs the build
+  is blocked, and above 300,000 triangles the level is rejected. The report prints the
+  point lights' count beside their cap.
+- The description admits at most 512 props, 256 static objects, 16 seals and eight glows.
+- The stage and the seals hold 113,853 triangles, so the props and the static objects may
+  add 186,147. The level's 217 static objects add 2,604, and the report prints the level's
+  count beside the cap: 136,493.
 - A slab's triangle count grows with its face: 12 for a 1 by 1 m slab, 20 for 2 by 1.2 m,
   44 for 4 by 2.4 m and 92 for 7 by 3.2 m. 800 crate slabs add 9,600 triangles; two bridge
   cranes of span 29.37 and travel 30 add 3,104.
-- Props add no body box. The hall uses 227 of sec-111's 512 with or without props.
+- Props and static objects add no body box: the hall uses 227 of sec-111's 512 either way.
 
 ## Finishes
 
 The description's `finishes` is the finish table: each finish, such as `housing`, holds
 its `cut`, its `light` and its `roles`, and each role is one recipe of a `body`, `layers`
-and an optional `extends`. Every slab names a finish path, `finish/role`, which the kit
-chooses by the slab's kind and part, as "Finish paths" in the
+and an optional `extends`. A static object states its finish path, `finish/role`; the kit
+chooses a slab's by its kind and part, as "Finish paths" in the
 [prop-kit knowledge](../packages/prop-kit/docs/KNOWLEDGE.md) lists. "The finish table" in
 the [level-format knowledge](../packages/level-format/docs/KNOWLEDGE.md) gives every key,
-length, effect and cap. The art team's notes, the painter recipes and the painter briefs,
-hold the recipes and the value ladder.
+length, effect and cap. The art team's notes, the painter recipes and the briefs, hold the
+recipes and the value ladder.
 
 - A role's `body` holds its path's metalness and roughness, and its `lit` the emission:
   every slab of a glowing prop names the glow, and only a lit body shines in it.
 - The committed table paints every finish with layers: `housing`, `corrugated`, `beam`,
-  `bed`, `casting`, `cast-concrete`, `timber`, `steel-stock`, `block` and the joints of
-  `luminaire/strip`. Six paths stay plain bodies: `housing/top`, `corrugated/roof`,
-  `beam/flange`, `beam/tie`, `cast-concrete/top` and `luminaire/band`. `steel-stock` and
-  `luminaire` keep metalness 0.55; every other finish stands at metalness 0. Both
-  `luminaire` paths are lit.
+  `bed`, `casting`, `cast-concrete`, `timber`, `steel-stock`, `block`, the five roles of
+  `litter` and the joints of `luminaire/strip`. Six paths stay plain bodies: `housing/top`,
+  `corrugated/roof`, `beam/flange`, `beam/tie`, `cast-concrete/top` and `luminaire/band`.
+  The bodies of `steel-stock` and `luminaire` keep metalness 0.55, and every other body
+  stands at metalness 0. Both `luminaire` paths are lit.
 - Every kind takes `wear` and `seed`; the kinds command prints their ranges and defaults.
   A wearing layer follows `wear`, and `seed` varies a pattern between props.
 - Three parameters choose a role: a container's `door`, `+z` or `-z`, puts
@@ -371,24 +402,28 @@ hold the recipes and the value ladder.
   and its stacks with posts `steel-stock/stack-posts`.
 - Every face of a slab takes the slab's tint, the inside face included.
 
-A finish changes in the draft like a prop: edit a role, validate, fix the path the
-validator names, snapshot, and read the path's page.
-
 The snapshot command draws one page per finish path in use, `<finish>.<role>.png` in
 `.tmp/snapshots/finish/`. It empties that directory first, so it holds the pages of this
-level alone. A page shows its path on the path's largest outside face of the level:
+level alone. A slab's page shows its path on the path's largest outside face of the level:
+that face between its two end edges, the inside face and the top and bottom edges, at 5 mm
+per pixel, or 20 mm when the face is longer than 8 m, and the outside face again at 40 mm,
+what survives 20 m.
 
-- the outside face between its two end edges, at 5 mm per pixel, or 20 mm when the face
-  is longer than 8 m;
-- the inside face and the top and bottom edges at the same scale;
-- the outside face again at 40 mm, what survives 20 m.
+A path that only static objects name gets a box page, after the slabs' pages: the box as
+a slab of its width, height and length as the thickness, on the static object with the
+largest shown face, its width times the larger of its height and its length. The `top` and
+`bottom` tiles are the box's upper and lower faces, +X to the right and +Z on top, so
+`top` is the view from above flipped top to bottom. `outside` is the side along the width;
+`inside`, `end-` and `end+` stand for no face of a box. No tile shows the sides along the
+length: type the side that carries a mark as the width, and turn the box by its `yaw`.
 
 Under each face stand a ruler in metres and the face's mean albedo as linear luminance,
-such as `outside 5mm 0.142`. A page shows albedo only, in the slab's tint, and draws a
-`"glow"` mark in the finish's `light`. The author holds each mean against the value
-ladder of the art team's notes; the [look and lighting](LOOK-AND-LIGHTING.md) document
-turns it into what a top, a side and an underside show. The QA app's next start shows the
-finish lit.
+such as `outside 5mm 0.142`. A page shows albedo only, in the slab's or the box's tint, and
+draws a `"glow"` mark in the finish's `light`. The author holds each mean against the value
+ladder of the art team's notes. The [look and lighting](LOOK-AND-LIGHTING.md) document
+turns it into what a top, a side and an underside show, and gives the mood, the stage's
+materials, the hall's light, the bloom threshold, the tuning handles, the reference levels
+and how to add an emergency wall light. The QA app's next start shows the finish lit.
 
 ### Hall finishes
 
@@ -409,33 +444,23 @@ known part.
 
 The committed table holds the finish `hall`. `hall/front` paints `Material.001`,
 `hall/slab` paints `Material.003` and `hall/wall` paints `Material.002`. Both floors extend
-`hall/floor`, joints with tone steps between the bays. The front floor adds two aisle lines
-and a band at the ramp's foot, the slab a line on its edge, and the side walls draw a
-darker base. The art team's hall brief holds the recipes and their values.
+`hall/floor`, joints with tone steps between the bays. The front floor adds two aisle
+lines, a band at the ramp's foot and a box around each assembly line. The slab adds a line
+on its edge and the side lines of the yard's four slots, and the side walls draw a darker
+base. The art team's hall brief holds the recipes, their places and their values.
 
 The snapshot command draws one page per hall finish that an override names, after the
-slab pages, with one tile per class its layers draw on, over a plain grey ground:
-
-- a wall or a ceiling as a window of 16 by 8 m from the interior's low corner, at 20 mm;
-- a floor whole at the plan sheet's 50 mm and orientation, split into two halves side by
-  side;
-- rulers in level coordinates under and beside each tile.
-
-A floor line 0.1 m wide shows as 2 px, and a joint only as a tone. Over the grey ground the
-mean tells the marks' share, not the surface's value; the QA app shows the marks on the
-stage.
-
-## Look and lighting
-
-A sheet shows layout, scale and silhouette, never mood; the owner judges the mood in the
-browser. The [look and lighting](LOOK-AND-LIGHTING.md) document gives the stage's
-materials, how the hall is lit, the bloom threshold, the tuning handles and the reference
-levels.
+other pages, with one tile per class its layers draw on, over a plain grey ground: a wall
+or a ceiling as a window of 16 by 8 m from the interior's low corner, at 20 mm; a floor
+whole at the plan sheet's 50 mm and orientation, split into two halves side by side; and
+rulers in level coordinates under and beside each tile. A floor line 0.1 m wide shows as
+2 px, and a joint only as a tone. Over the grey ground the mean tells the marks' share,
+not the surface's value; the QA app shows the marks on the stage.
 
 ## Accepted limits
 
-The project knowledge lists the limits of the first pass that the owner accepts, among them
-what the first pass cannot express.
+The project knowledge lists the limits of the first pass that the owner accepts, and what
+the kit cannot express.
 
 `gap` has limits of its own. It does not judge a pair nearer than 0.7 m, so two props that
 touch at an acute angle leave a wedge it never sees. It stays strict where nothing fills a
@@ -468,6 +493,6 @@ just fmt                                                     # after the copy ov
 - Exit status 0 means accepted or done, 2 a blocked build or a rejected level, 3 a usage or
   file error, and 1 a defect or a broken sibling install.
 - One validate takes about 4 s, also with 800 crate slabs. A snapshot of the committed
-  level, with 40 finish pages, takes about 34 s.
+  level, with 45 finish pages, takes about 40 s.
 - When the validator accepts the draft, copy it over the committed file and run the
   formatter; `just lint` checks the committed file's layout.

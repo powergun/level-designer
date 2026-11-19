@@ -62,6 +62,7 @@ export function fakeBuilt(): BuiltLevel {
       lighting: LIGHTING,
       glows: new Map(),
       seals: [],
+      statics: [],
       finishes: FINISHES,
       base: { doubleSided: [], materials: new Map(), scale: 3.89956 },
     },
@@ -71,6 +72,7 @@ export function fakeBuilt(): BuiltLevel {
     level,
     baseImages: 0,
     prepared: { level: PREPARED, files: PREPARED_FILES },
+    placed: [],
   };
 }
 

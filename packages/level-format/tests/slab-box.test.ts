@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { slabBox } from "@level-designer/level-format";
-import type { Slab, Vec3 } from "@level-designer/level-format";
+import { slabBox, staticBox } from "@level-designer/level-format";
+import type { Slab, StaticObject, Vec3 } from "@level-designer/level-format";
 import { SLAB_FINISH } from "./finishes.ts";
 
 /** The sine and cosine of 45 degrees, the components of a 90 degree turn. */
@@ -102,4 +102,39 @@ test("a slab turned 120 degrees about (1, 1, 1) and lifted 20 m has its hand-com
     ],
   );
   expect(box.halfExtents).toEqual([1, 2, 3]);
+});
+
+/** A floor litter of `size` at `at`, turned by `yaw`, with the fixture's paint. */
+function litter(at: readonly [number, number], yaw: number, size: Vec3): StaticObject {
+  return { id: "sheet", at, yaw, size, lift: 0, color: "#8b9097", ...SLAB_FINISH };
+}
+
+test("a static object yawed 30 degrees at an underside of 1.25 m has its hand-computed corners", () => {
+  // Turning +30 degrees about +Y: the width axis is (cos 30, 0, -sin 30) and the length axis
+  // (sin 30, 0, cos 30); half extents 1, 0.05 and 0.5 about the centre (3, 1.3, -4).
+  const box = staticBox(litter([3, -4], 30, [2, 0.1, 1]), 1.25);
+  expectPoints(box.corners, [
+    [1.8839745962, 1.25, -3.9330127019],
+    [3.6160254038, 1.25, -4.9330127019],
+    [1.8839745962, 1.35, -3.9330127019],
+    [3.6160254038, 1.35, -4.9330127019],
+    [2.3839745962, 1.25, -3.0669872981],
+    [4.1160254038, 1.25, -4.0669872981],
+    [2.3839745962, 1.35, -3.0669872981],
+    [4.1160254038, 1.35, -4.0669872981],
+  ]);
+  expect(box.halfExtents).toEqual([1, 0.05, 0.5]);
+});
+
+test("a static object yawed 90 degrees turns its length to +X", () => {
+  const box = staticBox(litter([0, 0], 90, [0.4, 0.02, 1.2]), 0);
+  expectPoints(
+    [box.axes[2], box.axes[0], box.corners[4] ?? [0, 0, 0], box.corners[1] ?? [0, 0, 0]],
+    [
+      [1, 0, 0],
+      [0, 0, -1],
+      [0.6, 0, 0.2],
+      [-0.6, 0, -0.2],
+    ],
+  );
 });
