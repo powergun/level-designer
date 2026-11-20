@@ -46,6 +46,40 @@ the base stage's image count; the prepared static level as sec-111 returns it, t
 its two files; and the placed static objects. The pipeline stores none of the hall facts it
 reads.
 
+## Game dressing
+
+`buildDressing` takes the same inputs as `buildLevel` and follows steps 1 through 5.
+The game consumes the rounded slabs and placed floor boxes directly. The two JSON files
+share the level frame: metres, +Y up, positive yaw about +Y in degrees.
+
+### Destructible props
+
+`props.json` (`factory-props/1`) holds `props` in description order. Each record carries
+its id, kind, plan point `at` as [x, z], floor height, yaw, authored parameters and slabs
+in generator order. The [prop kit](../../../packages/prop-kit/docs/KNOWLEDGE.md)
+describes each kind's generator, defaults and splitting rules.
+
+Each slab carries size [width, height, thickness], destruction material, sRGB tint, world
+base centre `position`, local-to-world quaternion `rotation` as [x, y, z, w], and the
+finish path, number, seed and wear. The prop id and zero-based slab index identify a
+slab. Apply each slab pose directly in the level frame. A prop's `params.glow` names
+the emission colour and strength for the lit parts of its slabs.
+
+### Floor decorations
+
+`decorations.json` (`factory-decorations/1`) holds `objects` in placement order.
+Each entry is a draw-only floor box with a world `center`, full `size`
+[width, height, length], yaw, id, tint and paint keys. The centre includes the sampled
+floor height and half the object's height.
+
+### Shared finishes
+
+The prop sheet owns the `finishes` dictionary keyed by paths used by either sheet.
+Each value holds the resolved body, ordered layers, fallback light colour and cut
+material. The layers are the painter's typed inputs, including defaults, inherited
+layers and lengths in metres with optional face-relative shares. The `glows` dictionary
+maps the names in use to linear RGB colours and strengths.
+
 ## The placement
 
 The pipeline owns the one placement of the static objects. Each placed static object pairs

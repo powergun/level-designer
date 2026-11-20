@@ -1,7 +1,7 @@
 # level-view
 
 `@level-designer/level-view` draws a level pair through the game's renderer, the
-rendering-poc pipeline, with the game's look and the level's lighting. Its one consumer is
+rendering-poc pipeline, with authoring bloom and lens dirt and the level's lighting. Its one consumer is
 `@level-designer/qa-client`, the QA page.
 
 The facade offers one start, `startLevelView`. It takes the canvas, the level GLB's bytes,

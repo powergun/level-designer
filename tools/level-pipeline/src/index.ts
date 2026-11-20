@@ -2,12 +2,13 @@
  * level-pipeline: the one build sequence from a level description to a built level, and the
  * validation of a built level into a report; see @tools/level-pipeline/docs/KNOWLEDGE.md.
  */
-export { buildLevel } from "./sequence/index.js";
+export { buildDressing, buildLevel } from "./sequence/index.js";
 export type {
   BuildError,
   BuildInputs,
   BuildOutcome,
   BuiltLevel,
+  DressingOutcome,
   PreparedStatic,
 } from "./sequence/index.js";
 export { COMMITTED_DESCRIPTION, readInputs } from "./read.js";

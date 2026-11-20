@@ -13,7 +13,11 @@ export interface CustomView {
 export type Command =
   | { readonly name: "kinds" }
   | { readonly name: "validate"; readonly description: string }
-  | { readonly name: "build"; readonly description: string; readonly workdir: string }
+  | {
+      readonly name: "build" | "export-dressing";
+      readonly description: string;
+      readonly workdir: string;
+    }
   | {
       readonly name: "snapshot";
       readonly description: string;
@@ -28,11 +32,11 @@ export type Parsed =
 
 /** The one usage line that follows every usage problem. */
 export const USAGE: string =
-  "usage: level-cli <kinds|validate|build|snapshot> [--description <path>] [--workdir <dir>]" +
+  "usage: level-cli <kinds|validate|build|export-dressing|snapshot> [--description <path>] [--workdir <dir>]" +
   " [--eye=<x,y,z> --look-at=<x,y,z>]";
 
 /** The command names, in the order the usage line gives them. */
-const COMMANDS = ["kinds", "validate", "build", "snapshot"] as const;
+const COMMANDS = ["kinds", "validate", "build", "export-dressing", "snapshot"] as const;
 
 /** The options every command accepts; `--eye` and `--look-at` belong to `snapshot`. */
 const OPTIONS = {
@@ -77,7 +81,7 @@ function command(name: (typeof COMMANDS)[number], values: Values, committed: str
   if (name === "validate") return { ok: true, command: { name, description } };
   if (values.workdir === undefined) return problem(`${name} needs --workdir <dir>`);
   const workdir = resolve(values.workdir);
-  if (name === "build") return { ok: true, command: { name, description, workdir } };
+  if (name !== "snapshot") return { ok: true, command: { name, description, workdir } };
   return { ok: true, command: { name, description, workdir, custom } };
 }
 

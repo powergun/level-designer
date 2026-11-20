@@ -4,7 +4,13 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { run } from "@level-designer/level-cli";
 import type { Pipeline, Streams } from "@level-designer/level-cli";
-import type { BuildError, BuiltLevel, ReadOutcome, Report } from "@level-designer/level-pipeline";
+import type {
+  BuildError,
+  BuiltLevel,
+  DressingOutcome,
+  ReadOutcome,
+  Report,
+} from "@level-designer/level-pipeline";
 import type { PreparedLevel } from "@level-designer/sec111-gateway";
 import { readCommittedLevel } from "@level-designer/sec111-gateway/testing";
 import type { FinishSwatch, SnapshotInput } from "@level-designer/snapshot-render";
@@ -28,6 +34,7 @@ export function capture(): Captured {
 
 /** What the fake pipeline answers: the read, the build and the report of a built level. */
 export interface Script {
+  readonly dressing?: DressingOutcome;
   readonly read?: "ok" | "unreadable";
   readonly build: { readonly ok: true; readonly built: BuiltLevel } | readonly BuildError[];
   readonly report?: Report;
@@ -72,6 +79,10 @@ export function fakePipeline(script: Script): { pipeline: Pipeline; calls: Calls
       calls.builds.push(calls.builds.length);
       const build = script.build;
       return Promise.resolve("ok" in build ? build : { ok: false, errors: build });
+    },
+    buildDressing: () => {
+      if (script.dressing === undefined) throw new Error("the script holds no dressing");
+      return Promise.resolve(script.dressing);
     },
     validateLevel: (built) => {
       calls.validations.push(built);

@@ -87,8 +87,8 @@ Three turn props into slabs and judge the built level:
 The QA app lets the human walk and fly through the level in a browser:
 
 - [level-view](../packages/level-view/docs/KNOWLEDGE.md): draws a level pair
-  through the rendering-poc pipeline with the game's look, the level's lighting
-  and one painter per finish path in use: a twin for a slab or a box, a stage
+  through the rendering-poc pipeline with the game's colour grade, authoring bloom and
+  lens dirt, the level's lighting and one painter per finish path in use: a twin for a slab or a box, a stage
   wrap for a stage material whose hall finish holds a layer. It starts on WebGPU
   only and takes no input.
 - [qa-client](../packages/qa-client/docs/KNOWLEDGE.md): the QA page: boot, walk,
@@ -199,7 +199,7 @@ items and about 200 words, text is ASCII only, and no file reaches 500 lines.
 
 ## Tool recipes
 
-The recipes `kinds`, `validate`, `build` and `snapshot` run level-cli's program file
+The recipes `kinds`, `validate`, `build`, `export-dressing` and `snapshot` run level-cli's program file
 with Bun from the repository root, one recipe per command. Each passes `.tmp` as the
 work directory, so no package source names it, and passes every extra argument through.
 Each recipe ends with the tool's exit status. On Windows the recipe line exits with the
@@ -229,7 +229,8 @@ how to add an emergency wall light and the reference levels.
   source of truth. Git ignores the author's draft beside it,
   `levels/dark-factory.draft.json`.
 - `.tmp/` is the git-ignored scratch directory for generated output and logs. The
-  level pair lands in `.tmp/level/`, the sheets in `.tmp/snapshots/` and one page per
+  level pair lands in `.tmp/level/`, the game's two fact sheets in
+  `.tmp/factory-dressing/`, the snapshots in `.tmp/snapshots/` and one page per
   finish path in use and per hall finish in `.tmp/snapshots/finish/`, which
   `snapshot` empties first. The QA
   app writes one run log per run to `.tmp/qa/logs/qa-<local start time>.log` and

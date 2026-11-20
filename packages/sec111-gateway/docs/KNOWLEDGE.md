@@ -39,15 +39,15 @@ sec-111 stays the one owner of where the file lives.
 The testing entry re-exports sec-111's own `readCommittedLevel` and `readCommittedFiles`,
 unchanged. The first returns the committed prepared level decoded; the second returns its
 two files, the document text and the navmesh bytes, for tests that serve or decode the
-files themselves. The committed prepared level is sec-111's base stage with sec-111's own
-six destructible walls, not a level of this repository.
+files themselves. The committed prepared level contains the base factory, its imported
+procedural prop slabs and their baked navigation.
 
 ## Game values
 
 `GAME_VALUES` copies what a QA page must match:
 
 - the lens: 92 degrees, 0.05 m, 160 m;
-- the post look `arenaLook(1)`;
+- the game's post look `arenaLook(1)`, the starting point for the QA view's bloom and lens dirt;
 - the player: walk 3.5 m/s, sprint 5.5 m/s, eye ratio 0.92, pitch limit 1.55 rad, and the
   start direction `[0, 0, -1]`, the unit view direction at the start in world axes: toward
   -Z, the back wall;

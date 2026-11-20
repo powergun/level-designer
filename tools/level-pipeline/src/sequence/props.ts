@@ -1,20 +1,15 @@
 import { keyPath, roundSlab } from "@level-designer/level-format";
-import type { Description, Slab } from "@level-designer/level-format";
+import type { Description, Prop, Slab } from "@level-designer/level-format";
 import { expandProp } from "@level-designer/prop-kit";
 import { floorHeightAt } from "@level-designer/sec111-gateway";
 import type { BuildError, PreparedStatic } from "./built.js";
 import { insideInterior, OUTSIDE, placeError } from "./place.js";
 
-/** One rounded slab of a prop, with the glow name of a glowing slab. */
-interface RoundedSlab {
-  readonly slab: Slab;
+/** A prop at its sampled floor height with its rounded slabs and their shared glow. */
+export interface ExpandedProp extends Prop {
+  readonly floor: number;
+  readonly slabs: readonly Slab[];
   readonly glow?: string;
-}
-
-/** One prop's rounded slabs in slab order. */
-export interface ExpandedProp {
-  readonly id: string;
-  readonly slabs: readonly RoundedSlab[];
 }
 
 /** The props step's outcome: every prop's rounded slabs, or every error of the step. */
@@ -44,10 +39,9 @@ export function expandProps(description: Description, prepared: PreparedStatic):
       errors.push(...expansion.problems);
       return;
     }
-    const slabs = expansion.slabs.map(({ slab, glow }) =>
-      glow === undefined ? { slab: roundSlab(slab) } : { slab: roundSlab(slab), glow },
-    );
-    props.push({ id: prop.id, slabs });
+    const slabs = expansion.slabs.map(({ slab }) => roundSlab(slab));
+    const glow = expansion.slabs[0]?.glow;
+    props.push({ ...prop, floor, slabs, ...(glow === undefined ? {} : { glow }) });
   });
   return errors.length > 0 ? { ok: false, errors } : { ok: true, props };
 }

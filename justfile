@@ -145,6 +145,10 @@ validate *ARGS:
 build *ARGS:
     @{{LEVEL_CLI}} build --workdir .tmp {{ARGS}}{{KEEP_STATUS}}
 
+# Export the approved prop slabs and floor decorations where the game team can copy them.
+export-dressing *ARGS:
+    @{{LEVEL_CLI}} export-dressing --workdir .tmp {{ARGS}}{{KEEP_STATUS}}
+
 # Build without judging and write the plan, section and view sheets to .tmp/snapshots/.
 snapshot *ARGS:
     @{{LEVEL_CLI}} snapshot --workdir .tmp {{ARGS}}{{KEEP_STATUS}}

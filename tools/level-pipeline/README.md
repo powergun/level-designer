@@ -18,6 +18,8 @@ The facade offers:
 - `buildLevel`: the built level with its placed static objects, or every build error of
   the first step that has errors; an optional prepared static level replaces the
   preparation;
+- `buildDressing` exports the prop recipes, their rounded slabs and the placed floor
+  decorations as two JSON fact sheets. It shares the level build through placement.
 - `validateLevel`: the validator's report of a built level, from `level-rules`' checks;
 - the types of the inputs, the outcomes, a build error, a built level, the prepared static
   level and the report.

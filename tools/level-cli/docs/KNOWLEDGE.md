@@ -20,6 +20,9 @@ with Bun and pass the scratch directory as `--workdir`, so no source names it.
   of a blocked build. It writes nothing.
 - `build` runs `validate` and then writes `<workdir>/level/<name>.glb` and
   `<workdir>/level/<name>.json`, only when the validator accepts.
+- `export-dressing` reads the description, builds through placement and writes
+  `<workdir>/factory-dressing/props.json` and `<workdir>/factory-dressing/decorations.json`.
+  Use `validate` to judge a changed level before exporting it.
 - `snapshot` builds without judging, so a rejected level can still be seen. It writes
   `plan.png`, `section.png` and `view.png` to `<workdir>/snapshots/`, and `custom.png` when
   `--eye` and `--look-at` name a view. Then it writes one finish page per finish path in
@@ -27,7 +30,7 @@ with Bun and pass the scratch directory as `--workdir`, so no source names it.
   the hall pages.
 
 Every command takes `--description <path>` and `--workdir <dir>`. The description defaults
-to the committed one that `level-pipeline` names. `build` and `snapshot` need `--workdir`;
+to the committed one that `level-pipeline` names. Each writing command needs `--workdir`;
 `--eye` and `--look-at` belong to `snapshot` and come together. A point is written
 `x,y,z` in metres; a value that starts with a minus sign needs the `=` form, as in
 `--eye=-5,1.7,-20`. An option value must not be empty: `--workdir=` would name the current

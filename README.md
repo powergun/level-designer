@@ -1,9 +1,8 @@
 # Level designer
 
-The level designer authors the dressed factory level of the sec-111 game: a `.glb`
-file with meshes, materials and textures, and a `.json` file with the in-house
-gameplay and lighting data. The game consumes only this level data, never the
-designer's code.
+The level designer authors the dressed factory for sec-111. Its QA app shows the
+full level pair with the stage, props, static objects and lighting. The game takes
+the destructible props and floor decorations from two JSON fact sheets.
 
 ## Current state
 
@@ -40,8 +39,8 @@ The library components carry the level's data and judgement:
 The QA app lets the human walk and fly through the level in a browser:
 
 - [level-view](packages/level-view/README.md): draws a level pair through the game's
-  renderer with the game's look and the level's lighting, its props and boxes painted by
-  their finishes and its stage materials by their hall finishes;
+  renderer with the game's colour grade, authoring bloom and lens dirt, and the level's
+  lighting. It paints props and boxes with their finishes and stage materials with hall finishes;
 - [qa-client](packages/qa-client/README.md): the QA page: boot, walk in the game's
   collision, fly, marks, heads-up display and the protocol it shares with the server;
 - [qa-server](tools/qa-server/README.md): the loopback server under Bun: it builds the
@@ -57,8 +56,8 @@ The tools run under Bun:
   description and the base stage, builds a level with its finish data or returns its
   build errors, and validates a built level into a report;
 - [level-cli](tools/level-cli/README.md): the command-line tool: it lists the prop kinds,
-  validates a description, builds the level pair and draws the snapshot sheets and the
-  finish pages.
+  validates a description, builds the level pair, exports the game dressing and draws the
+  snapshot sheets and finish pages.
 
 The committed level description, `levels/dark-factory.json`, is the authoring source of
 truth. The level pair is a build product of it and is never committed.
@@ -99,6 +98,7 @@ The command-line tool builds and judges the level description:
 just kinds        # prop kinds with their parameters, ranges and defaults
 just validate     # build in memory, judge, print the report
 just build        # validate, then write the pair to .tmp/level/
+just export-dressing  # prop and floor decoration facts in .tmp/factory-dressing/
 just snapshot     # sheets in .tmp/snapshots/, finish pages in .tmp/snapshots/finish/
 ```
 
@@ -107,6 +107,12 @@ another file, such as the git-ignored draft `levels/dark-factory.draft.json`.
 `snapshot` adds a custom view with `--eye=<x,y,z> --look-at=<x,y,z>`. The exit status
 is 0 for accepted or done, 2 for a blocked build or a rejected level, 3 for a usage or
 file error, and 1 for a defect or a broken sibling install.
+
+For a game handoff, run the `validate` and `export-dressing` recipes. Copy `props.json`
+and `decorations.json` together from `.tmp/factory-dressing/` to sec-111's
+`assets/stages/`. Format those copies with the game's pinned Biome and compare the
+parsed JSON values with the export. The [pipeline knowledge](tools/level-pipeline/docs/KNOWLEDGE.md)
+defines both sheets.
 
 ## QA the level
 

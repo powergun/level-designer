@@ -5,6 +5,7 @@
 import { run } from "@level-designer/level-cli";
 import {
   buildLevel,
+  buildDressing,
   COMMITTED_DESCRIPTION,
   readInputs,
   validateLevel,
@@ -17,6 +18,7 @@ process.exitCode = await run(
     committedDescription: COMMITTED_DESCRIPTION,
     readInputs,
     buildLevel,
+    buildDressing,
     validateLevel,
     renderSheets,
     renderFinishSheet,

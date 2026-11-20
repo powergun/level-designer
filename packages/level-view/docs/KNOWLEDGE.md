@@ -2,7 +2,7 @@
 
 `@level-designer/level-view` draws a level pair through the rendering-poc pipeline, so the
 QA page shows the game's mood. It owns the start, the GLB loading, the painted twins, the
-stage wraps, the mesh rules, the lighting mapping, the post pipeline with the game's look, the frame call
+stage wraps, the mesh rules, the lighting mapping, the post pipeline with the authoring look, the frame call
 and the failure hooks. It reaches the renderer through
 [render-gateway](../../render-gateway/docs/KNOWLEDGE.md), the game values through
 [sec111-gateway](../../sec111-gateway/docs/KNOWLEDGE.md), the lighting section and the
@@ -60,19 +60,18 @@ names its running boot step.
 
 ## The mapping rules as built
 
-- Key: a directional light placed at the interior centre plus `direction` times half the
-  box diagonal, aimed at the centre. Its orthographic shadow camera is fitted in light
-  space to the eight interior corners, with no pad and no margin. The shadow is the
-  renderer's default PCF with the stored map size, biases and radius; it renders once.
-- Points: a point light each, decay 2, no shadow. Without a key there is no directional
-  light.
+- The directional key aims at the interior centre from half a box diagonal along
+  `direction`. Its orthographic camera fits the eight corners exactly in light space.
+  It renders one PCF shadow using the stored map size, biases and radius.
+- Each point light has decay 2 and casts no shadow.
 - Environment: a back-faced sphere of radius 10, 64 by 32 segments, whose vertex colours
   are the formula at each vertex's unit direction, in linear working space. The PMREM
   bake uses blur 0.04; `environment.intensity` sets the scene's environment intensity.
 - Clear colour: the game's, `GAME_VALUES.page.clearColor` from sec111-gateway under its drift
   test, or this component's loud magenta (1, 0, 1) for `leak`.
-- Look: the game's post configuration with the level's haze density, colour, glow and
-  exposure written over it.
+- Look: the QA view takes the game's post configuration and sets its own bloom and
+  lens dirt for judging factory finishes. The level supplies haze density, colour, glow
+  and exposure.
 - Mesh rules: every mesh casts and receives shadows with two-sided shadow faces, every
   texture of its materials filters at anisotropy 8, and every matrix freezes. Sidedness
   and emissive strength stay as the GLB states them.

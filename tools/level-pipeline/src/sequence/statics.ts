@@ -44,7 +44,7 @@ function place(
     const floor = floorHeightAt(prepared.level, object.at[0], object.at[1]);
     return { ok: true, placement: { object, box: staticBox(object, floor + object.lift) } };
   }
-  const slabs = slabsOf(props, on).map(({ slab }) => slab);
+  const slabs = slabsOf(props, on);
   const top = topUnder(slabs, object.at);
   if (top === undefined) {
     return { ok: false, error: placeError(atPath, object.at, `lies over no top of prop ${on}`) };

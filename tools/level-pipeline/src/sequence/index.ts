@@ -3,6 +3,7 @@
  * level, or the build errors of the first step that has errors.
  */
 export { buildLevel } from "./build.js";
+export { buildDressing, type DressingOutcome } from "./dressing.js";
 export type {
   BuildError,
   BuildInputs,

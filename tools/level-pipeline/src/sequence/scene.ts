@@ -25,13 +25,13 @@ export function levelScene(
 ): Uint8Array {
   const meshes: PropMeshes[] = props.map((prop) => ({
     id: prop.id,
-    slabs: prop.slabs.map(({ slab, glow }) => {
+    slabs: prop.slabs.map((slab) => {
       const mesh = { ...meshSlab(slab), finish: slab.finish };
-      return glow === undefined ? mesh : { ...mesh, glow };
+      return prop.glow === undefined ? mesh : { ...mesh, glow: prop.glow };
     }),
   }));
   const paths = [
-    ...props.flatMap((prop) => prop.slabs.map(({ slab }) => slab.finish)),
+    ...props.flatMap((prop) => prop.slabs.map((slab) => slab.finish)),
     ...placements.map(({ object }) => object.finish),
   ];
   const looks = { bodies: bodiesInUse(paths, description), glows: description.glows };

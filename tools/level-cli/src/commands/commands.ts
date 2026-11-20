@@ -8,7 +8,7 @@ import { boxSwatches, sealSwatches } from "./box-swatches.js";
 import { clearDirectory, writeFiles } from "./files.js";
 import { finishSwatches } from "./finish-swatches.js";
 import { hallSwatches } from "./hall-swatches.js";
-import { judge, readAndBuild } from "./level.js";
+import { judge, load, readAndBuild, reportBlocked } from "./level.js";
 import type { ExitStatus, Pipeline, Streams } from "./pipeline.js";
 import { snapshotInput } from "./snapshot-input.js";
 
@@ -65,6 +65,31 @@ export async function build(
 
 /** The path segments of the finish pages' directory under the work directory. */
 const FINISH_PAGES = ["snapshots", "finish"] as const;
+
+/** Export the two game dressing sheets from the common placement step. */
+export async function exportDressing(
+  description: string,
+  workdir: string,
+  pipeline: Pipeline,
+  streams: Streams,
+): Promise<ExitStatus> {
+  const inputs = await load(description, pipeline, streams);
+  if (!inputs.ok) return inputs.status;
+  const sheets = await pipeline.buildDressing(inputs.value);
+  if (!sheets.ok) {
+    reportBlocked(sheets.errors, streams);
+    streams.err(BLOCKED);
+    return 2;
+  }
+  return writeFiles(
+    workdir,
+    [
+      { path: ["factory-dressing", "props.json"], data: sheets.props },
+      { path: ["factory-dressing", "decorations.json"], data: sheets.decorations },
+    ],
+    streams,
+  );
+}
 
 /**
  * The swatch of every finish page: the slab pages, the box pages, the seal pages, then the

@@ -1,11 +1,15 @@
 import { expect, spyOn, test } from "bun:test";
-import type { Description } from "@level-designer/level-format";
+import { recipeAt, staticClass, type Description } from "@level-designer/level-format";
 import {
+  buildDressing,
   buildLevel,
+  type BuildInputs,
+  type BuiltLevel,
   COMMITTED_DESCRIPTION,
   readInputs,
   validateLevel,
 } from "@level-designer/level-pipeline";
+import { floorHeightAt } from "@level-designer/sec111-gateway";
 import * as stage from "@level-designer/sec111-gateway/stage";
 import { field, glbDocument, listAt } from "./glb-json.js";
 
@@ -74,6 +78,65 @@ function glowsMet(materials: readonly WrittenMaterial[]): ReadonlySet<string> {
   return new Set(names.filter((name): name is string => typeof name === "string"));
 }
 
+/** Compare the game export to every prop and floor decoration in the approved level build. */
+async function expectDressing(inputs: BuildInputs, built: BuiltLevel): Promise<void> {
+  const sheets = await buildDressing(inputs, built.prepared);
+  if (!sheets.ok) throw new Error(`dressing blocked: ${JSON.stringify(sheets.errors)}`);
+  const propSheet: unknown = JSON.parse(sheets.props);
+  const decorationSheet: unknown = JSON.parse(sheets.decorations);
+  const props = built.description.props.map(({ id, at, kind, yaw, params }, index) => ({
+    id,
+    kind,
+    at,
+    yaw,
+    floor: floorHeightAt(built.prepared.level, ...at),
+    params: Object.fromEntries(params),
+    slabs: built.level.props[index]?.slabs,
+  }));
+  const floor = built.placed.filter(({ object }) => staticClass(object) === "floor");
+  const objects = floor.map(
+    ({ object: { id, yaw, size, color, finish, number, wear, seed, glow }, box }) => ({
+      id,
+      yaw,
+      size,
+      color,
+      finish,
+      number,
+      wear,
+      seed,
+      center: box.center,
+      ...(glow === undefined ? {} : { glow }),
+    }),
+  );
+  expect(field(propSheet, "props")).toEqual(props);
+  expect(decorationSheet).toEqual({ schema: "factory-decorations/1", objects });
+  const paths = new Set([
+    ...built.level.props.flatMap(({ slabs }) => slabs.map(({ finish }) => finish)),
+    ...objects.map(({ finish }) => finish),
+  ]);
+  const finishes = field(propSheet, "finishes");
+  expect(new Set(Object.keys(Object(finishes)))).toEqual(paths);
+  for (const path of paths) {
+    const recipe = recipeAt(built.description.finishes, path);
+    const cut = built.description.finishes.get(path.split("/")[0] ?? "")?.cut;
+    expect(field(finishes, path)).toEqual({ ...recipe, cut });
+  }
+  const glows = new Set([
+    ...built.description.props.map(({ params }) => params.get("glow")),
+    ...objects.map(({ glow }) => glow),
+  ]);
+  expect(field(propSheet, "glows")).toEqual(
+    Object.fromEntries([...built.description.glows].filter(([name]) => glows.has(name))),
+  );
+  expect(Object.keys(Object(propSheet)).toSorted()).toEqual([
+    "finishes",
+    "glows",
+    "props",
+    "schema",
+  ]);
+  expect(field(propSheet, "schema")).toBe("factory-props/1");
+}
+
 test(
   "the committed description builds and is accepted, every lamp emits at its strength, and every glow in use is met",
   async () => {
@@ -88,11 +151,12 @@ test(
     expect(outcome.built.prepared.level.metrics.scale).toBe(1);
     const { count, limit } = report.summary.bodyBoxes;
     expect(count).toBeLessThan(limit);
-    expect(preparations.mock.calls.length - before).toBe(1);
     const { description, glb } = outcome.built;
     const materials = materialsOf(glb);
     expectLitLamps(materials, description);
     expect(glowsMet(materials)).toEqual(glowsInUse(description));
+    await expectDressing(read.inputs, outcome.built);
+    expect(preparations.mock.calls.length - before).toBe(1);
   },
   PREPARATION_TIMEOUT,
 );

@@ -22,7 +22,7 @@ sec-111's base stage GLB. level-glb's tests read the base stage through it.
 
 The testing entry, `@level-designer/sec111-gateway/testing`, runs under Bun and serves
 tests only. It offers sec-111's own `readCommittedLevel()` and `readCommittedFiles()`:
-the committed prepared level of the base stage, typed and as its two files, as real hall
+the committed factory with its prop slabs and navmesh, typed and as its two files, as real hall
 data without a preparation. No build reads them.
 
 Every name except `readBaseStage` and `GAME_VALUES` is sec-111's own, unchanged.

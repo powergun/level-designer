@@ -23,8 +23,8 @@
 - Start on WebGPU only, and refuse a WebGL fallback with this component's own typed error.
   Expected start failures are outcomes of the start, never rejections.
 - Hold no game value of its own: the lens, the look, the page constants and the game's
-  clear colour come from `GAME_VALUES`. The leak colour and the other mapping constants are
-  this component's own, each in one place in the `scene` unit.
+  clear colour come from `GAME_VALUES`. The authoring bloom and lens dirt, leak colour
+  and other mapping constants belong to the `scene` unit.
 - Keep the light set fixed after the start: expose no light and no setter.
 
 ## Tests

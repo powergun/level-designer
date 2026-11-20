@@ -10,6 +10,22 @@ import { ACCEPTED, ACCEPTED_LINES, BLOCKING, REJECTED } from "./reports.js";
 
 const scene = sceneForEachTest();
 
+test("export-dressing writes the two pipeline sheets directly from placement", async () => {
+  const dressing = { ok: true, props: "prop records", decorations: "floor boxes" } as const;
+  const { pipeline, calls } = fakePipeline({ dressing, build: BLOCKING });
+  const output = capture();
+  const status = await run(
+    ["export-dressing", "--workdir", scene.workdir],
+    pipeline,
+    output.streams,
+  );
+  expect(status).toBe(0);
+  expect(calls.builds).toEqual([]);
+  const dir = join(scene.workdir, "factory-dressing");
+  expect(await readFile(join(dir, "props.json"), "utf8")).toBe(dressing.props);
+  expect(await readFile(join(dir, "decorations.json"), "utf8")).toBe(dressing.decorations);
+});
+
 test("build writes the pair of an accepted level under the work directory and announces it", async () => {
   const { pipeline } = fakePipeline({ build: { ok: true, built: scene.built }, report: ACCEPTED });
   const output = capture();

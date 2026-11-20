@@ -2,6 +2,7 @@ import type {
   BuildInputs,
   BuildOutcome,
   BuiltLevel,
+  DressingOutcome,
   ReadOutcome,
   Report,
 } from "@level-designer/level-pipeline";
@@ -16,6 +17,7 @@ export interface Pipeline {
   readonly committedDescription: string;
   readonly readInputs: (path: string) => Promise<ReadOutcome>;
   readonly buildLevel: (inputs: BuildInputs) => Promise<BuildOutcome>;
+  readonly buildDressing: (inputs: BuildInputs) => Promise<DressingOutcome>;
   readonly validateLevel: (built: BuiltLevel) => Promise<Report>;
   readonly renderSheets: (glb: Uint8Array, input: SnapshotInput) => Sheets;
   readonly renderFinishSheet: (swatch: FinishSwatch) => Uint8Array;

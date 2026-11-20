@@ -1,14 +1,15 @@
 import type { Command } from "./command-line/index.js";
 import { parseCommand, USAGE } from "./command-line/index.js";
 import type { ExitStatus, Pipeline, Streams } from "./commands/index.js";
-import { build, kinds, snapshot, validate } from "./commands/index.js";
+import { build, exportDressing, kinds, snapshot, validate } from "./commands/index.js";
 
 /** Runs one parsed command. */
 function dispatch(command: Command, pipeline: Pipeline, streams: Streams): Promise<ExitStatus> {
   if (command.name === "kinds") return Promise.resolve(kinds(streams));
   if (command.name === "validate") return validate(command.description, pipeline, streams);
-  if (command.name === "build") {
-    return build(command.description, command.workdir, pipeline, streams);
+  if (command.name !== "snapshot") {
+    const write = command.name === "build" ? build : exportDressing;
+    return write(command.description, command.workdir, pipeline, streams);
   }
   return snapshot(command.description, command.workdir, command.custom, pipeline, streams);
 }
